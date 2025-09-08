@@ -7,4 +7,4 @@ A "counter" example for toying with `intent` (switch between activities)
 ### version tested
 |Android Studio            | Android SDK | Gradle | Emulator |
 |--------------------------|-------------|--------|----------|
-|Giraffe 2022.3.1 Patch 2  |33           | 8.0.0  | Pixel 3a |
+|Narwhal 2025.1.2 Patch 2  |33           | 8.13.0  | Pixel 9 |
