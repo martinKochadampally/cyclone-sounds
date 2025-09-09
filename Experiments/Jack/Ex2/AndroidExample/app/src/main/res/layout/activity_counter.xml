@@ -14,7 +14,7 @@
         android:layout_marginTop="100dp"
         android:layout_gravity="center"
         android:textSize="150sp"
-        android:textColor="#E91E63"
+        android:textColor="#4B5320"
         android:text="0" >
     </TextView>
 
@@ -24,7 +24,7 @@
         android:layout_height="80dp"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
-        android:text="Increase">
+        android:text="PLUS 5">
     </Button>
 
     <Button
@@ -33,7 +33,7 @@
         android:layout_height="80dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
-        android:text="Decrease">
+        android:text="MINUS 10">
     </Button>
 
     <Button
