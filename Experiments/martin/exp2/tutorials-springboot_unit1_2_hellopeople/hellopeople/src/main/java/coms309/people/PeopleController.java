@@ -63,8 +63,8 @@ public class PeopleController {
     // THIS IS A GET METHOD
     // RequestParam is expected from the request under the key "name"
     // returns all names that contains value passed to the key "name"
-    @GetMapping("/people/contains")
-    public List<Person> getPersonByParam(@RequestParam("name") String name) {
+    @GetMapping("/people/contains/name")
+    public List<Person> getPersonByName(@RequestParam("name") String name) {
         List<Person> res = new ArrayList<>();
         for (Person p : peopleList.values()) {
             if (p.getFirstName().contains(name) || p.getLastName().contains(name))
@@ -72,6 +72,18 @@ public class PeopleController {
         }
         return res;
     }
+
+    @GetMapping("/people/contains/job")
+    public List<Person> getPersonByOccupation(@RequestParam("job") String job) {
+        List<Person> res = new ArrayList<>();
+        for (Person p : peopleList.values()) {
+            if (p.getOccupation().contains(job)) {
+                res.add(p);
+            }
+        }
+        return res;
+    }
+
 
     // THIS IS THE UPDATE OPERATION
     // We extract the person from the HashMap and modify it.
@@ -94,6 +106,17 @@ public class PeopleController {
     public Person updatePerson2(@RequestParam("firstName") String firstName, @RequestBody Person p) {
         peopleList.replace(firstName, p);
         return peopleList.get(firstName);
+    }
+
+    @PutMapping("/people/phoneNo")
+    public Person updatePhoneNumber(@RequestParam("oldPhoneNo") String oldPhoneNo, @RequestParam("newPhoneNo") String newPhoneNo) {
+        for (Person p : peopleList.values()) {
+            if (p.getTelephone().equals(oldPhoneNo)) {
+                p.setTelephone(newPhoneNo);
+                return p;
+            }
+        }
+        return null;
     }
 
     // THIS IS THE DELETE OPERATION

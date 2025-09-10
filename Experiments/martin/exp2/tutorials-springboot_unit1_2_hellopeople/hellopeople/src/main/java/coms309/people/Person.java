@@ -19,6 +19,8 @@ public class Person {
 
     private String lastName;
 
+    private String occupation;
+
     private String address;
 
     private String telephone;
@@ -27,9 +29,10 @@ public class Person {
 //
 //    }
 
-    public Person(String firstName, String lastName, String address, String telephone){
+    public Person(String firstName, String lastName, String occupation, String address, String telephone){
         this.firstName = firstName;
         this.lastName = lastName;
+        this.occupation = occupation;
         this.address = address;
         this.telephone = telephone;
     }
@@ -56,6 +59,14 @@ public class Person {
         this.lastName = lastName;
     }
 
+    public String getOccupation() {
+        return this.occupation;
+    }
+
+    public void setOccupation(String occupation) {
+        this.occupation = occupation;
+    }
+
     public String getAddress() {
         return this.address;
     }
@@ -74,9 +85,10 @@ public class Person {
 
     @Override
     public String toString() {
-        return firstName + " " 
-               + lastName + " "
-               + address + " "
-               + telephone;
+        return firstName + " "
+                + lastName + " "
+                + occupation + " "
+                + address + " "
+                + telephone;
     }
 }

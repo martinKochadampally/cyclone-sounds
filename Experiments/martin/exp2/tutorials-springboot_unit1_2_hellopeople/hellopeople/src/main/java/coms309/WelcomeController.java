@@ -1,12 +1,11 @@
 package coms309;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Simple Hello World Controller to display the string returned
  *
- * @author Vivek Bengre
+ * @author Martin Kochadampally
  */
 
 @RestController
@@ -25,20 +24,13 @@ class WelcomeController {
         return "Hi " + name + "! Welcome to Cyclone Sounds!!!\n Here are your songs: ";
     }
 
-    @GetMapping("/counter")
-    public String counter() {
-        return "Please enter a number after counter in url. For example 'https://.../counter/10'";
-    }
-
-    @GetMapping(
-            value = "/counter"
-            params = {"number"}
-    )
+    @GetMapping("/counter/{number}")
     public String counterWithNumber(@PathVariable int number) {
         String s = "";
         for (int i = 0; i < number; i++) {
-            s += (i + 1) + "\n";
+            s += (i + 1) + " ";
         }
         return s;
     }
+
 }
