@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
         android:layout_marginBottom="50dp"
-        android:textSize="30dp"
+        android:textSize="60dp"
         android:textColor="#fc0303">
     </TextView>
 

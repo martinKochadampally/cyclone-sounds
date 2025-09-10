@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="200dp"
         android:textSize="30dp"
-        android:textColor="#3F51B5">
+        android:textColor="#C70707">
     </TextView>
 
     <Button
@@ -24,9 +24,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:layout_gravity="center"
-        android:text="To the Counter Activity"
+        android:backgroundTint="#C70707"
+        android:text="@string/to_counter_activity"
         android:textSize="20sp"
-        android:textColor="#ffffff">
+        android:textColor="#FFFFFF">
     </Button>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

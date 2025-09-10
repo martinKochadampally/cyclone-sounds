@@ -11,10 +11,10 @@
         android:id="@+id/number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="150dp"
         android:layout_gravity="center"
         android:textSize="150sp"
-        android:textColor="#E91E63"
+        android:textColor="#C70707"
         android:text="0" >
     </TextView>
 
@@ -24,6 +24,8 @@
         android:layout_height="80dp"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
+        android:textSize="40dp"
+        android:backgroundTint="#C70707"
         android:text="Increase">
     </Button>
 
@@ -33,6 +35,8 @@
         android:layout_height="80dp"
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
+        android:textSize="40dp"
+        android:backgroundTint="#C70707"
         android:text="Decrease">
     </Button>
 
@@ -42,6 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="50dp"
+        android:backgroundTint="#C70707"
         android:text="Back to Main" >
 
     </Button>
