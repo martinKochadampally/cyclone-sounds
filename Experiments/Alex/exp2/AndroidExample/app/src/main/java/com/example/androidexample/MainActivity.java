@@ -62,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
             messageText.setText("The number was " + number);
         }
 
+        String name = "Alex";
+        String buttonText = getString(R.string.to_counter_activity, name);
+        counterButton.setText(buttonText);
+
         /* click listener on counter button pressed */
         counterButton.setOnClickListener(new View.OnClickListener() {
             @Override
