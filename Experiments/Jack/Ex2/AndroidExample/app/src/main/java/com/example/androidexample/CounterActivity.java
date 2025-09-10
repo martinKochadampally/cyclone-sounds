@@ -31,17 +31,23 @@ public class CounterActivity extends AppCompatActivity {
         /* when increase btn is pressed, counter++, reset number textview */
         increaseBtn.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View v) {
-                numberTxt.setText(String.valueOf(++counter));
+                counter += 5;
+                numberTxt.setText(String.valueOf(counter));
             }
+
         });
 
         /* when decrease btn is pressed, counter--, reset number textview */
         decreaseBtn.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View v) {
-                numberTxt.setText(String.valueOf(--counter));
+                counter -= 10;
+                numberTxt.setText(String.valueOf(counter));
             }
+
         });
 
         /* when back btn is pressed, switch back to MainActivity */
