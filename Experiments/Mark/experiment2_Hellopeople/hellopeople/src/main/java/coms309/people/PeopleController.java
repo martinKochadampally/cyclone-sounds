@@ -19,7 +19,6 @@ public class PeopleController {
     // Note that there is only ONE instance of PeopleController in 
     // Springboot system.
     HashMap<String, Person> peopleList = new  HashMap<>();
-
     //CRUDL (create/read/update/delete/list)
     // use POST, GET, PUT, DELETE, GET methods for CRUDL
 
@@ -29,6 +28,7 @@ public class PeopleController {
     // Springboot automatically converts the list to JSON format 
     // in this case because of @ResponseBody
     // Note: To LIST, we use the GET method
+    //change for experiment 2, hello people. Switched a hashmap to a list to hold people that can have the same name
     @GetMapping("/people")
     public  HashMap<String,Person> getAllPersons() {
         return peopleList;
@@ -43,7 +43,7 @@ public class PeopleController {
     public  String createPerson(@RequestBody Person person) {
         System.out.println(person);
         peopleList.put(person.getFirstName(), person);
-        String s = "New person "+ person.getFirstName() + " Saved";
+        String s = "A person named "+ person.getFirstName() + " is saved";
         return s;
         //public  ResponseEntity<Map<String, String>>  //unused
         // createPerson(@RequestBody Person person) { // unused
@@ -66,11 +66,26 @@ public class PeopleController {
     // THIS IS A GET METHOD
     // RequestParam is expected from the request under the key "name"
     // returns all names that contains value passed to the key "name"
-    @GetMapping("/people/contains")
-    public List<Person> getPersonByParam(@RequestParam("name") String name) {
+    @GetMapping("/people/contains/name")
+    public List<Person> getPersonByParam(@RequestParam("firstName") String name) {
         List<Person> res = new ArrayList<>(); 
         for (Person p : peopleList.values()) {
             if (p.getFirstName().contains(name) || p.getLastName().contains(name))
+                res.add(p);
+
+        }
+        return res;
+    }
+
+    //added a new method to search my phone number
+    // THIS IS A GET METHOD
+    // RequestParam is expected from the request under the key "number"
+    // returns all names that contains value passed to the key "number"
+    @GetMapping("/people/contains/number")
+    public List<Person> getPersonByParamNum(@RequestParam("phone") String number) {
+        List<Person> res = new ArrayList<>();
+        for (Person p : peopleList.values()) {
+            if (p.getTelephone().contains(number))
                 res.add(p);
         }
         return res;
@@ -99,5 +114,12 @@ public class PeopleController {
         peopleList.remove(firstName);
         return peopleList;
     }
+
+    //created a GET operation
+    //Used to count the number of people added to the arraylist
+    // which was the other change I made from a Hashmap
+    @GetMapping("/people/count")
+    public int getPeopleSize(){
+        return peopleList.size();}
 } // end of people controller
 
