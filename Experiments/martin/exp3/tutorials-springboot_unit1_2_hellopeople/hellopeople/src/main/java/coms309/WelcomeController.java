@@ -1,8 +1,12 @@
 package coms309;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Simple Hello World Controller to display the string returned
+ *
+ * @author Martin Kochadampally
+ */
 
 @RestController
 class WelcomeController {
@@ -17,10 +21,9 @@ class WelcomeController {
     // Uses the name given in the URL to welcome the user.
     @GetMapping("/{name}")
     public String welcome(@PathVariable String name) {
-        return "Hi " + name + "! Welcome to Cyclone Sounds!!! Here are your songs: ";
+        return "Hi " + name + "! Welcome to Cyclone Sounds!!!\n Here are your songs: ";
     }
 
-    // Uses the integer given and counts from 1 to that number.
     @GetMapping("/counter/{number}")
     public String counterWithNumber(@PathVariable int number) {
         String s = "";
@@ -29,4 +32,5 @@ class WelcomeController {
         }
         return s;
     }
+
 }
