@@ -20,11 +20,7 @@ class WelcomeController {
         return "Hi " + name + "! Welcome to Cyclone Sounds!!! Here are your songs: ";
     }
 
-    @GetMapping("/counter")
-    public String counter() {
-        return "Please enter a number after counter in url. For example 'https://.../counter/10'";
-    }
-
+    // Uses the integer given and counts from 1 to that number.
     @GetMapping("/counter/{number}")
     public String counterWithNumber(@PathVariable int number) {
         String s = "";

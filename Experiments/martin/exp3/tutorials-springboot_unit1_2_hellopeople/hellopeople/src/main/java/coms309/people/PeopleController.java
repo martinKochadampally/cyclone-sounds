@@ -98,16 +98,6 @@ public class PeopleController {
         return peopleList.get(firstName);
     }
 
-    // UPDATE using RequestParam and ResponseBody with alternate style of declaring params
-    @PutMapping(
-            value="/people",
-            params = { "firstName" }
-    )
-    public Person updatePerson2(@RequestParam("firstName") String firstName, @RequestBody Person p) {
-        peopleList.replace(firstName, p);
-        return peopleList.get(firstName);
-    }
-
     @PutMapping("/people/phoneNo")
     public Person updatePhoneNumber(@RequestParam("oldPhoneNo") String oldPhoneNo, @RequestParam("newPhoneNo") String newPhoneNo) {
         for (Person p : peopleList.values()) {
