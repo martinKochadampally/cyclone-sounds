@@ -94,30 +94,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="100sp"
-            android:text="confirm\npassword\nagain: "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/signup_confirm2_edt"
-            android:layout_width="wrap_content"
-            android:inputType="textPassword"
-            android:layout_height="70dp"
-            android:hint="Enter Password Here">
-        </EditText>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:layout_marginTop="100dp"
         android:orientation="horizontal">
 

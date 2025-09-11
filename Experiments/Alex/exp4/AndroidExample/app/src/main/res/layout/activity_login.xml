@@ -10,10 +10,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Signup Example"
+        android:text="Login Example"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="150dp"
         android:textSize="30dp"
         android:textColor="#fc0303">
     </TextView>
@@ -34,7 +34,7 @@
         </TextView>
 
         <EditText
-            android:id="@+id/signup_username_edt"
+            android:id="@+id/login_username_edt"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:hint="Enter Username Here">
@@ -57,58 +57,10 @@
         </TextView>
 
         <EditText
-            android:id="@+id/signup_password_edt"
+            android:id="@+id/login_password_edt"
             android:layout_width="wrap_content"
             android:inputType="textPassword"
             android:layout_height="50dp"
-            android:hint="Enter Password Here">
-        </EditText>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="70sp"
-            android:text="confirm\npassword: "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/signup_confirm_edt"
-            android:layout_width="wrap_content"
-            android:inputType="textPassword"
-            android:layout_height="70dp"
-            android:hint="Enter Password Here">
-        </EditText>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="100sp"
-            android:text="confirm\npassword\nagain: "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/signup_confirm2_edt"
-            android:layout_width="wrap_content"
-            android:inputType="textPassword"
-            android:layout_height="70dp"
             android:hint="Enter Password Here">
         </EditText>
 
@@ -122,7 +74,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/signup_login_btn"
+            android:id="@+id/login_login_btn"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
@@ -132,7 +84,7 @@
         </Button>
 
         <Button
-            android:id="@+id/signup_signup_btn"
+            android:id="@+id/login_signup_btn"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"

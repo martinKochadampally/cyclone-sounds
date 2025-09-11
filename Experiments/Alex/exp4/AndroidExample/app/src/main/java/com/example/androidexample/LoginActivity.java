@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -26,7 +25,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText = findViewById(R.id.login_password_edt);
         loginButton = findViewById(R.id.login_login_btn);    // link to login button in the Login activity XML
         signupButton = findViewById(R.id.login_signup_btn);  // link to signup button in the Login activity XML
-        Bundle extras = getIntent().getExtras();
+
         /* click listener on login button pressed */
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,24 +34,12 @@ public class LoginActivity extends AppCompatActivity {
                 /* grab strings from user inputs */
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
-                if (extras == null) {
-                    /* when login button is pressed, use intent to switch to Login Activity */
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                    intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                    startActivity(intent);  // go to MainActivity with the key-value data
-                } else {
-                    if (username.equals(extras.getString("USERNAME")) && password.equals(extras.getString("PASSWORD"))) {
-                        /* when login button is pressed, use intent to switch to Login Activity */
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                        intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                        startActivity(intent);  // go to MainActivity with the key-value data
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Username or Password is incorrect silly", Toast.LENGTH_LONG).show();
-                    }
-                }
 
+                /* when login button is pressed, use intent to switch to Login Activity */
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
+                intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
+                startActivity(intent);  // go to MainActivity with the key-value data
             }
         });
 

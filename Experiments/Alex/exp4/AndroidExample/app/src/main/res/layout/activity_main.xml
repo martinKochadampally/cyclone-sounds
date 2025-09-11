@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
         android:layout_marginBottom="50dp"
-        android:textSize="30dp"
+        android:textSize="40dp"
         android:textColor="#fc0303">
     </TextView>
 
@@ -30,12 +30,6 @@
         android:textSize="30dp"
         android:textColor="#000000">
     </TextView>
-
-    <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/cy" />
 
 
     <Button
@@ -54,6 +48,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Signup"
+        android:textSize="20sp"
+        android:textColor="#ffffff">
+    </Button>
+
+    <Button
+        android:id="@+id/change_password_btn"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Change Password"
         android:textSize="20sp"
         android:textColor="#ffffff">
     </Button>
