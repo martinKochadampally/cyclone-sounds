@@ -11,7 +11,7 @@
         android:id="@+id/home_msg_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cyclone Sounds"
+        android:text="Profile"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
         android:layout_marginBottom="50dp"
@@ -19,17 +19,6 @@
         android:textColor="#fc0303">
     </TextView>
 
-    <TextView
-        android:id="@+id/home_username_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="{{username}}"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="100dp"
-        android:textSize="30dp"
-        android:textColor="#000000">
-    </TextView>
     <Space
         android:layout_width="match_parent"
         android:layout_height="0dp"

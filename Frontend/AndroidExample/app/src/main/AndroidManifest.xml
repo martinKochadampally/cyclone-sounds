@@ -29,6 +29,10 @@
         </activity>
         <activity android:name=".HomeActivity"
             android:exported="false" />
+        <activity android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity android:name=".MusicActivity"
+            android:exported="false" />
 
     </application>
 
