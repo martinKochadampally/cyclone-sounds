@@ -45,6 +45,8 @@ public class HomeActivity extends AppCompatActivity {
     private TextView usernameText;  // define username textview variable
     private Button profileButton;    // define profile button variable
     private Button musicButton;      // define music button variable
+    private Button jamsButton;
+    private Button createButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,8 @@ public class HomeActivity extends AppCompatActivity {
         usernameText = findViewById(R.id.home_username_txt);// link to username textview in the Main activity XML
         musicButton = findViewById(R.id.music_button_btn);    // link to music button in the Main activity XML
         profileButton = findViewById(R.id.profile_button_btn);// link to profile button in the Main activity XML
+        jamsButton = findViewById(R.id.jams_button_btn);
+        createButton = findViewById(R.id.create_button_btn);
 
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
@@ -86,6 +90,23 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        jamsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(HomeActivity.this, JamsActivity.class);
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
+                startActivity(intent);
+            }
+        });
+
+        createButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(HomeActivity.this, CreateActivity.class);
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
+                startActivity(intent);
+            }
+        });
 
     }
 }

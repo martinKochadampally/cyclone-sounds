@@ -1,14 +1,12 @@
 package com.example.androidexample;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import androidx.appcompat.app.AppCompatActivity;
 
 /*
 
@@ -39,46 +37,57 @@ import org.w3c.dom.Text;
  */
 
 
-public class ProfileActivity extends AppCompatActivity {
+public class CreateActivity extends AppCompatActivity {
 
     private TextView messageText;   // define message textview variable
     private TextView usernameText;  // define username textview variable
-    private Button musicButton;      // define music button variable
-    private Button homeButton;
+    private Button profileButton;    // define profile button variable
+    private Button homeButton;      // define music button variable
+    private Button musicButton;
     private Button jamsButton;
-    private Button createButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);             // link to Main activity XML
+        setContentView(R.layout.activity_create);             // link to Main activity XML
 
         /* initialize UI elements */
-        musicButton = findViewById(R.id.music_button_btn);    // link to music button in the Main activity XML
-        homeButton = findViewById(R.id.home_button_btn);
+        homeButton = findViewById(R.id.home_button_btn);    // link to music button in the Main activity XML)
+        profileButton = findViewById(R.id.profile_button_btn);// link to profile button in the Main activity XML
+        musicButton = findViewById(R.id.music_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
-        createButton = findViewById(R.id.create_button_btn);
+
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
         if(extras == null) {
-                         // set username text invisible initially
+            // set username text invisible initially
         } else {
 
 
         }
 
-        musicButton.setOnClickListener(new View.OnClickListener() {
+        homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, MusicActivity.class);
+                Intent intent = new Intent(CreateActivity.this, HomeActivity.class);
                 intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
                 startActivity(intent);
             }
         });
 
-        homeButton.setOnClickListener(new View.OnClickListener() {
+        profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
+                Intent intent = new Intent(CreateActivity.this, ProfileActivity.class);
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
+                startActivity(intent);
+            }
+        });
+
+        musicButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(CreateActivity.this, MusicActivity.class);
                 intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
                 startActivity(intent);
             }
@@ -87,21 +96,10 @@ public class ProfileActivity extends AppCompatActivity {
         jamsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, JamsActivity.class);
+                Intent intent = new Intent(CreateActivity.this, JamsActivity.class);
                 intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
                 startActivity(intent);
             }
         });
-
-        createButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, CreateActivity.class);
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
-                startActivity(intent);
-            }
-        });
-
-
     }
 }

@@ -43,7 +43,8 @@ public class MusicActivity extends AppCompatActivity {
     private TextView usernameText;  // define username textview variable
     private Button profileButton;    // define profile button variable
     private Button homeButton;      // define music button variable
-
+    private Button jamsButton;
+    private Button createButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +53,8 @@ public class MusicActivity extends AppCompatActivity {
         /* initialize UI elements */
         homeButton = findViewById(R.id.home_button_btn);    // link to music button in the Main activity XML)
         profileButton = findViewById(R.id.profile_button_btn);// link to profile button in the Main activity XML
+        jamsButton = findViewById(R.id.jams_button_btn);
+        createButton = findViewById(R.id.create_button_btn);
 
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
@@ -75,6 +78,24 @@ public class MusicActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MusicActivity.this, ProfileActivity.class);
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
+                startActivity(intent);
+            }
+        });
+
+        jamsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MusicActivity.this, JamsActivity.class);
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
+                startActivity(intent);
+            }
+        });
+
+        createButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MusicActivity.this, CreateActivity.class);
                 intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
                 startActivity(intent);
             }
