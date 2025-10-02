@@ -114,7 +114,8 @@
             android:layout_marginLeft="10dp"
             android:text="Signup"
             android:textSize="20sp"
-            android:textColor="#ffffff">
+            android:textColor="#ffffff"
+            android:enabled="false">
         </Button>
 
     </LinearLayout>

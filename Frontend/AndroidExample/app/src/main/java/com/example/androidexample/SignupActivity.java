@@ -1,9 +1,10 @@
 package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,11 +12,11 @@ import android.widget.Toast;
 
 public class SignupActivity extends AppCompatActivity {
 
-    private EditText usernameEditText;  // define username edittext variable
-    private EditText passwordEditText;  // define password edittext variable
-    private EditText confirmEditText;   // define confirm edittext variable
-    private Button loginButton;         // define login button variable
-    private Button signupButton;        // define signup button variable
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private EditText confirmEditText;
+    private Button loginButton;
+    private Button signupButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,11 +24,45 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         /* initialize UI elements */
-        usernameEditText = findViewById(R.id.signup_username_edt);  // link to username edtext in the Signup activity XML
-        passwordEditText = findViewById(R.id.signup_password_edt);  // link to password edtext in the Signup activity XML
-        confirmEditText = findViewById(R.id.signup_confirm_edt);    // link to confirm edtext in the Signup activity XML
-        loginButton = findViewById(R.id.signup_login_btn);    // link to login button in the Signup activity XML
-        signupButton = findViewById(R.id.signup_signup_btn);  // link to signup button in the Signup activity XML
+        usernameEditText = findViewById(R.id.signup_username_edt);
+        passwordEditText = findViewById(R.id.signup_password_edt);
+        confirmEditText = findViewById(R.id.signup_confirm_edt);
+        loginButton = findViewById(R.id.signup_login_btn);
+        signupButton = findViewById(R.id.signup_signup_btn);
+
+        // Create a TextWatcher to monitor the EditText fields
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Not needed for this use case
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Not needed for this use case
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // This is called after the text in any of the EditTexts changes
+                String username = usernameEditText.getText().toString().trim();
+                String password = passwordEditText.getText().toString().trim();
+                String confirm = confirmEditText.getText().toString().trim();
+
+                // Check if fields are filled AND if passwords match
+                boolean passwordsMatch = password.equals(confirm);
+                boolean fieldsAreValid = !username.isEmpty() && !password.isEmpty() && !confirm.isEmpty() && passwordsMatch;
+
+                // Enable or disable the signup button based on the validation
+                signupButton.setEnabled(fieldsAreValid);
+            }
+        };
+
+        // Attach the TextWatcher to all three EditText fields
+        usernameEditText.addTextChangedListener(textWatcher);
+        passwordEditText.addTextChangedListener(textWatcher);
+        confirmEditText.addTextChangedListener(textWatcher);
+
 
         /* click listener on login button pressed */
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +79,7 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // This code now only runs if the button is enabled by the TextWatcher
 
                 /* grab strings from user inputs */
                 String username = usernameEditText.getText().toString();
@@ -53,12 +89,14 @@ public class SignupActivity extends AppCompatActivity {
                 if (password.equals(confirm)){
                     Toast.makeText(getApplicationContext(), "Signing up", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                    intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
+                    intent.putExtra("USERNAME", username);
+                    intent.putExtra("PASSWORD", password);
                     startActivity(intent);
                 }
                 else {
-                    Toast.makeText(getApplicationContext(), "Password don't match", Toast.LENGTH_LONG).show();
+                    // This else block is less likely to be hit, as the button is disabled
+                    // if passwords don't match, but it's good for robustness.
+                    Toast.makeText(getApplicationContext(), "Passwords don't match", Toast.LENGTH_LONG).show();
                 }
             }
         });
