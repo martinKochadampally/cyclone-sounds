@@ -118,6 +118,13 @@
         </Button>
 
     </LinearLayout>
+    <TextView
+        android:id="@+id/msg_Response"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:text="" />
 
 
 </androidx.appcompat.widget.LinearLayoutCompat>
