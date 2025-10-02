@@ -1,70 +1,77 @@
 package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText usernameEditText;  // define username edittext variable
-    private EditText passwordEditText;  // define password edittext variable
-    private Button loginButton;         // define login button variable
-    private Button signupButton;        // define signup button variable
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private Button loginButton;
+    private Button signupButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);            // link to Login activity XML
+        setContentView(R.layout.activity_login);
 
-        /* initialize UI elements */
         usernameEditText = findViewById(R.id.login_username_edt);
         passwordEditText = findViewById(R.id.login_password_edt);
-        loginButton = findViewById(R.id.login_login_btn);    // link to login button in the Login activity XML
-        signupButton = findViewById(R.id.login_signup_btn);  // link to signup button in the Login activity XML
-        Bundle extras = getIntent().getExtras();
-        /* click listener on login button pressed */
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        loginButton = findViewById(R.id.login_login_btn);
+        signupButton = findViewById(R.id.login_signup_btn);
 
-                /* grab strings from user inputs */
-                String username = usernameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
-                if (extras == null) {
-                    /* when login button is pressed, use intent to switch to Login Activity */
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                    intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                    startActivity(intent);  // go to MainActivity with the key-value data
-                } else {
-                    if (username.equals(extras.getString("USERNAME")) && password.equals(extras.getString("PASSWORD"))) {
-                        /* when login button is pressed, use intent to switch to Login Activity */
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://d32495e1-408f-47f7-a807-a1477958cb7f.mock.pstmn.io/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        loginButton.setOnClickListener(v -> {
+            Toast.makeText(getApplicationContext(), "Attempting to log in...", Toast.LENGTH_SHORT).show();
+
+            Call<LoginResponse> call = apiService.loginUser();
+
+            call.enqueue(new Callback<LoginResponse>() {
+                @Override
+                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                    if (response.isSuccessful()) {
+                        LoginResponse loginResponse = response.body();
+                        Log.d("API_LOGIN_SUCCESS", "Status: " + loginResponse.getStatus());
+                        Log.d("API_LOGIN_SUCCESS", "Token: " + loginResponse.getToken());
+
+                        Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                        intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                        intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                        startActivity(intent);  // go to MainActivity with the key-value data
+                        startActivity(intent);
+
                     } else {
-                        Toast.makeText(getApplicationContext(), "Username or Password is incorrect silly", Toast.LENGTH_LONG).show();
+                        Log.e("API_ERROR", "Login response error: " + response.code());
+                        Toast.makeText(getApplicationContext(), "Login failed. Please try again.", Toast.LENGTH_LONG).show();
                     }
                 }
 
-            }
+                @Override
+                public void onFailure(Call<LoginResponse> call, Throwable t) {
+                    Log.e("API_FAILURE", "Network request failed: " + t.getMessage());
+                    Toast.makeText(getApplicationContext(), "Network error. Please try again.", Toast.LENGTH_LONG).show();
+                }
+            });
         });
 
-        /* click listener on signup button pressed */
-        signupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                /* when signup button is pressed, use intent to switch to Signup Activity */
-                Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
-                startActivity(intent);  // go to SignupActivity
-            }
+        signupButton.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+            startActivity(intent);
         });
     }
 }
