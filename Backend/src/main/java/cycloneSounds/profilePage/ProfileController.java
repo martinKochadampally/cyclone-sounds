@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,6 +42,11 @@ public class ProfileController {
         return profileRepository.findAll();
     }
 
+    /**
+     * GET endpoint
+     * @param email
+     * @return the information for the given email
+     */
     @GetMapping(path = "/profiles/{email}")
     public Profile getProfilebyEmail(@PathVariable String email) {
         return profileRepository.findByEmail(email).orElse(null);
@@ -83,7 +87,7 @@ public class ProfileController {
         profile.setFavSong(request.getFavSong());
         profile.setFavArtist(request.getFavArtist());
         profile.setFavGenre(request.getFavGenre());
-        profile.setBio(request.getBio());
+        profile.setBiography(request.getBiography());
 
         profileRepository.save(profile);
         return profile;

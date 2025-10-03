@@ -1,12 +1,8 @@
 package cycloneSounds.profilePage;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
 
 
 /**
@@ -88,11 +84,11 @@ public class Profile {
 
     public void setFavGenre(String favGenre) { this.favGenre = favGenre;}
 
-    public String getBio(){
+    public String getBiography(){
         return biography;
     }
 
-    public void setBio(String biography) { this.biography = biography;}
+    public void setBiography(String biography) { this.biography = biography;}
 
 
 }
