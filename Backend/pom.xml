@@ -5,26 +5,25 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>coms309</groupId>
-  <artifactId>helloworld</artifactId>
+  <artifactId>onetoone</artifactId>
   <version>1.0.0</version>
 
   <!-- To make it a spring boot project -->
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.3</version>
+    <version>3.1.4</version>
   </parent>
 
-  <name>helloworld</name>
+  <name>cyclone-sounds</name>
 
   <properties>
 
     <!-- Generic properties -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!--  Spring 3.4.3 requires atleast Java 17-23-->
-    <maven.compiler.source>23</maven.compiler.source>
-    <maven.compiler.target>23</maven.compiler.target>
+<!--    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+<!--    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
+<!--    <java.version>11</java.version>-->
+
   </properties>
 
   <dependencies>
@@ -33,6 +32,28 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- The H2 database dependency -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>1.4.200</version>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- MYSQL dependencies -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.33</version>
+    </dependency>
+
+
+    <!-- The ORM JPA specs/hibernate impl -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
   </dependencies>
