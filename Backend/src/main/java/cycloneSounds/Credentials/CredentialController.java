@@ -19,12 +19,10 @@ public class CredentialController {
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
 
-    @PostMapping(path = "/login/{emailOrUsername}")
-    String verifyLogin(@RequestBody String password, @PathVariable String emailOrUsername) {
-        Credentials credentials = credentialRepository.findByUsernameOrEmailId(emailOrUsername, emailOrUsername).orElse(null);
-        if (credentials == null || !credentials.getPassword().equals(password))
-            return failure;
-        return success;
+    @GetMapping(path = "/login")
+    Boolean verifyLogin(@RequestBody String username, @RequestBody String password) {
+        Credentials credentials = credentialRepository.findByUsernameOrEmailId(username, username).orElse(null);
+        return credentials != null && credentials.getPassword().equals(password);
     }
 
     @GetMapping(path = "/credentials")
@@ -42,14 +40,21 @@ public class CredentialController {
     }
 
     @PostMapping(path = "/credentials")
-    String createCredentials(@RequestBody Credentials credential){
-        if (credential == null)
-            return failure;
+    String createCredentials(@RequestParam String emailId, @RequestParam String username, @RequestParam String password, @RequestParam String accountType) {
 
-        boolean emailExists = credentialRepository.existsById(credential.getEmailId());
-        boolean usernameExists = credentialRepository.existsByUsername(credential.getUsername());
-        if (emailExists || usernameExists)
+        // First, check if the user or email already exists
+        boolean emailExists = credentialRepository.existsById(emailId);
+        boolean usernameExists = credentialRepository.existsByUsername(username);
+        if (emailExists || usernameExists) {
             return failure;
+        }
+
+        // If not, create a new Credentials object and save it
+        Credentials credential = new Credentials();
+        credential.setEmailId(emailId);
+        credential.setUsername(username);
+        credential.setPassword(password);
+        credential.setAccountType(accountType);
 
         credentialRepository.save(credential);
         return success;

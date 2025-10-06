@@ -2,17 +2,17 @@ package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -20,6 +20,9 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEditText;
     private Button loginButton;
     private Button signupButton;
+
+//    private static final String URL_STRING_REQ = "https://7d516973-a034-410b-95cd-47eade783d4e.mock.pstmn.io/login";
+    private static final String URL_STRING_REQ = "http://localhost:8080/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,47 +34,65 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.login_login_btn);
         signupButton = findViewById(R.id.login_signup_btn);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://d32495e1-408f-47f7-a807-a1477958cb7f.mock.pstmn.io/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        ApiService apiService = retrofit.create(ApiService.class);
-
         loginButton.setOnClickListener(v -> {
-            Toast.makeText(getApplicationContext(), "Attempting to log in...", Toast.LENGTH_SHORT).show();
+            String username = usernameEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
 
-            Call<LoginResponse> call = apiService.loginUser();
-
-            call.enqueue(new Callback<LoginResponse>() {
-                @Override
-                public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                    if (response.isSuccessful()) {
-                        LoginResponse loginResponse = response.body();
-                        Log.d("API_LOGIN_SUCCESS", "Status: " + loginResponse.getStatus());
-                        Log.d("API_LOGIN_SUCCESS", "Token: " + loginResponse.getToken());
-
-                        Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                        startActivity(intent);
-
-                    } else {
-                        Log.e("API_ERROR", "Login response error: " + response.code());
-                        Toast.makeText(getApplicationContext(), "Login failed. Please try again.", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    Log.e("API_FAILURE", "Network request failed: " + t.getMessage());
-                    Toast.makeText(getApplicationContext(), "Network error. Please try again.", Toast.LENGTH_LONG).show();
-                }
-            });
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Please enter both username and password", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+                makeGetRequest(username, password);
+            }
         });
 
         signupButton.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void makeGetRequest(final String username, final String password) {
+        Uri.Builder builder = Uri.parse(URL_STRING_REQ).buildUpon();
+        builder.appendQueryParameter("username", username);
+        builder.appendQueryParameter("password", password);
+        String urlWithParams = builder.build().toString();
+
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.GET,
+                urlWithParams,
+                response -> {
+                    Log.d("Volley Response", response);
+                    try {
+                        JSONObject jsonResponse = new JSONObject(response);
+                        String status = jsonResponse.getString("status");
+
+                        if ("success".equals(status)) {
+                            String message = jsonResponse.getString("message");
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+                            // *** THIS LINE HAS BEEN CHANGED ***
+                            // It now navigates to HomeActivity upon successful login.
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+
+                            intent.putExtra("USERNAME", username);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            String message = jsonResponse.getString("message");
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        }
+
+                    } catch (JSONException e) {
+                        Log.e("Volley JSON Error", "Error parsing JSON: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
+                    }
+                },
+                error -> {
+                    Log.e("Volley Error", error.toString());
+                    Toast.makeText(getApplicationContext(), "Network Error", Toast.LENGTH_LONG).show();
+                }
+        );
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 }
