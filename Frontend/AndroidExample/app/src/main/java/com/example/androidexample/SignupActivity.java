@@ -34,7 +34,7 @@ public class SignupActivity extends AppCompatActivity {
     private TextView msgResponse;
 
     // API for Volley
-    private static final String URL_STRING_REQ = "https://9e5d2bff-061b-461d-a5f5-6050e3c1616d.mock.pstmn.io/signup";
+    private static final String URL_STRING_REQ = "http://localhost:8080/credentials";
 
 
     @Override
