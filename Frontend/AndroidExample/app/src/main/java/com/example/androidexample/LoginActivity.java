@@ -1,70 +1,97 @@
 package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText usernameEditText;  // define username edittext variable
-    private EditText passwordEditText;  // define password edittext variable
-    private Button loginButton;         // define login button variable
-    private Button signupButton;        // define signup button variable
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private Button loginButton;
+    private Button signupButton;
+
+    private static final String URL_STRING_REQ = "https://7d516973-a034-410b-95cd-47eade783d4e.mock.pstmn.io/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);            // link to Login activity XML
+        setContentView(R.layout.activity_login);
 
-        /* initialize UI elements */
         usernameEditText = findViewById(R.id.login_username_edt);
         passwordEditText = findViewById(R.id.login_password_edt);
-        loginButton = findViewById(R.id.login_login_btn);    // link to login button in the Login activity XML
-        signupButton = findViewById(R.id.login_signup_btn);  // link to signup button in the Login activity XML
-        Bundle extras = getIntent().getExtras();
-        /* click listener on login button pressed */
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        loginButton = findViewById(R.id.login_login_btn);
+        signupButton = findViewById(R.id.login_signup_btn);
 
-                /* grab strings from user inputs */
-                String username = usernameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
-                if (extras == null) {
-                    /* when login button is pressed, use intent to switch to Login Activity */
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                    intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                    startActivity(intent);  // go to MainActivity with the key-value data
-                } else {
-                    if (username.equals(extras.getString("USERNAME")) && password.equals(extras.getString("PASSWORD"))) {
-                        /* when login button is pressed, use intent to switch to Login Activity */
-                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                        intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                        intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-                        startActivity(intent);  // go to MainActivity with the key-value data
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Username or Password is incorrect silly", Toast.LENGTH_LONG).show();
+        loginButton.setOnClickListener(v -> {
+            String username = usernameEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Please enter both username and password", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+                makeGetRequest(username, password);
+            }
+        });
+
+        signupButton.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void makeGetRequest(final String username, final String password) {
+        Uri.Builder builder = Uri.parse(URL_STRING_REQ).buildUpon();
+        builder.appendQueryParameter("username", username);
+        builder.appendQueryParameter("password", password);
+        String urlWithParams = builder.build().toString();
+
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.GET,
+                urlWithParams,
+                response -> {
+                    Log.d("Volley Response", response);
+                    try {
+                        JSONObject jsonResponse = new JSONObject(response);
+                        String status = jsonResponse.getString("status");
+
+                        if ("success".equals(status)) {
+                            String message = jsonResponse.getString("message");
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+                            // *** THIS LINE HAS BEEN CHANGED ***
+                            // It now navigates to HomeActivity upon successful login.
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+
+                            intent.putExtra("USERNAME", username);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            String message = jsonResponse.getString("message");
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        }
+
+                    } catch (JSONException e) {
+                        Log.e("Volley JSON Error", "Error parsing JSON: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
                     }
+                },
+                error -> {
+                    Log.e("Volley Error", error.toString());
+                    Toast.makeText(getApplicationContext(), "Network Error", Toast.LENGTH_LONG).show();
                 }
-
-            }
-        });
-
-        /* click listener on signup button pressed */
-        signupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                /* when signup button is pressed, use intent to switch to Signup Activity */
-                Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
-                startActivity(intent);  // go to SignupActivity
-            }
-        });
+        );
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 }
