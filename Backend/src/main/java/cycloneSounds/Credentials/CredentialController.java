@@ -19,12 +19,10 @@ public class CredentialController {
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
 
-    @PostMapping(path = "/login/{emailOrUsername}")
-    String verifyLogin(@RequestBody String password, @PathVariable String emailOrUsername) {
+    @GetMapping(path = "/login")
+    Boolean verifyLogin(@RequestBody String username, @RequestBody String password) {
         Credentials credentials = credentialRepository.findByUsernameOrEmailId(emailOrUsername, emailOrUsername).orElse(null);
-        if (credentials == null || !credentials.getPassword().equals(password))
-            return failure;
-        return success;
+        return credentials != null && credentials.getPassword().equals(password);
     }
 
     @GetMapping(path = "/credentials")
