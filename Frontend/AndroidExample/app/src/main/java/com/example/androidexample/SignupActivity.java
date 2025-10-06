@@ -23,7 +23,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button signupButton;
 
     // Your specific IP address is now included.
-    private static final String URL_STRING_REQ = "http://10.48.245.207:8080/credentials";
+    private static final String URL_STRING_REQ = "http://10.48.116.71:8080/credentials";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
