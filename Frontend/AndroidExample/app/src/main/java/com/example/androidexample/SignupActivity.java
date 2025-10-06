@@ -134,14 +134,17 @@ public class SignupActivity extends AppCompatActivity {
                 // Parameters for the request (if needed)
                 Map<String, String> params = new HashMap<>();
 
+                params.put("emailId", username + "@gmail.com");
                 params.put("username", username);
                 params.put("password", password);
+                params.put("accountType", "regular");
 
                 // Example parameters (uncomment if needed)
                 // params.put("param1", "value1");
                 // params.put("param2", "value2");
                 return params;
             }
+
         };
 
         // Adding request to the Volley request queue
