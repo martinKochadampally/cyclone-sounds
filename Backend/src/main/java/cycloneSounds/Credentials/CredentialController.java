@@ -20,7 +20,7 @@ public class CredentialController {
     private String failure = "{\"message\":\"failure\"}";
 
     @GetMapping(path = "/login")
-    Boolean verifyLogin(@RequestBody String username, @RequestBody String password) {
+    Boolean verifyLogin(@RequestParam String username, @RequestParam String password) {
         Credentials credentials = credentialRepository.findByUsernameOrEmailId(username, username).orElse(null);
         return credentials != null && credentials.getPassword().equals(password);
     }
