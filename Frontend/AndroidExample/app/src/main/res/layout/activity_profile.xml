@@ -1,90 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:context=".MainActivity"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".ProfileActivity">
 
     <TextView
-        android:id="@+id/home_msg_txt"
+        android:id="@+id/profile_title_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profile"
-        android:layout_gravity="center"
-        android:layout_marginTop="100dp"
-        android:layout_marginBottom="50dp"
-        android:textSize="30dp"
-        android:textColor="#fc0303">
-    </TextView>
+        android:text="Edit Your Profile"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:textSize="30sp"
+        android:textColor="#fc0303" />
 
-    <Space
+    <EditText
+        android:id="@+id/profile_name_edt"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_title_txt"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/profile_email_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_name_edt"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/profile_song_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_email_edt"
+        android:hint="Favorite Song"
+        android:inputType="text"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/profile_genre_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_song_edt"
+        android:hint="Favorite Genre"
+        android:inputType="text"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/profile_artist_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_genre_edt"
+        android:hint="Favorite Artist"
+        android:inputType="text"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/profile_bio_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_artist_edt"
+        android:hint="Biography"
+        android:inputType="textMultiLine"
+        android:lines="3"
+        android:gravity="top"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/profile_update_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_bio_edt"
+        android:text="Update Info" />
+
+    <Button
+        android:id="@+id/profile_delete_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_update_btn"
+        android:layout_marginTop="10dp"
+        android:text="Delete Account"
+        android:backgroundTint="#FF5252" />
+
     <LinearLayout
         android:id="@+id/bottom_button_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:gravity="center">
+
         <Button
             android:id="@+id/home_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Home"
-            android:textSize="8sp"
-            android:textColor="#ffffff">
-        </Button>
+            android:textSize="8sp" />
+
         <Button
             android:id="@+id/music_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Music"
-            android:textSize="8sp"
-            android:textColor="#ffffff">
-        </Button>
+            android:textSize="8sp" />
 
         <Button
             android:id="@+id/create_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Create"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="8sp" />
 
         <Button
             android:id="@+id/jams_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginStart="8dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Jams"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="8sp" />
 
         <Button
             android:id="@+id/profile_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Profile"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="8sp" />
     </LinearLayout>
 
-
-</androidx.appcompat.widget.LinearLayoutCompat>
+</RelativeLayout>
