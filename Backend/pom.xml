@@ -5,7 +5,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>coms309</groupId>
-  <artifactId>onetoone</artifactId>
+  <artifactId>cyclone-sounds</artifactId>
   <version>1.0.0</version>
 
   <!-- To make it a spring boot project -->
@@ -18,7 +18,6 @@
   <name>cyclone-sounds</name>
 
   <properties>
-
     <!-- Generic properties -->
 <!--    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
 <!--    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>-->
