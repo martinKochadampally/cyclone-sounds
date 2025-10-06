@@ -114,18 +114,10 @@
             android:layout_marginLeft="10dp"
             android:text="Signup"
             android:textSize="20sp"
-            android:textColor="#ffffff"
-            android:enabled="true">
+            android:textColor="#ffffff">
         </Button>
 
     </LinearLayout>
-    <TextView
-        android:id="@+id/msg_Response"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="16sp"
-        android:text="" />
 
 
 </androidx.appcompat.widget.LinearLayoutCompat>
