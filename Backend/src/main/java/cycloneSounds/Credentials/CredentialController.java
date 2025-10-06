@@ -40,14 +40,21 @@ public class CredentialController {
     }
 
     @PostMapping(path = "/credentials")
-    String createCredentials(@RequestBody Credentials credential){
-        if (credential == null)
-            return failure;
+    String createCredentials(@RequestParam String emailId, @RequestParam String username, @RequestParam String password, @RequestParam String accountType) {
 
-        boolean emailExists = credentialRepository.existsById(credential.getEmailId());
-        boolean usernameExists = credentialRepository.existsByUsername(credential.getUsername());
-        if (emailExists || usernameExists)
+        // First, check if the user or email already exists
+        boolean emailExists = credentialRepository.existsById(emailId);
+        boolean usernameExists = credentialRepository.existsByUsername(username);
+        if (emailExists || usernameExists) {
             return failure;
+        }
+
+        // If not, create a new Credentials object and save it
+        Credentials credential = new Credentials();
+        credential.setEmailId(emailId);
+        credential.setUsername(username);
+        credential.setPassword(password);
+        credential.setAccountType(accountType);
 
         credentialRepository.save(credential);
         return success;
