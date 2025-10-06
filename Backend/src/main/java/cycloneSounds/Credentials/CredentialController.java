@@ -21,7 +21,7 @@ public class CredentialController {
 
     @GetMapping(path = "/login")
     Boolean verifyLogin(@RequestBody String username, @RequestBody String password) {
-        Credentials credentials = credentialRepository.findByUsernameOrEmailId(emailOrUsername, emailOrUsername).orElse(null);
+        Credentials credentials = credentialRepository.findByUsernameOrEmailId(username, username).orElse(null);
         return credentials != null && credentials.getPassword().equals(password);
     }
 

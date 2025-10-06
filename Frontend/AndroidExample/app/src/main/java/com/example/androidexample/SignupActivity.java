@@ -34,7 +34,7 @@ public class SignupActivity extends AppCompatActivity {
     private TextView msgResponse;
 
     // API for Volley
-    private static final String URL_STRING_REQ = "http://localhost:8080/credentials";
+    private static final String URL_STRING_REQ = "https://localhost:8080/credentials";
 
 
     @Override

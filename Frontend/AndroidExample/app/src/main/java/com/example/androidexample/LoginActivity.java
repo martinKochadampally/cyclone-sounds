@@ -21,7 +21,8 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private Button signupButton;
 
-    private static final String URL_STRING_REQ = "https://7d516973-a034-410b-95cd-47eade783d4e.mock.pstmn.io/login";
+//    private static final String URL_STRING_REQ = "https://7d516973-a034-410b-95cd-47eade783d4e.mock.pstmn.io/login";
+    private static final String URL_STRING_REQ = "http://localhost:8080/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
