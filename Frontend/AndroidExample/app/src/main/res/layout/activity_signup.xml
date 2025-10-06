@@ -115,7 +115,7 @@
             android:text="Signup"
             android:textSize="20sp"
             android:textColor="#ffffff"
-            android:enabled="false">
+            android:enabled="true">
         </Button>
 
     </LinearLayout>

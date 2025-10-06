@@ -75,10 +75,6 @@ public class SignupActivity extends AppCompatActivity {
                 if (password.equals(confirm)){
                     Toast.makeText(getApplicationContext(), "Signing up", Toast.LENGTH_LONG).show();
                     makePostRequest(username, password);
-//                    Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-//                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-//                    intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
-//                    startActivity(intent);
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Password don't match", Toast.LENGTH_LONG).show();
@@ -100,10 +96,14 @@ public class SignupActivity extends AppCompatActivity {
                             JSONObject jsonResponse = new JSONObject(response);
                             String message = jsonResponse.getString("message");
                             // Display response in the TextView
-                            msgResponse.setText(message);
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                            intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
+                            intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
+                            startActivity(intent);
                         } catch (JSONException e) {
                             Log.e("Volley JSON Error", "Error parsing JSON: " + e.getMessage());
-                            msgResponse.setText("Response format error.");
+                            Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
                         }
                     }
                 },
@@ -114,7 +114,7 @@ public class SignupActivity extends AppCompatActivity {
                         Log.e("Volley Error", error.toString());
 
                         // Show an error message in the UI
-                        msgResponse.setText("Failed to load data. Please try again.");
+                        Toast.makeText(getApplicationContext(), "Volley Error", Toast.LENGTH_LONG).show();
                     }
                 }
         ) {
