@@ -25,65 +25,51 @@
         android:layout_weight="1" />
     <LinearLayout
         android:id="@+id/bottom_button_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:gravity="center">
+
         <Button
             android:id="@+id/home_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Home"
-            android:textSize="8sp"
-            android:textColor="#ffffff">
-        </Button>
+            android:textSize="9sp" />
+
         <Button
             android:id="@+id/music_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Music"
-            android:textSize="8sp"
-            android:textColor="#ffffff">
-        </Button>
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/create_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Create"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/jams_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginStart="8dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Jams"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/profile_button_btn"
-            android:layout_width="75dp"
-            android:layout_height="80dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:text="Profile"
-            android:textColor="#ffffff"
-            android:textSize="8sp"></Button>
+            android:textSize="9sp" />
     </LinearLayout>
 
 
