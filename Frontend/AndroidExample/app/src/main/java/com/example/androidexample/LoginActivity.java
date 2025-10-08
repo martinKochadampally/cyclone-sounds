@@ -2,6 +2,7 @@ package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -17,8 +18,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private Button signupButton;
 
-    // The URL for your backend's login endpoint
-    private static final String URL_LOGIN_REQ = "http://10.48.116.71:8080/login";
+    private static final String URL_LOGIN_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,21 +48,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void makeLoginRequest(final String username, final String password) {
-        // Build the URL with the username and password as query parameters
-        String urlWithParams = URL_LOGIN_REQ + "?username=" + username + "&password=" + password;
+        String urlWithParams = Uri.parse(URL_LOGIN_REQ)
+                .buildUpon()
+                .appendQueryParameter("username", username)
+                .appendQueryParameter("password", password)
+                .build().toString();
 
-        // Create the GET request
+        Log.d("Login URL", "Requesting URL: " + urlWithParams);
+
         StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithParams,
                 response -> {
                     Log.d("Volley Response", "Server responded with: " + response);
 
-                    // Check if the response from the server is literally "true"
-                    if (response.equalsIgnoreCase("true")) {
+                    if (response.trim().equalsIgnoreCase("true")) {
                         Toast.makeText(getApplicationContext(), "Login Successful!", Toast.LENGTH_LONG).show();
-                        // Navigate to HomeActivity on success
+
                         Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                        intent.putExtra("USERNAME", username);
                         startActivity(intent);
-                        finish(); // Close the login activity so the user can't go back to it
+                        finish();
                     } else {
                         Toast.makeText(getApplicationContext(), "Login Failed: Invalid username or password", Toast.LENGTH_LONG).show();
                     }
@@ -72,7 +76,6 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Error: Could not connect to server", Toast.LENGTH_LONG).show();
                 });
 
-        // Add the request to the Volley queue
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 }

@@ -22,8 +22,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button loginButton;
     private Button signupButton;
 
-    // Your specific IP address is now included.
-    private static final String URL_STRING_REQ = "http://10.48.116.71:8080/credentials";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/credentials";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +70,7 @@ public class SignupActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Signup Successful!", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
                             startActivity(intent);
-                            finish(); // Close signup activity
+                            finish();
                         } else {
                             Toast.makeText(getApplicationContext(), "Signup Failed: User might already exist", Toast.LENGTH_LONG).show();
                         }
@@ -87,7 +86,7 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("emailId", username + "@iastate.edu"); // Assuming a default domain
+                params.put("emailId", username + "@iastate.edu");
                 params.put("username", username);
                 params.put("password", password);
                 params.put("accountType", "regular");
