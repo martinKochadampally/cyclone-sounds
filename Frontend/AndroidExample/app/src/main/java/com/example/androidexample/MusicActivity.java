@@ -148,13 +148,18 @@ public class MusicActivity extends AppCompatActivity {
                                 String user = songObject.optString("user", "N/A");
                                 String title = songObject.optString("title", "N/A");
                                 String artist = songObject.optString("artist", "N/A");
-                                double rating = songObject.getDouble("rating");
+                                String rating = songObject.optString("rating");
+                                String upvotes = songObject.optString("upvotes");
+                                String downvotes = songObject.optString("downvotes");
+
 
                                 TableRow tableRow = new TableRow(MusicActivity.this);
                                 tableRow.addView(createTextView(user, true));
                                 tableRow.addView(createTextView(title, true));
                                 tableRow.addView(createTextView(artist, true));
-                                tableRow.addView(createTextView(String.valueOf(rating), true));
+                                tableRow.addView(createTextView(rating, true));
+                                tableRow.addView(createTextView(upvotes, true));
+                                tableRow.addView(createTextView(downvotes, true));
                                 tableLayout.addView(tableRow);
 
 

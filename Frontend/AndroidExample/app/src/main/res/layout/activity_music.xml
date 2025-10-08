@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textStyle="bold"
-                android:text="User" />
+                android:text="   User" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,6 +53,32 @@
                 android:layout_weight="1"
                 android:textStyle="bold"
                 android:text="Rating" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:text="Upvotes" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:text="Downvotes" />
+            <TextView
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:text="Up" />
+            <TextView
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="11"
+                android:text="Down" />
+
         </TableRow>
         <TableRow
             android:layout_width="match_parent"
@@ -78,6 +104,25 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="" />
+            <Button
+                android:id="@+id/up_button_btn"
+                android:layout_width="20dp"
+                android:layout_height="20dp" />
+            <Button
+                android:id="@+id/down_button_btn"
+                android:layout_width="20dp"
+                android:layout_height="20dp" />
+
         </TableRow>
     </TableLayout>
     <LinearLayout
