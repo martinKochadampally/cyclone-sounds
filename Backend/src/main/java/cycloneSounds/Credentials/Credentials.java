@@ -2,7 +2,7 @@ package cycloneSounds.Credentials;
 
 import jakarta.persistence.*;
 
-//import cyclone-sounds.profilePage.Profile;
+import cycloneSounds.profilePage.Profile;
 
 
 /**
@@ -14,9 +14,6 @@ import jakarta.persistence.*;
 public class Credentials {
 
     @Id
-    @Column(length = 50)
-    private String emailId;
-
     @Column(unique = true)
     private String username;
 
@@ -24,26 +21,17 @@ public class Credentials {
 
     private String accountType;
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "emailID")
-//    private Profile profile;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "username")
+    private Profile profile;
 
-    public Credentials(String emailId, String username, String password, String accountType) {
-        this.emailId = emailId;
+    public Credentials(String username, String password, String accountType) {
         this.username = username;
         this.password = password;
         this.accountType = accountType;
     }
 
     public Credentials() {}
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
-    }
 
     public String getUsername() {
         return username;
