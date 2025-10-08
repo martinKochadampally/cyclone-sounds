@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -68,7 +69,10 @@ public class MusicActivity extends AppCompatActivity {
     private Button createButton;
     private TableLayout tableLayout;
     private RequestQueue requestQueue;
-    private static final String URL_STRING_REQ = "https://9e5d2bff-061b-461d-a5f5-6050e3c1616d.mock.pstmn.io/";
+    private static final String URL_STRING_REQ = "https://3818e7ce-2776-4a8f-bb7f-5d57942ce11f.mock.pstmn.io/ratings";
+    private static final String VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
+    private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +87,7 @@ public class MusicActivity extends AppCompatActivity {
         tableLayout = findViewById(R.id.song_table);
 
         requestQueue = VolleySingleton.getInstance(getApplicationContext()).getRequestQueue();
-        fetchMusicData();
+
 
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
@@ -93,7 +97,7 @@ public class MusicActivity extends AppCompatActivity {
 
 
         }
-
+        fetchMusicData(extras.getString("USERNAME"));
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -130,7 +134,8 @@ public class MusicActivity extends AppCompatActivity {
             }
         });
     }
-    private void fetchMusicData() {
+    private void fetchMusicData(final String username) {
+        clearTable();
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(
                 Request.Method.GET, // HTTP method (GET request)
                 URL_STRING_REQ, // API URL
@@ -151,6 +156,7 @@ public class MusicActivity extends AppCompatActivity {
                                 String rating = songObject.optString("rating");
                                 String upvotes = songObject.optString("upvotes");
                                 String downvotes = songObject.optString("downvotes");
+                                final String songId = songObject.optString("songId");
 
 
                                 TableRow tableRow = new TableRow(MusicActivity.this);
@@ -160,8 +166,21 @@ public class MusicActivity extends AppCompatActivity {
                                 tableRow.addView(createTextView(rating, true));
                                 tableRow.addView(createTextView(upvotes, true));
                                 tableRow.addView(createTextView(downvotes, true));
-                                tableLayout.addView(tableRow);
 
+                                Button upvoteButton = createButton("Up", songId, "upvote", username);
+                                Button downvoteButton = createButton("Down", songId, "downvote", username);
+
+                                tableRow.addView(upvoteButton);
+                                tableRow.addView(downvoteButton);
+
+                                if (user.equals(username)) {
+                                    Button deleteButton = createDeleteButton("Del", songId, username);
+                                    tableRow.addView(deleteButton);
+                                } else {
+                                    tableRow.addView(createTextView("", true));
+                                }
+
+                                tableLayout.addView(tableRow);
 
                             }
                         } catch (JSONException e) {
@@ -216,6 +235,104 @@ public class MusicActivity extends AppCompatActivity {
         }
         return textView;
     }
+
+    private Button createButton(String text, final String songId, final String voteType, final String username) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextSize(11);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+        params.width = 100;
+        button.setLayoutParams(params);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View view){
+                voteForSong(songId, voteType, username);
+            }
+        });
+        return button;
+    }
+
+    private Button createDeleteButton(String text, final String songId, final String username) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextSize(10);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+        params.width = 110;
+        button.setLayoutParams(params);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View view) {
+                deleteRating(songId, username);
+            }
+        });
+        return button;
+    }
+
+    private void deleteRating(final String songId, final String username) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.DELETE, // HTTP method (DELETE request)
+                DELETE_URL + songId,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Delete Response", response);
+                        Toast.makeText(MusicActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
+                        clearTable();
+                        fetchMusicData(username);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Delete Error", error.toString());
+                        Toast.makeText(MusicActivity.this, "Delete Error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void voteForSong(final String songId, final String voteType, final String username) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.PUT, // HTTP method (PUT request)
+                VOTE_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Vote Response", response);
+                        Toast.makeText(MusicActivity.this, "Voted " + voteType, Toast.LENGTH_SHORT).show();
+                        clearTable();
+                        fetchMusicData(username);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Vote Error", error.toString());
+                        Toast.makeText(MusicActivity.this, "Vote Error", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // Headers for the request (if needed)
+                Map<String, String> headers = new HashMap<>();
+
+                // Example headers (uncomment if needed)
+                // headers.put("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+                // headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("songId", songId);
+                params.put("voteType", voteType);
+                return params;
+            }
+
+            };
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        }
+
     private void clearTable() {
         int childCount = tableLayout.getChildCount();
         if (childCount > 1) {

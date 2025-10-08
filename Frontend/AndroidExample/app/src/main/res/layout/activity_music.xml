@@ -70,58 +70,22 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textStyle="bold"
+                android:textSize="11dp"
                 android:text="Up" />
             <TextView
                 android:layout_width="10dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textStyle="bold"
-                android:textSize="11"
+                android:textSize="11dp"
                 android:text="Down" />
-
-        </TableRow>
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:padding="5dp" >
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="10dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="" />
-            <Button
-                android:id="@+id/up_button_btn"
-                android:layout_width="20dp"
-                android:layout_height="20dp" />
-            <Button
-                android:id="@+id/down_button_btn"
-                android:layout_width="20dp"
-                android:layout_height="20dp" />
+                android:textStyle="bold"
+                android:textSize="11dp"
+                android:text="Delete" />
 
         </TableRow>
     </TableLayout>
