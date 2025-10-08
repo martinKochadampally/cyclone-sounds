@@ -50,7 +50,7 @@ public class CredentialController {
     @PostMapping(path = "/credentials")
     String createCredentials(@RequestParam String username, @RequestParam String password, @RequestParam String accountType) {
         if (credentialRepository.existsById(username)) {
-            return failure;
+            return "{\"message\":\"An account already exists for that username.\"}";
         }
 
         // If not, create a new Credentials object and save it

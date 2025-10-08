@@ -32,17 +32,7 @@ public class Main {
      */
     @Bean
     CommandLineRunner initProfiles(ProfileRepository profileRepository) {
-        return args -> {
-            // Create three sample Profile objects
-            Profile profile1 = new Profile("Mark", "Mark@iastate.edu", "Bohemian Rhapsody", "Queen", "Rock", "Loves classic rock and coding.");
-            Profile profile2 = new Profile("Martin", "martin@gmail.com", "Blinding Lights", "The Weeknd", "Synth-pop", "Enjoys modern pop music and design.");
-            Profile profile3 = new Profile("Jack", "Jack@yahoo.com", "Take Five", "Dave Brubeck Quartet", "Jazz", "A fan of jazz music and photography.");
-
-            // Save the profiles to the database
-            profileRepository.save(profile1);
-            profileRepository.save(profile2);
-            profileRepository.save(profile3);
-        };
+        return null;
     }
 }
 
