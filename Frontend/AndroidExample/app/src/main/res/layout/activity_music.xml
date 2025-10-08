@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textStyle="bold"
-                android:text="User" />
+                android:text="   User" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -53,31 +53,40 @@
                 android:layout_weight="1"
                 android:textStyle="bold"
                 android:text="Rating" />
-        </TableRow>
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:padding="5dp" >
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="" />
+                android:textStyle="bold"
+                android:text="Upvotes" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="" />
+                android:textStyle="bold"
+                android:text="Downvotes" />
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="10dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="" />
+                android:textStyle="bold"
+                android:textSize="11dp"
+                android:text="Up" />
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="10dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="" />
+                android:textStyle="bold"
+                android:textSize="11dp"
+                android:text="Down" />
+            <TextView
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="11dp"
+                android:text="Delete" />
+
         </TableRow>
     </TableLayout>
     <LinearLayout
