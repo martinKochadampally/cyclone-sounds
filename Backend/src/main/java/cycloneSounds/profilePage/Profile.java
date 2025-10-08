@@ -1,16 +1,15 @@
 package cycloneSounds.profilePage;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
+
+import cycloneSounds.Credentials.Credentials;
 
 
 /**
  * 
- * @author Vivek Bengre
+ * @author Mark Seward
  * 
- */ 
-
+ */
 @Entity
 public class Profile {
 
@@ -19,8 +18,7 @@ public class Profile {
      */
     @Id
     @Column(unique = true)
-    private String email;
-
+    private String username;
     private String name;
     private String favSong;
     private String favArtist;
@@ -33,13 +31,13 @@ public class Profile {
      * in the database (more info : https://www.baeldung.com/jpa-cascade-types)
      * @JoinColumn defines the ownership of the foreign key i.e. the user table will have a field called laptop_id
      */
-    //@OneToOne(cascade = CascadeType.ALL)
-    //@JoinColumn(name = "laptop_id")
-    //private Laptop laptop;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "username")
+    private Credentials credential;
 
-    public Profile(String name, String email, String favSong, String favArtist, String favGenre, String biography) {
+    public Profile(String username, String name, String favSong, String favArtist, String favGenre, String biography) {
+        this.username = username;
         this.name = name;
-        this.email = email;
         this.favSong = favSong;
         this.favArtist = favArtist;
         this.favGenre = favGenre;
@@ -50,6 +48,13 @@ public class Profile {
     }
 
     // =============================== Getters and Setters for each field ================================== //
+    public String getUsername(){
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getName(){
         return name;
@@ -59,13 +64,6 @@ public class Profile {
         this.name = name;
     }
 
-
-    public String getEmail(){
-        return email;
-    }
-
-    public void setEmail(String email) { this.email = email;}
-//
     public String getFavSong(){
         return favSong;
     }

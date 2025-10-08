@@ -15,13 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 /**
- * 
- * @author Mark Seward
- * 
- */
-
-/**
  * A REST controller for handling HTTP requests related to Profiles.
+ *
+ * @author Mark Seward
+ *
  */
 @RestController
 public class ProfileController {
@@ -44,12 +41,12 @@ public class ProfileController {
 
     /**
      * GET endpoint
-     * @param email
-     * @return the information for the given email
+     * @param username
+     * @return the information for the given username
      */
-    @GetMapping(path = "/profiles/{email}")
-    public Profile getProfilebyEmail(@PathVariable String email) {
-        return profileRepository.findByEmail(email).orElse(null);
+    @GetMapping(path = "/profiles/{username}")
+    public Profile getProfilebyUsername(@PathVariable String username) {
+        return profileRepository.findById(username).orElse(null);
     }
     /**
      * POST endpoint to create a new profile. (Create)
@@ -59,7 +56,7 @@ public class ProfileController {
      */
     @PostMapping(path = "/profiles")
     public String createProfile(@RequestBody Profile profile) {
-        if (profile == null || profile.getEmail() == null || profile.getName() == null || profile.getFavArtist() == null ||
+        if (profile == null || profile.getUsername() == null || profile.getName() == null || profile.getFavArtist() == null ||
             profile.getFavGenre() == null || profile.getFavSong() == null) {
             return failure;
         }
@@ -70,42 +67,42 @@ public class ProfileController {
     /**
      * PUT endpoint to update an existing profile. (Update)
      *
-     * @param email      The ID of the profile to update.
+     * @param username      The ID of the profile to update.
      * @param request The Profile object containing the new data.
      * @return The updated Profile object, or null if the profile wasn't found.
      */
-    @PutMapping("/profiles/{email}")
-    public Profile updateProfile(@PathVariable String email, @RequestBody Profile request) {
-        Optional<Profile> profileOptional = profileRepository.findByEmail(email);
+    @PutMapping("/profiles/{username}")
+    public Profile updateProfile(@PathVariable String username, @RequestBody Profile request) {
+        Optional<Profile> profileOptional = profileRepository.findById(username);
         if (profileOptional.isEmpty()) {
-            return null;
+            return null; // User not found
         }
-        Profile profile = profileOptional.get();
 
-        // Update fields from the request
-        profile.setName(request.getName());
-        profile.setEmail(request.getEmail());
-        profile.setFavSong(request.getFavSong());
-        profile.setFavArtist(request.getFavArtist());
-        profile.setFavGenre(request.getFavGenre());
-        profile.setBiography(request.getBiography());
+        Profile profileToUpdate = profileOptional.get();
 
-        profileRepository.save(profile);
-        return profile;
+        // Update all fields EXCEPT the primary key (username)
+        profileToUpdate.setName(request.getName());
+        profileToUpdate.setFavSong(request.getFavSong());
+        profileToUpdate.setFavArtist(request.getFavArtist());
+        profileToUpdate.setFavGenre(request.getFavGenre());
+        profileToUpdate.setBiography(request.getBiography());
+
+        profileRepository.save(profileToUpdate);
+        return profileToUpdate;
     }
 
     /**
-     * DELETE endpoint to remove a profile by its email. (Delete)
+     * DELETE endpoint to remove a profile by its username. (Delete)
      *
-     * @param email The name of the profile to delete.
+     * @param username The name of the profile to delete.
      * @return A JSON string indicating success.
      */
     @Transactional
-    @DeleteMapping(path = "/profiles/{email}")
-    public String deleteProfile(@PathVariable String email) {
+    @DeleteMapping(path = "/profiles/{username}")
+    public String deleteProfile(@PathVariable String username) {
         // Check if the profile exists before deleting
-        if (profileRepository.existsByEmail(email)) {
-            profileRepository.deleteByEmail(email);
+        if (profileRepository.existsById(username)) {
+            profileRepository.deleteById(username);
             return success;
         }
         return failure;

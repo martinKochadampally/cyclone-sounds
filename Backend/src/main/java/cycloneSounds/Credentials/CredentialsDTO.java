@@ -1,24 +1,14 @@
 package cycloneSounds.Credentials;
 
 public class CredentialsDTO {
-    private String emailId;
     private String username;
     private String accountType;
 
     public CredentialsDTO() {}
 
-    public CredentialsDTO(String emailId, String username, String accountType) {
-        this.emailId = emailId;
+    public CredentialsDTO(String username, String accountType) {
         this.username = username;
         this.accountType = accountType;
-    }
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
     }
 
     public String getUsername() {
