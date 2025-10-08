@@ -27,19 +27,10 @@
         android:layout_marginBottom="8dp"/>
 
     <EditText
-        android:id="@+id/profile_email_edt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/profile_name_edt"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="8dp"/>
-
-    <EditText
         android:id="@+id/profile_song_edt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/profile_email_edt"
+        android:layout_below="@id/profile_name_edt"
         android:hint="Favorite Song"
         android:inputType="text"
         android:layout_marginBottom="8dp"/>
@@ -80,14 +71,22 @@
         android:layout_below="@id/profile_bio_edt"
         android:text="Update Info" />
 
-    <Button
-        android:id="@+id/profile_delete_btn"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/profile_update_btn"
-        android:layout_marginTop="10dp"
-        android:text="Delete Account"
-        android:backgroundTint="#FF5252" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottom_button_layout"
+        android:layout_below="@id/profile_update_btn">
+
+        <Button
+            android:id="@+id/profile_delete_btn"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_centerInParent="true"
+            android:backgroundTint="#FF5252"
+            android:text="Delete Account"
+            android:textColor="@android:color/white" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/bottom_button_layout"
@@ -103,7 +102,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Home"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/music_button_btn"
@@ -111,7 +110,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Music"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/create_button_btn"
@@ -119,7 +118,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Create"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/jams_button_btn"
@@ -127,7 +126,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Jams"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
 
         <Button
             android:id="@+id/profile_button_btn"
@@ -135,7 +134,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Profile"
-            android:textSize="8sp" />
+            android:textSize="9sp" />
     </LinearLayout>
 
 </RelativeLayout>

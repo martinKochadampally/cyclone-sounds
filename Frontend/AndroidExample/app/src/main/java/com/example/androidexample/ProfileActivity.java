@@ -23,7 +23,7 @@ public class ProfileActivity extends AppCompatActivity {
     private String currentUserEmail;
 
     // Your specific IP address
-    private static final String BASE_URL = "http://10.48.116.71:8080/profiles/";
+    private static final String BASE_URL = "http://10:48:165:186:8080/profiles";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +64,11 @@ public class ProfileActivity extends AppCompatActivity {
     private void fetchUserData() {
         String url = BASE_URL + currentUserEmail;
 
+        // Use JsonObjectRequest to correctly handle the JSON response
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
+                        // Use optString for safety in case a field is missing
                         nameEditText.setText(response.optString("name"));
                         emailEditText.setText(response.optString("email"));
                         songEditText.setText(response.optString("favSong"));
@@ -81,6 +83,7 @@ public class ProfileActivity extends AppCompatActivity {
                     Log.e("VOLLEY_FETCH_ERROR", "Could not fetch user data", error);
                     Toast.makeText(this, "Could not load profile data", Toast.LENGTH_SHORT).show();
                 });
+
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
