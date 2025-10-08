@@ -59,7 +59,8 @@ public class ProfileController {
      */
     @PostMapping(path = "/profiles")
     public String createProfile(@RequestBody Profile profile) {
-        if (profile == null) {
+        if (profile == null || profile.getEmail() == null || profile.getName() == null || profile.getFavArtist() == null
+            || profile.getFavGenre() == null || profile.getFavSong() == null) {
             return failure;
         }
         profileRepository.save(profile);

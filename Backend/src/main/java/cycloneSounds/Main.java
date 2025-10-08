@@ -1,16 +1,20 @@
 package cycloneSounds;
 
+import cycloneSounds.Reviews.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import cycloneSounds.Credentials.Credentials;
-import cycloneSounds.Credentials.CredentialRepository;
 
 import cycloneSounds.profilePage.Profile;
 import cycloneSounds.profilePage.ProfileRepository;
+
+import cycloneSounds.Reviews.Review;
+import cycloneSounds.Reviews.ReviewRepository;
+
+import java.util.List;
 
 /**
  * @author Vivek Bengre
@@ -27,22 +31,11 @@ public class Main {
      * Creates a CommandLineRunner bean to insert dummy data into the database upon application startup.
      * This is useful for testing and demonstration purposes.
      *
-     * @param profileRepository The repository for the Profile entity.
+     * @param reviewRepository The repository for the Profile entity.
      * @return A CommandLineRunner that creates and saves three sample profiles.
      */
     @Bean
-    CommandLineRunner initProfiles(ProfileRepository profileRepository) {
-        return args -> {
-            // Create three sample Profile objects
-            Profile profile1 = new Profile("Mark", "Mark@iastate.edu", "Bohemian Rhapsody", "Queen", "Rock", "Loves classic rock and coding.");
-            Profile profile2 = new Profile("Martin", "martin@gmail.com", "Blinding Lights", "The Weeknd", "Synth-pop", "Enjoys modern pop music and design.");
-            Profile profile3 = new Profile("Jack", "Jack@yahoo.com", "Take Five", "Dave Brubeck Quartet", "Jazz", "A fan of jazz music and photography.");
-
-            // Save the profiles to the database
-            profileRepository.save(profile1);
-            profileRepository.save(profile2);
-            profileRepository.save(profile3);
-        };
-    }
+    CommandLineRunner initProfiles(ReviewRepository reviewRepository, SongRepository songRepository) {
+            return null;
+        }
 }
-
