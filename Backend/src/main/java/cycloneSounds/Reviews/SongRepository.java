@@ -1,0 +1,11 @@
+package cycloneSounds.Reviews;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.List;
+
+public interface SongRepository extends JpaRepository<Song, Integer> {
+
+    Optional<Song> findByReviewerAndSongNameAndArtist(String reviewer, String songName, String artist);
+}
