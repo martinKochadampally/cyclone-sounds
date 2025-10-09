@@ -14,7 +14,7 @@ public class CreateReviewFile {
     public CreateReviewFile() {
     }
 
-    public CreateReviewFile(String reviewer, double rating, String body, String songName, String artist) {
+    public CreateReviewFile(String reviewer, String songName, String artist, String body, double rating) {
         this.reviewer = reviewer;
         this.rating = rating;
         this.body = body;
