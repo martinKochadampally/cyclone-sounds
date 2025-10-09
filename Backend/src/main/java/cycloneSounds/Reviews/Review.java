@@ -16,24 +16,27 @@ public class Review {
     private String reviewer;
 
     @ManyToOne
-    @JoinColumn(name = "song_ID", nullable = false)
+    @JoinColumn(name = "song_id", nullable = false)
     private Song song;
 
     private double rating;
-    private String description;
+    private String body; // Renamed from "description"
+
     private int upVotes = 0;
     private int downVotes = 0;
 
     public Review () {}
 
-    public Review (String reviewer, double rating, String description, String songName, String artist) {
+    // Constructor can be simplified as the song is set separately
+    public Review (String reviewer, double rating, String body) {
         this.reviewer = reviewer;
         this.rating = rating;
-        this.description = description;
-
+        this.body = body;
         this.upVotes = 0;
         this.downVotes = 0;
     }
+
+    // --- Getters and Setters ---
 
     public int getId() {
         return id;
@@ -67,12 +70,13 @@ public class Review {
         this.rating = rating;
     }
 
-    public String getDescription() {
-        return description;
+    // Renamed to getBody() and setBody() to match the controller
+    public String getBody() {
+        return body;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public int getUpVotes() {
@@ -80,11 +84,7 @@ public class Review {
     }
 
     public void incrementUpVotes() {
-        this.upVotes += 1;
-    }
-
-    public void decrementUpVotes() {
-        this.upVotes -= 1;
+        this.upVotes++;
     }
 
     public int getDownVotes() {
@@ -92,10 +92,6 @@ public class Review {
     }
 
     public void incrementDownVotes() {
-        this.downVotes += 1;
-    }
-
-    public void decrementDownVotes() {
-        this.downVotes -= 1;
+        this.downVotes++;
     }
 }

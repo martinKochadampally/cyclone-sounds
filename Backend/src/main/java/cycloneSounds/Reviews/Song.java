@@ -12,54 +12,41 @@ public class Song {
 
     private String songName;
     private String artist;
-    private String reviewer;
-    private double rating;
-    private String body;
-    //private String genre;
 
-    public Song(){}
+    // A song doesn't have a reviewer, rating, or body. The Review does.
+    // So we remove those fields from here.
 
-    public Song(String songName, String artist, String reviewer, double rating, String body) {
+    public Song() {}
+
+    // The constructor now only needs the song's name and artist
+    public Song(String songName, String artist) {
         this.songName = songName;
         this.artist = artist;
-        this.reviewer = reviewer;
-        this.rating = rating;
-        this.body = body;
     }
 
-    public int getSongId(){
+    // --- Getters and Setters ---
+
+    public int getSongId() {
         return songId;
     }
 
-    public void setSongId(int songId){
+    public void setSongId(int songId) {
         this.songId = songId;
     }
 
-    public String getSongName(){
+    public String getSongName() {
         return songName;
     }
 
-    public void setSongName(String songName){
+    public void setSongName(String songName) {
         this.songName = songName;
     }
 
-    public String getArtist(){
+    public String getArtist() {
         return artist;
     }
 
-    public void setArtist(String artist){
+    public void setArtist(String artist) {
         this.artist = artist;
     }
-
-    public String getReviewer() { return reviewer;}
-
-    public void setReviewer(String reviewer){ this.reviewer = reviewer;}
-
-    public double getRating(){ return rating;}
-
-    public void setRating(int rating){ this.rating = rating;}
-
-    public String getBody(){ return body;}
-
-    public void setBody(String body){ this.body = body;}
 }

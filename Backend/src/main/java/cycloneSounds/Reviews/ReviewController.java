@@ -41,21 +41,24 @@ public class ReviewController {
 
     //Need this from front end: reviewer, rating, body, songName, and artist.
     @PostMapping(path = "/review")
-    public Review createReview(@RequestParam String songName, @RequestParam String artist, @RequestParam String  reviewer, @RequestParam String description, @RequestParam double rating) {
-        Song song = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(songName,artist, reviewer, rating, description).orElse(null);
+    public Review createReview(@RequestParam String songName, @RequestParam String artistName, @RequestParam String  reviewer, @RequestParam String description, @RequestParam double rating) {
+        // Find the song by its name and artist only
+        Song song = songRepository.findBySongNameAndArtist(songName, artistName).orElse(null);
 
-        if(song == null){
-            song = new Song(songName, artist, reviewer, rating, description);
+        // If the song doesn't exist, create a new one
+        if (song == null) {
+            song = new Song(songName, artistName);
             song = songRepository.save(song);
         }
-        Review createReview = new Review();
-        createReview.setReviewer(reviewer);
-        createReview.setRating(rating);
-        createReview.setDescription(description);
-        createReview.setSong(song);
 
+        // Create the new review
+        Review newReview = new Review();
+        newReview.setReviewer(reviewer);
+        newReview.setRating(rating);
+        newReview.setBody(description); // Assumes your Review entity has a setBody() method
+        newReview.setSong(song);
 
-        return reviewRepository.save(createReview);
+        return reviewRepository.save(newReview);
     }
 
     @PutMapping(path = "/review/upvote/{songId}")
@@ -99,7 +102,7 @@ public class ReviewController {
             @RequestParam String reviewer,@RequestParam String songName,
             @RequestParam String artist, @RequestParam double rating, @RequestParam String body) {
 
-        Optional<Song> optionalSong = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(reviewer, songName, artist, rating, body);
+        Optional<Song> optionalSong = songRepository.findBySongNameAndArtist(songName, artist);
 
         if (optionalSong.isEmpty()) {
             return ResponseEntity.notFound().build();
