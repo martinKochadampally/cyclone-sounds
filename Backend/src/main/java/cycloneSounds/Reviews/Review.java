@@ -20,16 +20,16 @@ public class Review {
     private Song song;
 
     private double rating;
-    private String body;
+    private String description;
     private int upVotes = 0;
     private int downVotes = 0;
 
     public Review () {}
 
-    public Review (String reviewer, double rating, String body, String songName, String artist) {
+    public Review (String reviewer, double rating, String description, String songName, String artist) {
         this.reviewer = reviewer;
         this.rating = rating;
-        this.body = body;
+        this.description = description;
 
         this.upVotes = 0;
         this.downVotes = 0;
@@ -67,12 +67,12 @@ public class Review {
         this.rating = rating;
     }
 
-    public String getBody() {
-        return body;
+    public String getDescription() {
+        return description;
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getUpVotes() {

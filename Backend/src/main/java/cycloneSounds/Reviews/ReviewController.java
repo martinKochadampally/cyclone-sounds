@@ -41,17 +41,17 @@ public class ReviewController {
 
     //Need this from front end: reviewer, rating, body, songName, and artist.
     @PostMapping(path = "/review")
-    public Review createReview(@RequestParam String songName, @RequestParam String artist, @RequestParam String  reviewer, @RequestParam String body, @RequestParam double rating) {
-        Song song = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(songName,artist, reviewer, rating, body).orElse(null);
+    public Review createReview(@RequestParam String songName, @RequestParam String artist, @RequestParam String  reviewer, @RequestParam String description, @RequestParam double rating) {
+        Song song = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(songName,artist, reviewer, rating, description).orElse(null);
 
         if(song == null){
-            song = new Song(songName, artist, reviewer, rating, body);
+            song = new Song(songName, artist, reviewer, rating, description);
             song = songRepository.save(song);
         }
         Review createReview = new Review();
         createReview.setReviewer(reviewer);
         createReview.setRating(rating);
-        createReview.setBody(body);
+        createReview.setDescription(description);
         createReview.setSong(song);
 
 
