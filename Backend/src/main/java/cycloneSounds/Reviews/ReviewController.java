@@ -42,10 +42,10 @@ public class ReviewController {
     //Need this from front end: reviewer, rating, body, songName, and artist.
     @PostMapping(path = "/review")
     public Review createReview(@RequestBody CreateReviewFile review) {
-        Song song = songRepository.findByReviewerAndSongNameAndArtist(review.getSongName(),review.getArtist(), review.getReviewer()).orElse(null);
+        Song song = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(review.getSongName(),review.getArtist(), review.getReviewer(), review.getRating(), review.getBody()).orElse(null);
 
         if(song == null){
-            song = new Song(review.getSongName(), review.getArtist(), review.getReviewer());
+            song = new Song(review.getSongName(), review.getArtist(), review.getReviewer(), review.getRating(), review.getBody());
             song = songRepository.save(song);
         }
         Review createReview = new Review();
@@ -97,23 +97,15 @@ public class ReviewController {
     @GetMapping("/review/by-song")
     public ResponseEntity<List<Review>> getReviewsBySongDetails(
             @RequestParam String reviewer,@RequestParam String songName,
-            @RequestParam String artist) {
+            @RequestParam String artist, @RequestParam double rating, @RequestParam String body) {
 
-        // 1. Translate: Use the natural keys (artist, songName) to find the Song object.
-        Optional<Song> optionalSong = songRepository.findByReviewerAndSongNameAndArtist(reviewer, songName, artist);
+        Optional<Song> optionalSong = songRepository.findByReviewerAndSongNameAndArtistAndRatingAndBody(reviewer, songName, artist, rating, body);
 
         if (optionalSong.isEmpty()) {
-            // If the song doesn't exist, there are no reviews for it.
             return ResponseEntity.notFound().build();
         }
-
-        // 2. Use the internal ID: Get the numeric ID from the found song.
         int songId = optionalSong.get().getSongId();
-
-        // 3. Query for reviews using the numeric ID.
         List<Review> reviews = reviewRepository.findBySong_SongId(songId);
-
-        // 4. Return the list of reviews.
         return ResponseEntity.ok(reviews);
     }
 }

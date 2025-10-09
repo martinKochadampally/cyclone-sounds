@@ -69,9 +69,10 @@ public class MusicActivity extends AppCompatActivity {
     private Button createButton;
     private TableLayout tableLayout;
     private RequestQueue requestQueue;
-    private static final String URL_STRING_REQ = "https://3818e7ce-2776-4a8f-bb7f-5d57942ce11f.mock.pstmn.io/ratings";
-    private static final String VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
-    private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/reviews";
+    private static final String UP_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/upvote/";
+    private static final String DOWN_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/downvote/";
+    private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/";
 
 
     @Override
@@ -246,7 +247,12 @@ public class MusicActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View view){
-                voteForSong(songId, voteType, username);
+                if (voteType.equals("upvote")) {
+                    upVoteForSong(songId, username);
+                } else {
+                    downVoteForSong(songId, username);
+                }
+
             }
         });
         return button;
@@ -291,15 +297,15 @@ public class MusicActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    private void voteForSong(final String songId, final String voteType, final String username) {
+    private void upVoteForSong(final String songId, final String username) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.PUT, // HTTP method (PUT request)
-                VOTE_URL,
+                UP_VOTE_URL + songId,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         Log.d("Vote Response", response);
-                        Toast.makeText(MusicActivity.this, "Voted " + voteType, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MusicActivity.this, "Voted", Toast.LENGTH_SHORT).show();
                         clearTable();
                         fetchMusicData(username);
                     }
@@ -325,7 +331,6 @@ public class MusicActivity extends AppCompatActivity {
             public Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("songId", songId);
-                params.put("voteType", voteType);
                 return params;
             }
 
@@ -333,6 +338,46 @@ public class MusicActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
         }
 
+    private void downVoteForSong(final String songId, final String username) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.PUT, // HTTP method (PUT request)
+                DOWN_VOTE_URL + songId,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Vote Response", response);
+                        Toast.makeText(MusicActivity.this, "Voted", Toast.LENGTH_SHORT).show();
+                        clearTable();
+                        fetchMusicData(username);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Vote Error", error.toString());
+                        Toast.makeText(MusicActivity.this, "Vote Error", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // Headers for the request (if needed)
+                Map<String, String> headers = new HashMap<>();
+
+                // Example headers (uncomment if needed)
+                // headers.put("Authorization", "Bearer YOUR_ACCESS_TOKEN");
+                // headers.put("Content-Type", "application/json");
+                return headers;
+            }
+            @Override
+            public Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("songId", songId);
+                return params;
+            }
+
+        };
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
     private void clearTable() {
         int childCount = tableLayout.getChildCount();
         if (childCount > 1) {

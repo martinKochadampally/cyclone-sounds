@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface SongRepository extends JpaRepository<Song, Integer> {
 
-    Optional<Song> findByReviewerAndSongNameAndArtist(String reviewer, String songName, String artist);
+    Optional<Song> findByReviewerAndSongNameAndArtistAndRatingAndBody(String reviewer, String songName, String artist, double rating, String body);
 }
