@@ -69,10 +69,10 @@ public class MusicActivity extends AppCompatActivity {
     private Button createButton;
     private TableLayout tableLayout;
     private RequestQueue requestQueue;
-    private static final String URL_STRING_REQ = "https://3818e7ce-2776-4a8f-bb7f-5d57942ce11f.mock.pstmn.io/ratings";
-    private static final String UP_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
-    private static final String DOWN_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
-    private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/reviews";
+    private static final String UP_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/upvote/";
+    private static final String DOWN_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/downvote/";
+    private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/";
 
 
     @Override
@@ -300,7 +300,7 @@ public class MusicActivity extends AppCompatActivity {
     private void upVoteForSong(final String songId, final String username) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.PUT, // HTTP method (PUT request)
-                UP_VOTE_URL,
+                UP_VOTE_URL + songId,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -341,7 +341,7 @@ public class MusicActivity extends AppCompatActivity {
     private void downVoteForSong(final String songId, final String username) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.PUT, // HTTP method (PUT request)
-                DOWN_VOTE_URL,
+                DOWN_VOTE_URL + songId,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {

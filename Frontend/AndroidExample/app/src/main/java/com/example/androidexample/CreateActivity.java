@@ -68,7 +68,7 @@ public class CreateActivity extends AppCompatActivity {
     private EditText rating;
     private EditText description;
     private Button submitButton;
-    private static final String URL_STRING_REQ = "";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/review";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
