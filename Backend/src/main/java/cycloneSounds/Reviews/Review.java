@@ -20,14 +20,14 @@ public class Review {
     private Song song;
 
     private double rating;
-    private String body; // Renamed from "description"
+    private String body;
 
     private int upVotes = 0;
     private int downVotes = 0;
 
     public Review () {}
 
-    // Constructor can be simplified as the song is set separately
+
     public Review (String reviewer, double rating, String body) {
         this.reviewer = reviewer;
         this.rating = rating;
@@ -35,8 +35,6 @@ public class Review {
         this.upVotes = 0;
         this.downVotes = 0;
     }
-
-    // --- Getters and Setters ---
 
     public int getId() {
         return id;
@@ -70,7 +68,6 @@ public class Review {
         this.rating = rating;
     }
 
-    // Renamed to getBody() and setBody() to match the controller
     public String getBody() {
         return body;
     }

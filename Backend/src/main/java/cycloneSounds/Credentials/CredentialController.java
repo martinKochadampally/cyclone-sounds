@@ -53,7 +53,6 @@ public class CredentialController {
             return "{\"message\":\"An account already exists for that username.\"}";
         }
 
-        // If not, create a new Credentials object and save it
         Credentials credential = new Credentials();
         Profile profile = new Profile();
         profile.setUsername(username);

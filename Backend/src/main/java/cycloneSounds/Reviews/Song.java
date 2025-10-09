@@ -13,18 +13,12 @@ public class Song {
     private String songName;
     private String artist;
 
-    // A song doesn't have a reviewer, rating, or body. The Review does.
-    // So we remove those fields from here.
-
     public Song() {}
 
-    // The constructor now only needs the song's name and artist
     public Song(String songName, String artist) {
         this.songName = songName;
         this.artist = artist;
     }
-
-    // --- Getters and Setters ---
 
     public int getSongId() {
         return songId;
