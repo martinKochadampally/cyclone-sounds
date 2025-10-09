@@ -1,142 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:context=".MainActivity"
-    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    tools:context=".MusicActivity">
 
     <TextView
-        android:id="@+id/home_msg_txt"
+        android:id="@+id/music_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="Music"
-        android:layout_gravity="center"
-        android:layout_marginTop="100dp"
-        android:layout_marginBottom="50dp"
-        android:textSize="30dp"
-        android:textColor="#fc0303">
-    </TextView>
-    <TableLayout
-        android:id="@+id/song_table"
-        android:layout_width="match_parent"
+        android:textColor="#fc0303"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/table_scroll_view"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center" >
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_button_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/music_title">
 
-        <TableRow
+        <TableLayout
+            android:id="@+id/song_table"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:padding="5dp" >
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="   User" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="Song Title" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="Artist" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="Rating" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="Upvotes" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:text="Downvotes" />
-            <TextView
-                android:layout_width="10dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:textSize="11dp"
-                android:text="Up" />
-            <TextView
-                android:layout_width="10dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:textSize="11dp"
-                android:text="Down" />
-            <TextView
-                android:layout_width="10dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:textSize="11dp"
-                android:text="Delete" />
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:stretchColumns="1,2">
 
-        </TableRow>
-    </TableLayout>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp">
+
+                <TextView android:text="User" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="Song Title" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="Artist" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="Rating" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="Up" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="Down" android:textStyle="bold" android:layout_marginEnd="4dp"/>
+                <TextView android:text="" android:layout_width="48dp"/>
+                <TextView android:text="" android:layout_width="48dp"/>
+                <TextView android:text="" android:layout_width="48dp"/>
+            </TableRow>
+
+        </TableLayout>
+    </ScrollView>
+
     <LinearLayout
         android:id="@+id/bottom_button_layout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:gravity="center">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <Button
             android:id="@+id/home_button_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Home"
             android:textSize="9sp" />
-
         <Button
             android:id="@+id/music_button_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Music"
             android:textSize="9sp" />
-
         <Button
             android:id="@+id/create_button_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Create"
             android:textSize="9sp" />
-
         <Button
             android:id="@+id/jams_button_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Jams"
             android:textSize="9sp" />
-
         <Button
             android:id="@+id/profile_button_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Profile"
             android:textSize="9sp" />
     </LinearLayout>
 
-
-</androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.constraintlayout.widget.ConstraintLayout>
