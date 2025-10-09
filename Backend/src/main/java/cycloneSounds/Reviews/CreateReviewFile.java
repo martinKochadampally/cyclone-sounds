@@ -9,15 +9,15 @@ public class CreateReviewFile {
     private String songName;
     private String artist;
     private double rating;
-    private String body;
+    private String description;
 
     public CreateReviewFile() {
     }
 
-    public CreateReviewFile(String reviewer, double rating, String body, String songName, String artist) {
+    public CreateReviewFile(String reviewer, String songName, String artist, String description, double rating) {
         this.reviewer = reviewer;
         this.rating = rating;
-        this.body = body;
+        this.description = description;
         this.songName = songName;
         this.artist = artist;
 
@@ -55,12 +55,12 @@ public class CreateReviewFile {
         this.rating = rating;
     }
 
-    public String getBody() {
-        return body;
+    public String getDescription() {
+        return description;
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

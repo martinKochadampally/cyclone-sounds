@@ -41,21 +41,24 @@ public class ReviewController {
 
     //Need this from front end: reviewer, rating, body, songName, and artist.
     @PostMapping(path = "/review")
-    public Review createReview(@RequestBody CreateReviewFile review) {
-        Song song = songRepository.findByReviewerAndSongNameAndArtist(review.getSongName(),review.getArtist(), review.getReviewer()).orElse(null);
+    public Review createReview(@RequestParam String songName, @RequestParam String artistName, @RequestParam String  reviewer, @RequestParam String description, @RequestParam double rating) {
+        // Find the song by its name and artist only
+        Song song = songRepository.findBySongNameAndArtist(songName, artistName).orElse(null);
 
-        if(song == null){
-            song = new Song(review.getSongName(), review.getArtist(), review.getReviewer());
+        // If the song doesn't exist, create a new one
+        if (song == null) {
+            song = new Song(songName, artistName);
             song = songRepository.save(song);
         }
-        Review createReview = new Review();
-        createReview.setReviewer(review.getReviewer());
-        createReview.setRating(review.getRating());
-        createReview.setBody(review.getBody());
-        createReview.setSong(song);
 
+        // Create the new review
+        Review newReview = new Review();
+        newReview.setReviewer(reviewer);
+        newReview.setRating(rating);
+        newReview.setBody(description); // Assumes your Review entity has a setBody() method
+        newReview.setSong(song);
 
-        return reviewRepository.save(createReview);
+        return reviewRepository.save(newReview);
     }
 
     @PutMapping(path = "/review/upvote/{songId}")
@@ -97,23 +100,15 @@ public class ReviewController {
     @GetMapping("/review/by-song")
     public ResponseEntity<List<Review>> getReviewsBySongDetails(
             @RequestParam String reviewer,@RequestParam String songName,
-            @RequestParam String artist) {
+            @RequestParam String artist, @RequestParam double rating, @RequestParam String body) {
 
-        // 1. Translate: Use the natural keys (artist, songName) to find the Song object.
-        Optional<Song> optionalSong = songRepository.findByReviewerAndSongNameAndArtist(reviewer, songName, artist);
+        Optional<Song> optionalSong = songRepository.findBySongNameAndArtist(songName, artist);
 
         if (optionalSong.isEmpty()) {
-            // If the song doesn't exist, there are no reviews for it.
             return ResponseEntity.notFound().build();
         }
-
-        // 2. Use the internal ID: Get the numeric ID from the found song.
         int songId = optionalSong.get().getSongId();
-
-        // 3. Query for reviews using the numeric ID.
         List<Review> reviews = reviewRepository.findBySong_SongId(songId);
-
-        // 4. Return the list of reviews.
         return ResponseEntity.ok(reviews);
     }
 }
