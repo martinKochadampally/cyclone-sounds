@@ -89,7 +89,6 @@ public class ProfileActivity extends AppCompatActivity {
             profileData.put("favGenre", genreEditText.getText().toString());
             profileData.put("favArtist", artistEditText.getText().toString());
             profileData.put("biography", bioEditText.getText().toString());
-            // You might need to include other non-null fields your backend expects
             profileData.put("username", currentUsername);
 
         } catch (JSONException e) {
