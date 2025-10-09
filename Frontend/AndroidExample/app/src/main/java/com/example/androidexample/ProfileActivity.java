@@ -20,8 +20,6 @@ public class ProfileActivity extends AppCompatActivity {
     private Button homeButton, musicButton, createButton, jamsButton, profileButton;
 
     private String currentUsername;
-    private String currentUserEmail;
-
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/profiles/";
 
     @Override
@@ -46,7 +44,6 @@ public class ProfileActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("USERNAME")) {
             currentUsername = intent.getStringExtra("USERNAME");
-            currentUserEmail = currentUsername + "@iastate.edu";
             fetchUserData();
         } else {
             Toast.makeText(this, "Error: No user profile found.", Toast.LENGTH_LONG).show();
@@ -60,7 +57,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void fetchUserData() {
-        String url = BASE_URL + currentUserEmail;
+        String url = BASE_URL + currentUsername; // Use username
         Log.d("ProfileFetch", "Fetching data from URL: " + url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -84,15 +81,17 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void updateUserData() {
-        String url = BASE_URL + currentUserEmail;
+        String url = BASE_URL + currentUsername; // Use username
         JSONObject profileData = new JSONObject();
         try {
             profileData.put("name", nameEditText.getText().toString());
-            profileData.put("email", currentUserEmail);
             profileData.put("favSong", songEditText.getText().toString());
             profileData.put("favGenre", genreEditText.getText().toString());
             profileData.put("favArtist", artistEditText.getText().toString());
             profileData.put("biography", bioEditText.getText().toString());
+            // You might need to include other non-null fields your backend expects
+            profileData.put("username", currentUsername);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -108,7 +107,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void deleteUserAccount() {
-        String url = BASE_URL + currentUserEmail;
+        String url = BASE_URL + currentUsername; // Use username
 
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
                 response -> {
