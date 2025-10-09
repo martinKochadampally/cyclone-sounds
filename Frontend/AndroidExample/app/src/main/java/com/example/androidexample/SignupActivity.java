@@ -86,7 +86,6 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("emailId", username + "@iastate.edu");
                 params.put("username", username);
                 params.put("password", password);
                 params.put("accountType", "regular");
