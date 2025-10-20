@@ -5,6 +5,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.TableRow;
+import android.view.Gravity;
+import android.widget.TableLayout;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -45,6 +49,9 @@ public class JamsActivity extends AppCompatActivity {
     private Button homeButton;      // define music button variable
     private Button musicButton;
     private Button createButton;
+    private TableLayout jamsTable;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,5 +108,29 @@ public class JamsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+    private void addJam(String name, String numParticipants, String status) {
+        TableRow newRow = new TableRow(this);
+
+        TextView nameView = new TextView(this);
+        nameView.setText(name);
+        nameView.setPadding(8, 8, 8, 8);
+        nameView.setGravity(Gravity.START);
+
+        TextView participantsView = new TextView(this);
+        participantsView.setText(numParticipants);
+        participantsView.setPadding(8, 8, 8, 8);
+        participantsView.setGravity(Gravity.START);
+
+        TextView statusView = new TextView(this);
+        statusView.setText(status);
+        statusView.setPadding(8, 8, 8, 8);
+        statusView.setGravity(Gravity.START);
+
+        newRow.addView(nameView);
+        newRow.addView(participantsView);
+        newRow.addView(statusView);
+
+        jamsTable.addView(newRow);
     }
 }
