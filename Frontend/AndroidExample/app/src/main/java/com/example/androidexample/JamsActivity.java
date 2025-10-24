@@ -2,11 +2,23 @@ package com.example.androidexample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.TableRow;
+import android.view.Gravity;
+import android.widget.TableLayout;
+import android.widget.Toast;
+
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /*
 
@@ -45,6 +57,12 @@ public class JamsActivity extends AppCompatActivity {
     private Button homeButton;      // define music button variable
     private Button musicButton;
     private Button createButton;
+    private TableLayout jamsTable;
+
+    private String server = "http://coms-3090-008.class.las.iastate.edu:8080/jam/";
+    private String URL_GET = "http://coms-3090-008.class.las.iastate.edu:8080/jams";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +74,7 @@ public class JamsActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);// link to profile button in the Main activity XML
         musicButton = findViewById(R.id.music_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        jamsTable = findViewById(R.id.jams_table);
 
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
@@ -102,4 +121,81 @@ public class JamsActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getJams(final String username) {
+        clearTable();
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.GET,
+                URL_GET,
+                null,
+                response -> {
+                    Log.d("Volley Response", "Received " + response.length() + " jams.");
+                    try {
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject jamObject = response.getJSONObject(i);
+                            String jamName = jamObject.optString("name", "N/A");
+                            String numParticipants = jamObject.optString("numParticipants", "N/A");
+                            String status = jamObject.optString("status", "N/A");
+                            addJam(jamName, numParticipants, status, username);
+                            Log.d("Volley Response", "Jam name: " + jamName);
+                            Log.d("Volley Response", "Number of participants: " + numParticipants);
+                            Log.d("Volley Response", "Status: " + status);
+                        }
+                    } catch (JSONException e) {
+                        Log.e("Volley JSON Error", "Error parsing JSON array: " + e.getMessage());
+                        Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
+                    }
+                },
+                error -> {
+                    Log.e("Volley Error", "Error fetching reviews: " + error.toString());
+                    Toast.makeText(getApplicationContext(), "Could not load reviews", Toast.LENGTH_LONG).show();
+                }
+        );
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
+    }
+    private void addJam(String name, String numParticipants, String status, String username) {
+        TableRow newRow = new TableRow(this);
+
+        TextView nameView = new TextView(this);
+        nameView.setText(name);
+        nameView.setPadding(8, 8, 8, 8);
+        nameView.setGravity(Gravity.START);
+        nameView.setClickable(true);
+        nameView.setOnClickListener(new View.OnClickListener() {
+            @Override
+                public void onClick(View view) {
+                    String serverUrl = server + nameView.getText().toString();
+
+                    WebSocketManager.getInstance().connectWebSocket(serverUrl);
+                    Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
+                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
+                    startActivity(intent);
+                }
+        });
+
+        TextView participantsView = new TextView(this);
+        participantsView.setText(numParticipants);
+        participantsView.setPadding(8, 8, 8, 8);
+        participantsView.setGravity(Gravity.START);
+
+        TextView statusView = new TextView(this);
+        statusView.setText(status);
+        statusView.setPadding(8, 8, 8, 8);
+        statusView.setGravity(Gravity.START);
+
+        newRow.addView(nameView);
+        newRow.addView(participantsView);
+        newRow.addView(statusView);
+
+        jamsTable.addView(newRow);
+    }
+
+    private void clearTable() {
+        int childCount = jamsTable.getChildCount();
+        if (childCount > 1) {
+            jamsTable.removeViews(1, childCount - 1);
+        }
+    }
 }
+
