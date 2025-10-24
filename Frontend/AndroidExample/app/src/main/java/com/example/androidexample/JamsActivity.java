@@ -3,123 +3,132 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.TableRow;
-import android.view.Gravity;
 import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
-
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/*
-
-1. To run this project, open the directory "Android Example", otherwise it may not recognize the file structure properly
-
-2. Ensure you are using a compatible version of gradle, to do so you need to check 2 files.
-
-    AndroidExample/Gradle Scripts/build.gradle
-    Here, you will have this block of code. Ensure it is set to a compatible version,
-    in this case 8.12.2 should be sufficient:
-        plugins {
-            id 'com.android.application' version '8.12.2' apply false
-        }
-
-    Gradle Scripts/gradle-wrapper.properties
-
-3. This file is what actually determines the Gradle version used, 8.13 should be sufficient.
-    "distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip" ---Edit the version if needed
-
-4. You might be instructed by the plugin manager to upgrade plugins, accept it and you may execute the default selected options.
-
-5. Press "Sync project with gradle files" located at the top right of Android Studio,
-   once this is complete you will be able to run the app
-
-   This version is compatible with both JDK 17 and 21. The Java version you want to use can be
-   altered in Android Studio->Settings->Build, Execution, Deployment->Build Tools->Gradle
-
- */
-
-
 public class JamsActivity extends AppCompatActivity {
 
-    private TextView messageText;   // define message textview variable
-    private TextView usernameText;  // define username textview variable
-    private Button profileButton;    // define profile button variable
-    private Button homeButton;      // define music button variable
+    private Button profileButton;
+    private Button homeButton;
     private Button musicButton;
     private Button createButton;
+    private Button createJamButton;
     private TableLayout jamsTable;
 
-    private String server = "http://coms-3090-008.class.las.iastate.edu:8080/jam/";
-    private String URL_GET = "http://coms-3090-008.class.las.iastate.edu:8080/jams";
+    private final String server = "http://coms-309-008.class.las.iastate.edu:8080/jam/";
+    private final String URL_GET_JAMS = "http://coms-309-008.class.las.iastate.edu:8080/jams";
+    private final String URL_GET_ACCOUNT_TYPE = "http://coms-309-008.class.las.iastate.edu:8080/credentials/";
 
-
+    // Callback interface for asynchronous calls
+    interface AccountTypeCallback {
+        void onResult(String accountType);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_jams);             // link to Main activity XML
+        setContentView(R.layout.activity_jams);
 
-        /* initialize UI elements */
-        homeButton = findViewById(R.id.home_button_btn);    // link to music button in the Main activity XML)
-        profileButton = findViewById(R.id.profile_button_btn);// link to profile button in the Main activity XML
+        homeButton = findViewById(R.id.home_button_btn);
+        profileButton = findViewById(R.id.profile_button_btn);
         musicButton = findViewById(R.id.music_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        createJamButton = findViewById(R.id.create_jam_btn);
         jamsTable = findViewById(R.id.jams_table);
 
-        /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
-        if(extras == null) {
-            // set username text invisible initially
+        if (extras != null) {
+            String username = extras.getString("USERNAME");
+            if (username != null && !username.isEmpty()) {
+
+                getAccountType(username, accountType -> {
+                    runOnUiThread(() -> {
+                        if ("jamManager".equals(accountType) || "admin".equals(accountType)) {
+                            createJamButton.setVisibility(View.VISIBLE);
+                        } else {
+                            createJamButton.setVisibility(View.GONE);
+                        }
+                    });
+                });
+            } else {
+                handleNoUsername();
+            }
         } else {
-
-
+            handleNoUsername();
         }
 
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(JamsActivity.this, HomeActivity.class);
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
-                startActivity(intent);
+        homeButton.setOnClickListener(view -> {
+            Intent intent = new Intent(JamsActivity.this, HomeActivity.class);
+            if (extras != null) {
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));
             }
+            startActivity(intent);
         });
 
-        profileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(JamsActivity.this, ProfileActivity.class);
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
-                startActivity(intent);
+        profileButton.setOnClickListener(view -> {
+            Intent intent = new Intent(JamsActivity.this, ProfileActivity.class);
+            if (extras != null) {
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));
             }
+            startActivity(intent);
         });
 
-        musicButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(JamsActivity.this, MusicActivity.class);
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
-                startActivity(intent);
+        musicButton.setOnClickListener(view -> {
+            Intent intent = new Intent(JamsActivity.this, MusicActivity.class);
+            if (extras != null) {
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));
             }
+            startActivity(intent);
         });
 
-        createButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(JamsActivity.this, CreateActivity.class);
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));  // key-value to pass to the MainActivity
-                startActivity(intent);
+        createButton.setOnClickListener(view -> {
+            Intent intent = new Intent(JamsActivity.this, CreateActivity.class);
+            if (extras != null) {
+                intent.putExtra("USERNAME", extras.getString("USERNAME"));
             }
+            startActivity(intent);
         });
+    }
+
+    private void handleNoUsername() {
+        Toast.makeText(this, "User not found, returning to login.", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(JamsActivity.this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void getAccountType(final String username, final AccountTypeCallback callback) {
+        String url = URL_GET_ACCOUNT_TYPE + username + "/accountType";
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        String accountType = response.getString("accountType");
+                        callback.onResult(accountType);
+                    } catch (JSONException e) {
+                        callback.onResult(null);
+                    }
+                },
+                error -> {
+                    callback.onResult(null);
+                });
+
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
     private void getJams(final String username) {
@@ -127,10 +136,9 @@ public class JamsActivity extends AppCompatActivity {
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
-                URL_GET,
+                URL_GET_JAMS,
                 null,
                 response -> {
-                    Log.d("Volley Response", "Received " + response.length() + " jams.");
                     try {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject jamObject = response.getJSONObject(i);
@@ -138,22 +146,18 @@ public class JamsActivity extends AppCompatActivity {
                             String numParticipants = jamObject.optString("numParticipants", "N/A");
                             String status = jamObject.optString("status", "N/A");
                             addJam(jamName, numParticipants, status, username);
-                            Log.d("Volley Response", "Jam name: " + jamName);
-                            Log.d("Volley Response", "Number of participants: " + numParticipants);
-                            Log.d("Volley Response", "Status: " + status);
                         }
                     } catch (JSONException e) {
-                        Log.e("Volley JSON Error", "Error parsing JSON array: " + e.getMessage());
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
                     }
                 },
                 error -> {
-                    Log.e("Volley Error", "Error fetching reviews: " + error.toString());
-                    Toast.makeText(getApplicationContext(), "Could not load reviews", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Could not load jams", Toast.LENGTH_LONG).show();
                 }
         );
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
+
     private void addJam(String name, String numParticipants, String status, String username) {
         TableRow newRow = new TableRow(this);
 
@@ -162,16 +166,13 @@ public class JamsActivity extends AppCompatActivity {
         nameView.setPadding(8, 8, 8, 8);
         nameView.setGravity(Gravity.START);
         nameView.setClickable(true);
-        nameView.setOnClickListener(new View.OnClickListener() {
-            @Override
-                public void onClick(View view) {
-                    String serverUrl = server + nameView.getText().toString();
+        nameView.setOnClickListener(view -> {
+            String serverUrl = server + nameView.getText().toString();
 
-                    WebSocketManager.getInstance().connectWebSocket(serverUrl);
-                    Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
-                    intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
-                    startActivity(intent);
-                }
+            WebSocketManager.getInstance().connectWebSocket(serverUrl);
+            Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
+            intent.putExtra("USERNAME", username);
+            startActivity(intent);
         });
 
         TextView participantsView = new TextView(this);
@@ -198,4 +199,3 @@ public class JamsActivity extends AppCompatActivity {
         }
     }
 }
-

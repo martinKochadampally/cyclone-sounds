@@ -19,12 +19,12 @@
         android:textColor="#fc0303">
     </TextView>
     <Button
-        android:id="@+id/start_jam_btn"
+        android:id="@+id/create_jam_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Jam"
+        android:text="Create Jam"
         android:layout_gravity="center"
-        android:visibility="invisible"/>
+        android:visibility="gone"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
