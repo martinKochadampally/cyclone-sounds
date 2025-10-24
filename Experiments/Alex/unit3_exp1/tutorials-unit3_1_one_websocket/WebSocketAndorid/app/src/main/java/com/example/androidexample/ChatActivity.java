@@ -2,6 +2,7 @@ package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -38,6 +39,12 @@ public class ChatActivity extends AppCompatActivity implements WebSocketListener
         /* send button listener */
         sendBtn.setOnClickListener(v -> {
             try {
+                if (msgEtx.getText().toString().equals("exit")) {
+                    WebSocketManager.getInstance().disconnectWebSocket();
+                    Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    return;
+                }
                 // send message
                 WebSocketManager.getInstance().sendMessage(msgEtx.getText().toString());
                 //clear text box once the msg is sent
