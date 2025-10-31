@@ -1,6 +1,7 @@
 package com.example.androidexample;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,9 +31,8 @@ public class JamsActivity extends AppCompatActivity {
     private Button createJamButton;
     private TableLayout jamsTable;
 
-    private final String server = "http://coms-309-008.class.las.iastate.edu:8080/jam/";
-    private final String URL_GET_JAMS = "http://coms-309-008.class.las.iastate.edu:8080/jams";
-    private final String URL_GET_ACCOUNT_TYPE = "http://coms-309-008.class.las.iastate.edu:8080/credentials/";
+    private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/jams/";
+    private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
 
     // Callback interface for asynchronous calls
     interface AccountTypeCallback {
@@ -53,17 +54,9 @@ public class JamsActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String username = extras.getString("USERNAME");
-            if (username != null && !username.isEmpty()) {
-
-                getAccountType(username, accountType -> {
-                    runOnUiThread(() -> {
-                        if ("jamManager".equals(accountType) || "admin".equals(accountType)) {
-                            createJamButton.setVisibility(View.VISIBLE);
-                        } else {
-                            createJamButton.setVisibility(View.GONE);
-                        }
-                    });
-                });
+            if (username != null) {
+                getAccountType(username);
+//                getJams(username);
             } else {
                 handleNoUsername();
             }
@@ -112,22 +105,34 @@ public class JamsActivity extends AppCompatActivity {
         finish();
     }
 
-    private void getAccountType(final String username, final AccountTypeCallback callback) {
-        String url = URL_GET_ACCOUNT_TYPE + username + "/accountType";
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+    private void getAccountType(final String username) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                URL_GET_ACCOUNT_TYPE + username,
+                null,
                 response -> {
                     try {
                         String accountType = response.getString("accountType");
-                        callback.onResult(accountType);
+                        Log.d("JamsActivity", "Account Type: " + accountType);
+                        if (accountType.equals("jamManager") || accountType.equals("admin")) {
+                            createJamButton.setVisibility(View.VISIBLE);
+                            createJamButton.setOnClickListener(view -> {
+                                Intent intent = new Intent(JamsActivity.this, CreateJamActivity.class);
+                                intent.putExtra("USERNAME", username);
+                                startActivity(intent);
+                            });
+                        } else {
+                            createJamButton.setVisibility(View.GONE);
+                        }
                     } catch (JSONException e) {
-                        callback.onResult(null);
+                        Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
                     }
                 },
                 error -> {
-                    callback.onResult(null);
-                });
-
+                    Log.e("JamsActivity", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(), "Could not load account type", Toast.LENGTH_LONG).show();
+                }
+        );
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
@@ -136,7 +141,7 @@ public class JamsActivity extends AppCompatActivity {
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
-                URL_GET_JAMS,
+                server,
                 null,
                 response -> {
                     try {
@@ -167,7 +172,7 @@ public class JamsActivity extends AppCompatActivity {
         nameView.setGravity(Gravity.START);
         nameView.setClickable(true);
         nameView.setOnClickListener(view -> {
-            String serverUrl = server + nameView.getText().toString();
+            String serverUrl = server + nameView.getText().toString() + "/" + username;
 
             WebSocketManager.getInstance().connectWebSocket(serverUrl);
             Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);

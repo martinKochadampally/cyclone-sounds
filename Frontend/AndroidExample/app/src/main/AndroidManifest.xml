@@ -42,6 +42,7 @@
         <activity android:name=".JamsActivity" android:exported="false" />
         <activity android:name=".CreateActivity" android:exported="false" />
         <activity android:name=".IndividualJamActivity" android:exported="false" />
+        <activity android:name=".CreateJamActivity" android:exported="false" />
 
 
     </application>

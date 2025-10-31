@@ -13,17 +13,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MusicActivity extends AppCompatActivity {
 
@@ -37,6 +34,12 @@ public class MusicActivity extends AppCompatActivity {
     private static final String UP_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/upvote/";
     private static final String DOWN_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/downvote/";
     private static final String DELETE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/";
+    private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
+    private boolean isAdmin = false;
+
+    interface AccountTypeCallback {
+        void onComplete();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +58,13 @@ public class MusicActivity extends AppCompatActivity {
             username = extras.getString("USERNAME");
         }
 
-        fetchMusicData(username);
-
         String finalUsername = username;
+        getAccountType(finalUsername, () -> {
+            // This code will run after the network request is complete
+            fetchMusicData(finalUsername);
+        });
+
+
         homeButton.setOnClickListener(view -> navigateTo(HomeActivity.class, finalUsername));
         profileButton.setOnClickListener(view -> navigateTo(ProfileActivity.class, finalUsername));
         jamsButton.setOnClickListener(view -> navigateTo(JamsActivity.class, finalUsername));
@@ -99,8 +106,7 @@ public class MusicActivity extends AppCompatActivity {
                             Button downvoteButton = createButton("Down", String.valueOf(reviewId), "downvote", username);
                             tableRow.addView(upvoteButton);
                             tableRow.addView(downvoteButton);
-
-                            if (user.equals(username)) {
+                            if (user.equals(username) || isAdmin) {
                                 Button deleteButton = createDeleteButton("Del", String.valueOf(reviewId), username);
                                 tableRow.addView(deleteButton);
                             } else {
@@ -131,6 +137,32 @@ public class MusicActivity extends AppCompatActivity {
         return textView;
     }
 
+    private void getAccountType(final String username, AccountTypeCallback callback) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                URL_GET_ACCOUNT_TYPE + username,
+                null,
+                response -> {
+                    try {
+                        String accountType = response.getString("accountType");
+                        Log.d("MusicActivity", "Account Type: " + accountType);
+                        if (accountType.equals("admin")) {
+                            isAdmin = true;
+                            callback.onComplete();
+                        } else {
+                            callback.onComplete();
+                        }
+                    } catch (JSONException e) {
+                        Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
+                    }
+                },
+                error -> {
+                    Log.e("JamsActivity", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(), "Could not load account type", Toast.LENGTH_LONG).show();
+                }
+        );
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+    }
     private Button createButton(String text, final String reviewId, final String voteType, final String username) {
         Button button = new Button(this);
         button.setText(text);
