@@ -15,6 +15,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button musicButton;
     private Button jamsButton;
     private Button createButton;
+    private Button friendsButton;
 
     private String currentUsername;
 
@@ -29,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        friendsButton = findViewById(R.id.friends_button_btn);
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("USERNAME")) {
@@ -62,6 +64,12 @@ public class HomeActivity extends AppCompatActivity {
             Intent createIntent = new Intent(HomeActivity.this, CreateActivity.class);
             createIntent.putExtra("USERNAME", currentUsername);
             startActivity(createIntent);
+        });
+
+        friendsButton.setOnClickListener(view -> {
+            Intent friendsIntent = new Intent(HomeActivity.this, FriendsActivity.class);
+            friendsIntent.putExtra("USERNAME", currentUsername);
+            startActivity(friendsIntent);
         });
     }
 }
