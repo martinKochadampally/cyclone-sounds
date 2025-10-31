@@ -16,7 +16,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button jamsButton;
     private Button createButton;
 
-    private String currentUsername; // Variable to safely hold the username
+    private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
