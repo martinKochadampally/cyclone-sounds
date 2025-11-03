@@ -18,101 +18,34 @@
         android:textSize="30dp"
         android:textColor="#fc0303">
     </TextView>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Song Name:      "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/song_name_edt"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:hint="Enter Song Name">
-        </EditText>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Artist Name:      "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/arist_name_edt"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:hint="Enter Artist Name">
-        </EditText>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="10dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Rating out of 5:   "
-            android:textSize="20dp"
-            android:textColor="#000000">
-        </TextView>
-
-        <EditText
-            android:id="@+id/rating_edt"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:hint="Enter Rating">
-        </EditText>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Description:       "
-            android:textSize="20dp"
-            android:textColor="#000000" >
-        </TextView>
-
-        <EditText
-            android:id="@+id/description_edt"
-            android:layout_width="200dp"
-            android:layout_height="150dp"
-            android:hint="Enter Description">
-        </EditText>
-    </LinearLayout>
     <Button
-        android:id="@+id/submit_btn"
+        android:id="@+id/create_review_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:text="Create Review"
+        android:textSize="20sp"
+        android:textColor="#ffffff"/>
+    <TextView
+        android:id="@+id/or_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="- OR -"
+        android:layout_gravity="center"
+        android:textSize="15dp"
+        android:textColor="#fc0303">
+    </TextView>
+    <Button
+        android:id="@+id/create_playlist_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginBottom="10dp"
-        android:text="Submit"
+        android:layout_marginTop="20dp"
+        android:text="Create Playlist"
         android:textSize="20sp"
         android:textColor="#ffffff"/>
     <Space
