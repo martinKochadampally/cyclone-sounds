@@ -22,6 +22,10 @@ public class ChatMessage {
     @CreationTimestamp
     private Instant timestamp;
 
+
+    public ChatMessage(){
+
+    }
     public ChatMessage(String sender, String receiver, String content) {
         this.sender = sender;
         this.receiver = receiver;

@@ -15,4 +15,6 @@ import java.util.Optional;
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, String> {
     List<Profile> findByUsernameContainingIgnoreCaseAndUsernameNot(String query, String myUsername);
+
+    Optional<Profile> findByUsername(String username);
 }

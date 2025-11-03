@@ -47,7 +47,6 @@ public class Profile {
     public Profile() {
     }
 
-    // =============================== Getters and Setters for each field ================================== //
     public String getUsername(){
         return username;
     }
