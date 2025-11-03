@@ -2,8 +2,10 @@ package cycloneSounds.Friends;
 
 import cycloneSounds.Credentials.Credentials;
 import jakarta.persistence.*;
-import org.springframework.context.annotation.Profile;
+import cycloneSounds.profilePage.Profile;
 
+@Entity
+@Table(name = "Friends")
 public class Friends {
 
     public enum Status {
@@ -16,11 +18,11 @@ public class Friends {
     private String username;
 
     @ManyToOne
-    @JoinColumn(name = "requesterUsername", nullable = false)
+    @JoinColumn(name = "requester", nullable = false)
     private Profile requester;
 
     @ManyToOne
-    @JoinColumn(name = "receiverUsername", nullable = false)
+    @JoinColumn(name = "receiver", nullable = false)
     private Profile receiver;
 
     @Enumerated(EnumType.STRING)
@@ -29,14 +31,6 @@ public class Friends {
 
 
     public Friends(){
-
-    }
-    public String getUsername(){
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public Profile getRequester(){
