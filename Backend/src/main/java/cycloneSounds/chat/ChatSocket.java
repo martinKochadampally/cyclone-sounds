@@ -53,19 +53,19 @@ public class ChatSocket {
     @OnMessage
     public void onMessage(Session session, String message) throws IOException {
         logger.info("Got Message: " + message);
-        String senderUsername = sessionUsernameMap.get(session);
+        String sender = sessionUsernameMap.get(session);
 
-        if (senderUsername == null) {
+        if (sender == null) {
             logger.warn("Received message from unknown session");
             return;
         }
 
         try {
             MessageSocket payload = objectMapper.readValue(message, MessageSocket.class);
-            String receiverUsername = payload.getReceiver();
+            String receiver = payload.getReceiver();
             String content = payload.getContent();
 
-            if (receiverUsername == null || receiverUsername.isEmpty() || content == null || content.isEmpty()) {
+            if (receiver == null || receiver.isEmpty() || content == null || content.isEmpty()) {
                 logger.warn("Invalid message payload: " + message);
                 return;
             }
@@ -75,9 +75,9 @@ public class ChatSocket {
                 throw new IllegalStateException("Chat service not available.");
             }
 
-            chatMessageService.saveMessage(senderUsername, receiverUsername, content);
+            chatMessageService.saveMessage(sender, receiver, content);
 
-            Session receiverSession = usernameSessionMap.get(receiverUsername);
+            Session receiverSession = usernameSessionMap.get(receiver);
             if (receiverSession != null && receiverSession.isOpen()) {
                 receiverSession.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
             }
