@@ -42,6 +42,8 @@
         <activity android:name=".JamsActivity" android:exported="false" />
         <activity android:name=".CreateActivity" android:exported="false" />
         <activity android:name=".CreateReviewActivity" android:exported="false" />
+        <activity android:name=".CreatePlaylistActivity" android:exported="false" />
+
 
     </application>
 
