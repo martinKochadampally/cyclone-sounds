@@ -33,8 +33,8 @@ public class ChatMessageService {
     public List<ChatMessage> getChatHistory(String user1, String user2) {
 
 
-        List<ChatMessage> messagesSent = chatMessageRepository.findBySenderUsernameAndReceiverUsername(user1, user2);
-        List<ChatMessage> messagesReceived = chatMessageRepository.findBySenderUsernameAndReceiverUsername(user2, user1);
+        List<ChatMessage> messagesSent = chatMessageRepository.findBySenderAndReceiver(user1, user2);
+        List<ChatMessage> messagesReceived = chatMessageRepository.findBySenderAndReceiver(user2, user1);
         List<ChatMessage> chatHistory = new ArrayList<>(messagesSent);
         chatHistory.addAll(messagesReceived);
 

@@ -70,13 +70,11 @@ public class ChatSocket {
                 return;
             }
 
-            // Check for null service, just in case
             if (chatMessageService == null) {
                 logger.error("ChatMessageService is STILL NULL. The Configurator failed.");
                 throw new IllegalStateException("Chat service not available.");
             }
 
-            // This should now work
             chatMessageService.saveMessage(senderUsername, receiverUsername, content);
 
             Session receiverSession = usernameSessionMap.get(receiverUsername);
