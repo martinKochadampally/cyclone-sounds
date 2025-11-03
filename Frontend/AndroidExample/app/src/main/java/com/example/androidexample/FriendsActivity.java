@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,16 +13,31 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class FriendsActivity extends AppCompatActivity {
 
+    private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
+
     private ListView friendsListView;
     private TextView emptyListText;
     private Button addFriendButton;
+    private Button pendingRequestsButton;
+
     private ArrayAdapter<String> friendsAdapter;
     private ArrayList<String> friendsList;
     private String currentUsername;
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +46,14 @@ public class FriendsActivity extends AppCompatActivity {
 
         currentUsername = getIntent().getStringExtra("USERNAME");
 
+        requestQueue = Volley.newRequestQueue(this);
+
         friendsListView = findViewById(R.id.friends_list_view);
         emptyListText = findViewById(R.id.empty_list_text);
         addFriendButton = findViewById(R.id.add_friend_button);
+        pendingRequestsButton = findViewById(R.id.pending_requests_button);
 
         friendsList = new ArrayList<>();
-
         friendsAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, friendsList);
         friendsListView.setAdapter(friendsAdapter);
@@ -44,16 +62,20 @@ public class FriendsActivity extends AppCompatActivity {
 
         addFriendButton.setOnClickListener(view -> showAddFriendDialog());
 
+        pendingRequestsButton.setOnClickListener(view -> fetchPendingRequests());
+
         friendsListView.setOnItemClickListener((parent, view, position, id) -> {
             String friendUsername = friendsList.get(position);
             showFriendOptionsDialog(friendUsername);
         });
 
+        if (currentUsername != null) {
+            fetchFriendsFromDatabase(currentUsername);
+        }
     }
 
     private void showFriendOptionsDialog(String friendUsername) {
         CharSequence[] options = {"View Profile", "Send DM"};
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(friendUsername);
         builder.setItems(options, (dialog, item) -> {
@@ -83,7 +105,7 @@ public class FriendsActivity extends AppCompatActivity {
         builder.setPositiveButton("Add", (dialog, which) -> {
             String friendUsername = input.getText().toString().trim();
             if (!friendUsername.isEmpty()) {
-                addFriendToDatabase(friendUsername);
+                sendFriendRequestToDatabase(friendUsername);
             } else {
                 Toast.makeText(this, "Username cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -94,12 +116,175 @@ public class FriendsActivity extends AppCompatActivity {
     }
 
     private void fetchFriendsFromDatabase(String username) {
-        Toast.makeText(this, "Fetching friends... (implement this)", Toast.LENGTH_SHORT).show();
+        // --- FIXED URL (1 of 4) ---
+        String url = BASE_URL + "/api/friends/accepted/" + username;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        friendsList.clear();
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject friendProfile = response.getJSONObject(i);
+                            String friendUsername = friendProfile.getString("username");
+                            friendsList.add(friendUsername);
+                        }
+                        friendsAdapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        Log.e("FriendsActivity", "JSON parsing error", e);
+                    }
+                },
+                error -> {
+                    Log.e("FriendsActivity", "Volley error", error);
+                    Toast.makeText(this, "Error loading friends", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        requestQueue.add(jsonArrayRequest);
     }
 
-    private void addFriendToDatabase(String friendUsername) {
-        friendsList.add(friendUsername);
-        friendsAdapter.notifyDataSetChanged();
-        Toast.makeText(this, friendUsername + " added (locally)", Toast.LENGTH_SHORT).show();
+    private void sendFriendRequestToDatabase(String friendUsername) {
+        // --- FIXED URL (2 of 4) ---
+        String url = BASE_URL + "/api/friends/request";
+
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("requester", currentUsername);
+            requestBody.put("receiver", friendUsername);
+        } catch (JSONException e) {
+            Log.e("FriendsActivity", "JSON creation error", e);
+            return;
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, requestBody,
+                response -> {
+                    try {
+                        String status = response.getString("status");
+                        if ("PENDING".equals(status)) {
+                            Toast.makeText(this, "Friend request sent!", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        Log.e("FriendsActivity", "JSON response error", e);
+                    }
+                },
+                error -> {
+                    String errorMessage = "Failed to send request";
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        try {
+                            String responseBody = new String(error.networkResponse.data, "utf-8");
+                            errorMessage = "Error: " + error.networkResponse.statusCode + " " + responseBody;
+                        } catch (Exception e) {
+                            Log.e("FriendsActivity", "Error parsing error response", e);
+                        }
+                    }
+                    Log.e("FriendsActivity", "Volley error: " + errorMessage, error);
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                }
+        );
+
+        requestQueue.add(jsonObjectRequest);
+    }
+
+    private void fetchPendingRequests() {
+        // --- FIXED URL (3 of 4) ---
+        String url = BASE_URL + "/api/friends/pending/" + currentUsername;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        ArrayList<String> displayNames = new ArrayList<>();
+                        ArrayList<String> requestIds = new ArrayList<>();
+
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject friendRequest = response.getJSONObject(i);
+
+                            String requestId = friendRequest.getString("id");
+
+                            JSONObject requesterProfile = friendRequest.getJSONObject("requester");
+                            String requesterUsername = requesterProfile.getString("username");
+
+                            displayNames.add(requesterUsername);
+                            requestIds.add(requestId);
+                        }
+
+                        showPendingRequestsDialog(displayNames, requestIds);
+
+                    } catch (JSONException e) {
+                        Log.e("FriendsActivity", "JSON parsing error", e);
+                    }
+                },
+                error -> {
+                    Log.e("FriendsActivity", "Volley error", error);
+                    Toast.makeText(this, "Error fetching requests", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        requestQueue.add(jsonArrayRequest);
+    }
+
+    private void showPendingRequestsDialog(ArrayList<String> displayNames, ArrayList<String> requestIds) {
+        if (displayNames.isEmpty()) {
+            Toast.makeText(this, "No pending requests", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CharSequence[] items = displayNames.toArray(new CharSequence[0]);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Pending Requests");
+        builder.setItems(items, (dialog, which) -> {
+            String selectedUsername = displayNames.get(which);
+            String selectedRequestId = requestIds.get(which);
+
+            showRespondToRequestDialog(selectedUsername, selectedRequestId);
+        });
+        builder.show();
+    }
+
+    private void showRespondToRequestDialog(String username, String requestId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Respond to " + username);
+        builder.setMessage("Do you want to accept this friend request?");
+
+        builder.setPositiveButton("Accept", (dialog, which) -> {
+            sendFriendResponse(requestId, "ACCEPTED");
+        });
+
+        builder.setNegativeButton("Decline", (dialog, which) -> {
+            sendFriendResponse(requestId, "DECLINED");
+        });
+
+        builder.setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+
+    private void sendFriendResponse(String requestId, String status) {
+        // --- FIXED URL (4 of 4) ---
+        String url = BASE_URL + "/api/friends/respond/" + requestId;
+
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("status", status);
+        } catch (JSONException e) {
+            Log.e("FriendsActivity", "JSON creation error", e);
+            return;
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, requestBody,
+                response -> {
+                    if ("ACCEPTED".equals(status)) {
+                        Toast.makeText(this, "Friend added!", Toast.LENGTH_SHORT).show();
+                        fetchFriendsFromDatabase(currentUsername);
+                    } else {
+                        Toast.makeText(this, "Request declined", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    Log.e("FriendsActivity", "Volley error", error);
+                    Toast.makeText(this, "Failed to respond", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        requestQueue.add(jsonObjectRequest);
     }
 }
