@@ -44,7 +44,7 @@ public class CreateActivity extends AppCompatActivity {
         });
 
         createPlaylistButton.setOnClickListener(view -> {
-            Intent createPlaylistIntent = new Intent(CreateActivity.this, CreateActivity.class);
+            Intent createPlaylistIntent = new Intent(CreateActivity.this, CreatePlaylistActivity.class);
             createPlaylistIntent.putExtra("USERNAME", currentUsername);
             startActivity(createPlaylistIntent);
         });
