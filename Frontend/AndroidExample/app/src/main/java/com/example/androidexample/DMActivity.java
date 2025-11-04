@@ -55,7 +55,8 @@ public class DMActivity extends AppCompatActivity {
         currentUsername = getIntent().getStringExtra("CURRENT_USERNAME");
         friendUsername = getIntent().getStringExtra("FRIEND_USERNAME");
 
-        WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/chat/" + currentUsername;
+        // --- THIS IS THE UPDATED URL ---
+        WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/chat/" + currentUsername;
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -191,7 +192,6 @@ public class DMActivity extends AppCompatActivity {
     private void sendMessageToBackend(ChatMessage message) {
         JSONObject requestBody = new JSONObject();
         try {
-            requestBody.put("sender", message.getSender());
             requestBody.put("receiver", friendUsername);
             requestBody.put("content", message.getContent());
         } catch (JSONException e) {
