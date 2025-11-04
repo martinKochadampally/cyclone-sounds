@@ -28,7 +28,7 @@ import java.util.List;
 
 public class DMActivity extends AppCompatActivity {
 
-    private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
+    private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/api";
     private String WEB_SOCKET_URL;
 
     private RequestQueue requestQueue;
@@ -55,7 +55,6 @@ public class DMActivity extends AppCompatActivity {
         currentUsername = getIntent().getStringExtra("CURRENT_USERNAME");
         friendUsername = getIntent().getStringExtra("FRIEND_USERNAME");
 
-        // --- THIS IS THE UPDATED URL ---
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/chat/" + currentUsername;
 
         requestQueue = Volley.newRequestQueue(this);
@@ -93,7 +92,7 @@ public class DMActivity extends AppCompatActivity {
     }
 
     private void fetchChatHistory(String user1, String user2) {
-        String url = HTTP_BASE_URL + "/api/chat/history/" + user1 + "/" + user2;
+        String url = HTTP_BASE_URL + "/chat/history/" + user1 + "/" + user2;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
@@ -114,8 +113,17 @@ public class DMActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
-                    Log.e("DMActivity", "Volley error", error);
-                    Toast.makeText(this, "Error loading chat history", Toast.LENGTH_SHORT).show();
+                    String errorMessage = "Error loading chat history";
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        try {
+                            String responseBody = new String(error.networkResponse.data, "utf-8");
+                            errorMessage = "Error: " + error.networkResponse.statusCode + " " + responseBody;
+                        } catch (Exception e) {
+                            Log.e("DMActivity", "Error parsing error response", e);
+                        }
+                    }
+                    Log.e("DMActivity", "Volley error: " + errorMessage, error);
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
 
