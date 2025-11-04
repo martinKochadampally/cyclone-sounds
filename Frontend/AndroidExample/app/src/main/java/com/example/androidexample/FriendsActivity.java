@@ -39,6 +39,8 @@ public class FriendsActivity extends AppCompatActivity {
     private String currentUsername;
     private RequestQueue requestQueue;
 
+    private Button homeButton, musicButton, createButton, jamsButton, profileButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +54,12 @@ public class FriendsActivity extends AppCompatActivity {
         emptyListText = findViewById(R.id.empty_list_text);
         addFriendButton = findViewById(R.id.add_friend_button);
         pendingRequestsButton = findViewById(R.id.pending_requests_button);
+
+        homeButton = findViewById(R.id.home_button_btn);
+        musicButton = findViewById(R.id.music_button_btn);
+        createButton = findViewById(R.id.create_button_btn);
+        jamsButton = findViewById(R.id.jams_button_btn);
+        profileButton = findViewById(R.id.profile_button_btn);
 
         friendsList = new ArrayList<>();
         friendsAdapter = new ArrayAdapter<>(this,
@@ -72,6 +80,8 @@ public class FriendsActivity extends AppCompatActivity {
         if (currentUsername != null) {
             fetchFriendsFromDatabase(currentUsername);
         }
+
+        setupNavigation();
     }
 
     private void showFriendOptionsDialog(String friendUsername) {
@@ -81,7 +91,8 @@ public class FriendsActivity extends AppCompatActivity {
         builder.setItems(options, (dialog, item) -> {
             if (options[item].equals("View Profile")) {
                 Intent profileIntent = new Intent(FriendsActivity.this, ProfileActivity.class);
-                profileIntent.putExtra("USERNAME", friendUsername);
+                profileIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                profileIntent.putExtra("PROFILE_TO_VIEW", friendUsername);
                 startActivity(profileIntent);
 
             } else if (options[item].equals("Send DM")) {
@@ -116,7 +127,6 @@ public class FriendsActivity extends AppCompatActivity {
     }
 
     private void fetchFriendsFromDatabase(String username) {
-        // --- FIXED URL (1 of 4) ---
         String url = BASE_URL + "/api/friends/accepted/" + username;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -143,7 +153,6 @@ public class FriendsActivity extends AppCompatActivity {
     }
 
     private void sendFriendRequestToDatabase(String friendUsername) {
-        // --- FIXED URL (2 of 4) ---
         String url = BASE_URL + "/api/friends/request";
 
         JSONObject requestBody = new JSONObject();
@@ -185,7 +194,6 @@ public class FriendsActivity extends AppCompatActivity {
     }
 
     private void fetchPendingRequests() {
-        // --- FIXED URL (3 of 4) ---
         String url = BASE_URL + "/api/friends/pending/" + currentUsername;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -259,7 +267,6 @@ public class FriendsActivity extends AppCompatActivity {
     }
 
     private void sendFriendResponse(String requestId, String status) {
-        // --- FIXED URL (4 of 4) ---
         String url = BASE_URL + "/api/friends/respond/" + requestId;
 
         JSONObject requestBody = new JSONObject();
@@ -286,5 +293,25 @@ public class FriendsActivity extends AppCompatActivity {
         );
 
         requestQueue.add(jsonObjectRequest);
+    }
+
+    private void setupNavigation() {
+        homeButton.setOnClickListener(view -> navigateTo(HomeActivity.class));
+        musicButton.setOnClickListener(view -> navigateTo(MusicActivity.class));
+        createButton.setOnClickListener(view -> navigateTo(CreateActivity.class));
+        jamsButton.setOnClickListener(view -> navigateTo(JamsActivity.class));
+
+        profileButton.setOnClickListener(view -> {
+            Intent intent = new Intent(FriendsActivity.this, ProfileActivity.class);
+            intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            intent.putExtra("PROFILE_TO_VIEW", currentUsername);
+            startActivity(intent);
+        });
+    }
+
+    private void navigateTo(Class<?> activityClass) {
+        Intent intent = new Intent(FriendsActivity.this, activityClass);
+        intent.putExtra("USERNAME", currentUsername);
+        startActivity(intent);
     }
 }

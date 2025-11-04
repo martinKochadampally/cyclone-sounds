@@ -3,6 +3,7 @@ package com.example.androidexample;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -48,6 +49,9 @@ public class DMActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dm);
 
+        Toolbar toolbar = findViewById(R.id.dm_toolbar);
+        setSupportActionBar(toolbar);
+
         currentUsername = getIntent().getStringExtra("CURRENT_USERNAME");
         friendUsername = getIntent().getStringExtra("FRIEND_USERNAME");
 
@@ -57,6 +61,7 @@ public class DMActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("DM with " + friendUsername);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         chatRecyclerView = findViewById(R.id.chat_recycler_view);
@@ -78,6 +83,12 @@ public class DMActivity extends AppCompatActivity {
         }
 
         createWebSocketClient();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     private void fetchChatHistory(String user1, String user2) {
@@ -114,6 +125,7 @@ public class DMActivity extends AppCompatActivity {
         URI uri;
         try {
             uri = new URI(WEB_SOCKET_URL);
+            Log.d("DMActivity", "Attempting to connect to: " + uri);
         } catch (URISyntaxException e) {
             Log.e("DMActivity", "Invalid WebSocket URL", e);
             return;
@@ -122,7 +134,7 @@ public class DMActivity extends AppCompatActivity {
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
-                Log.d("DMActivity", "WebSocket connected");
+                Log.d("DMActivity", "WebSocket onOpen: Connected successfully!");
             }
 
             @Override
@@ -146,15 +158,17 @@ public class DMActivity extends AppCompatActivity {
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                Log.d("DMActivity", "WebSocket closed: " + reason);
+                Log.e("DMActivity", "WebSocket onClose: Connection closed by " + (remote ? "server" : "us"));
+                Log.e("DMActivity", "WebSocket onClose: Code: " + code + ", Reason: " + reason);
             }
 
             @Override
             public void onError(Exception ex) {
-                Log.e("DMActivity", "WebSocket error", ex);
+                Log.e("DMActivity", "WebSocket onError: An error occurred", ex);
             }
         };
 
+        Log.d("DMActivity", "Calling webSocketClient.connect()...");
         webSocketClient.connect();
     }
 

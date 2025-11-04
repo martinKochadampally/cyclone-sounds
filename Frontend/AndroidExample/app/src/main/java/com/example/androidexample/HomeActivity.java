@@ -50,7 +50,10 @@ public class HomeActivity extends AppCompatActivity {
 
         profileButton.setOnClickListener(view -> {
             Intent profileIntent = new Intent(HomeActivity.this, ProfileActivity.class);
-            profileIntent.putExtra("USERNAME", currentUsername);
+            // --- THIS IS THE CHANGE ---
+            profileIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            profileIntent.putExtra("PROFILE_TO_VIEW", currentUsername);
+            // --------------------------
             startActivity(profileIntent);
         });
 
