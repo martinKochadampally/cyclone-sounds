@@ -81,7 +81,6 @@ public class ChatSocket {
             if (receiverSession != null && receiverSession.isOpen()) {
                 receiverSession.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
             }
-            session.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
 
         } catch (Exception e) {
             logger.error("Failed to process message or save to DB", e);
