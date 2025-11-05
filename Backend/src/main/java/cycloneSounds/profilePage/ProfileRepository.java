@@ -2,10 +2,12 @@ package cycloneSounds.profilePage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * 
- * @author Vivek Bengre
+ * The JPA repository for Profile.
+ *
+ * @author Martin Kochadampally
  * 
  */
 import org.springframework.stereotype.Repository;
