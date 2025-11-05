@@ -22,10 +22,26 @@ public class ChatMessage {
     @CreationTimestamp
     private Instant timestamp;
 
+
+    public ChatMessage(){
+
+    }
     public ChatMessage(String sender, String receiver, String content) {
         this.sender = sender;
         this.receiver = receiver;
         this.content = content;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     public Instant getTimestamp() {

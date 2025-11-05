@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,7 +20,9 @@ public class ProfileActivity extends AppCompatActivity {
     private Button updateButton, deleteButton;
     private Button homeButton, musicButton, createButton, jamsButton, profileButton;
 
-    private String currentUsername;
+    private String profileToViewUsername;
+    private String loggedInUsername;
+
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/profiles/";
 
     @Override
@@ -42,9 +45,21 @@ public class ProfileActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
 
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("USERNAME")) {
-            currentUsername = intent.getStringExtra("USERNAME");
+        if (intent != null && intent.hasExtra("LOGGED_IN_USERNAME") && intent.hasExtra("PROFILE_TO_VIEW")) {
+            loggedInUsername = intent.getStringExtra("LOGGED_IN_USERNAME");
+            profileToViewUsername = intent.getStringExtra("PROFILE_TO_VIEW");
+
+            if(getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(profileToViewUsername + "'s Profile");
+            }
+
             fetchUserData();
+            setupNavigation();
+
+            if (!loggedInUsername.equals(profileToViewUsername)) {
+                makeProfileReadOnly();
+            }
+
         } else {
             Toast.makeText(this, "Error: No user profile found.", Toast.LENGTH_LONG).show();
             finish();
@@ -52,12 +67,27 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateButton.setOnClickListener(v -> updateUserData());
         deleteButton.setOnClickListener(v -> deleteUserAccount());
+    }
 
-        setupNavigation();
+    private void makeProfileReadOnly() {
+        nameEditText.setEnabled(false);
+        songEditText.setEnabled(false);
+        genreEditText.setEnabled(false);
+        artistEditText.setEnabled(false);
+        bioEditText.setEnabled(false);
+
+        updateButton.setVisibility(View.GONE);
+        deleteButton.setVisibility(View.GONE);
+
+        homeButton.setVisibility(View.VISIBLE);
+        musicButton.setVisibility(View.VISIBLE);
+        createButton.setVisibility(View.VISIBLE);
+        jamsButton.setVisibility(View.VISIBLE);
+        profileButton.setVisibility(View.VISIBLE);
     }
 
     private void fetchUserData() {
-        String url = BASE_URL + currentUsername; // Use username
+        String url = BASE_URL + profileToViewUsername;
         Log.d("ProfileFetch", "Fetching data from URL: " + url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -74,14 +104,14 @@ public class ProfileActivity extends AppCompatActivity {
                 },
                 error -> {
                     Log.e("VOLLEY_FETCH_ERROR", "Could not fetch user data", error);
-                    Toast.makeText(this, "Could not load profile data. User may not exist.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Could not load profile data.", Toast.LENGTH_SHORT).show();
                 });
 
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
     private void updateUserData() {
-        String url = BASE_URL + currentUsername; // Use username
+        String url = BASE_URL + profileToViewUsername;
         JSONObject profileData = new JSONObject();
         try {
             profileData.put("name", nameEditText.getText().toString());
@@ -89,7 +119,7 @@ public class ProfileActivity extends AppCompatActivity {
             profileData.put("favGenre", genreEditText.getText().toString());
             profileData.put("favArtist", artistEditText.getText().toString());
             profileData.put("biography", bioEditText.getText().toString());
-            profileData.put("username", currentUsername);
+            profileData.put("username", profileToViewUsername);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -106,7 +136,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void deleteUserAccount() {
-        String url = BASE_URL + currentUsername; // Use username
+        String url = BASE_URL + profileToViewUsername;
 
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
                 response -> {
@@ -133,7 +163,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(ProfileActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("USERNAME", loggedInUsername);
         startActivity(intent);
     }
 }

@@ -13,16 +13,16 @@ public class Friends {
         ACCEPTED,
         DECLINED
     }
-
     @Id
-    private String username;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "requester", nullable = false)
+    @JoinColumn(name = "Requester", nullable = false)
     private Profile requester;
 
     @ManyToOne
-    @JoinColumn(name = "receiver", nullable = false)
+    @JoinColumn(name = "Receiver", nullable = false)
     private Profile receiver;
 
     @Enumerated(EnumType.STRING)
@@ -31,6 +31,14 @@ public class Friends {
 
 
     public Friends(){
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Profile getRequester(){
