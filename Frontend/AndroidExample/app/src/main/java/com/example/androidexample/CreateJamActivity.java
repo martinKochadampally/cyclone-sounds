@@ -64,13 +64,10 @@ public class CreateJamActivity extends AppCompatActivity {
                 response -> {
                     Log.d("Volley Response", response);
                     Toast.makeText(getApplicationContext(), "Jam Created Successfully!", Toast.LENGTH_LONG).show();
-                    String serverUrl = URL_STRING_REQ + "/" + jamName + "/" + user;
-
-                    // Establish WebSocket connection and set listener
-                    WebSocketManager.getInstance().connectWebSocket(serverUrl);
 
                     Intent intent = new Intent(CreateJamActivity.this, IndividualJamActivity.class);
                     intent.putExtra("USERNAME", user);
+                    intent.putExtra("JAM_NAME", jamName);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();

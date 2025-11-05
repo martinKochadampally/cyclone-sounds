@@ -56,7 +56,7 @@ public class JamsActivity extends AppCompatActivity {
             String username = extras.getString("USERNAME");
             if (username != null) {
                 getAccountType(username);
-//                getJams(username);
+                getJams(username);
             } else {
                 handleNoUsername();
             }
@@ -172,11 +172,9 @@ public class JamsActivity extends AppCompatActivity {
         nameView.setGravity(Gravity.START);
         nameView.setClickable(true);
         nameView.setOnClickListener(view -> {
-            String serverUrl = server + nameView.getText().toString() + "/" + username;
-
-            WebSocketManager.getInstance().connectWebSocket(serverUrl);
             Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
             intent.putExtra("USERNAME", username);
+            intent.putExtra("JAM_NAME", name);
             startActivity(intent);
         });
 
