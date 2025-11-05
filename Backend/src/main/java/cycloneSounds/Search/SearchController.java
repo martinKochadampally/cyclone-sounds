@@ -46,8 +46,10 @@ public class SearchController {
     @PutMapping(path = "search/profiles/{username}")
     public Profile updateProfileViewsbyUsername(@PathVariable String username) {
         Profile res = profileRepository.findById(username).orElse(null);
-        res.incrementViews();
-        profileRepository.save(res);
+        if (res != null) {
+            res.incrementViews();
+            profileRepository.save(res);
+        }
         return res;
     }
 
@@ -68,8 +70,10 @@ public class SearchController {
     @PutMapping(path = "search/songs/{songID}")
     public Song updateSongSearchesbySongID(@PathVariable int songID) {
         Song res = songRepository.findById(songID).orElse(null);
-        res.incrementSearches();
-        songRepository.save(res);
+        if (res != null) {
+            res.incrementSearches();
+            songRepository.save(res);
+        }
         return res;
     }
 
