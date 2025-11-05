@@ -287,8 +287,27 @@ public class FriendsActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
-                    Log.e("FriendsActivity", "Volley error", error);
-                    Toast.makeText(this, "Failed to respond", Toast.LENGTH_SHORT).show();
+                    String errorMessage = "Error loading friends";
+                    // Check if the server sent a response
+                    if (error.networkResponse != null) {
+                        // Get the HTTP status code (e.g., 404, 500)
+                        int statusCode = error.networkResponse.statusCode;
+                        errorMessage += " (Status " + statusCode + ")"; // e.g., "Error loading friends (Status 404)"
+
+                        // Try to get the server's error message from the response body
+                        try {
+                            String responseBody = new String(error.networkResponse.data, "utf-8");
+                            Log.e("FriendsActivity", "Volley Error " + statusCode + ": " + responseBody, error);
+                        } catch (Exception e) {
+                            Log.e("FriendsActivity", "Volley error parsing response", e);
+                        }
+                    } else {
+                        // No network response (e.g., couldn't connect, DNS error)
+                        Log.e("FriendsActivity", "Volley error (no network response)", error);
+                    }
+
+                    // Show the more detailed error on screen
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
 
