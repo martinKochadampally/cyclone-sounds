@@ -33,7 +33,6 @@ public class IndividualJamActivity extends AppCompatActivity {
 
     private RequestQueue requestQueue;
     private String currentUsername;
-    private String friendUsername;
     private String jamName;
     private RecyclerView chatRecyclerView;
     private EditText messageInput;
@@ -111,7 +110,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                         chatRecyclerView.scrollToPosition(messageList.size() - 1);
 
                     } catch (JSONException e) {
-                        Log.e("DMActivity", "JSON parsing error", e);
+                        Log.e("IndividualJamActivity", "JSON parsing error", e);
                     }
                 },
                 error -> {
@@ -121,10 +120,10 @@ public class IndividualJamActivity extends AppCompatActivity {
                             String responseBody = new String(error.networkResponse.data, "utf-8");
                             errorMessage = "Error: " + error.networkResponse.statusCode + " " + responseBody;
                         } catch (Exception e) {
-                            Log.e("DMActivity", "Error parsing error response", e);
+                            Log.e("IndividualJamActivity", "Error parsing error response", e);
                         }
                     }
-                    Log.e("DMActivity", "Volley error: " + errorMessage, error);
+                    Log.e("IndividualJamActivity", "Volley error: " + errorMessage, error);
                     Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
                 }
         );
@@ -136,21 +135,21 @@ public class IndividualJamActivity extends AppCompatActivity {
         URI uri;
         try {
             uri = new URI(WEB_SOCKET_URL);
-            Log.d("DMActivity", "Attempting to connect to: " + uri);
+            Log.d("IndividualJamActivity", "Attempting to connect to: " + uri);
         } catch (URISyntaxException e) {
-            Log.e("DMActivity", "Invalid WebSocket URL", e);
+            Log.e("IndividualJamActivity", "Invalid WebSocket URL", e);
             return;
         }
 
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
-                Log.d("DMActivity", "WebSocket onOpen: Connected successfully!");
+                Log.d("IndividualJamActivity", "WebSocket onOpen: Connected successfully!");
             }
 
             @Override
             public void onMessage(String message) {
-                Log.d("DMActivity", "Received message: " + message);
+                Log.d("IndividualJamActivity", "Received message: " + message);
                 try {
                     JSONObject messageJson = new JSONObject(message);
                     String sender = messageJson.getString("sender");
@@ -163,23 +162,23 @@ public class IndividualJamActivity extends AppCompatActivity {
                     });
 
                 } catch (JSONException e) {
-                    Log.e("DMActivity", "Error parsing received message", e);
+                    Log.e("IndividualJamActivity", "Error parsing received message", e);
                 }
             }
 
             @Override
             public void onClose(int code, String reason, boolean remote) {
-                Log.e("DMActivity", "WebSocket onClose: Connection closed by " + (remote ? "server" : "us"));
-                Log.e("DMActivity", "WebSocket onClose: Code: " + code + ", Reason: " + reason);
+                Log.e("IndividualJamActivity", "WebSocket onClose: Connection closed by " + (remote ? "server" : "us"));
+                Log.e("IndividualJamActivity", "WebSocket onClose: Code: " + code + ", Reason: " + reason);
             }
 
             @Override
             public void onError(Exception ex) {
-                Log.e("DMActivity", "WebSocket onError: An error occurred", ex);
+                Log.e("IndividualJamActivity", "WebSocket onError: An error occurred", ex);
             }
         };
 
-        Log.d("DMActivity", "Calling webSocketClient.connect()...");
+        Log.d("IndividualJamActivity", "Calling webSocketClient.connect()...");
         webSocketClient.connect();
     }
 
@@ -196,23 +195,23 @@ public class IndividualJamActivity extends AppCompatActivity {
         chatAdapter.notifyItemInserted(messageList.size() - 1);
         chatRecyclerView.scrollToPosition(messageList.size() - 1);
 
-        sendMessageToBackend(message);
+        sendMessageToBackend(message, jamName);
     }
 
-    private void sendMessageToBackend(ChatMessage message) {
+    private void sendMessageToBackend(ChatMessage message, String jamName) {
         JSONObject requestBody = new JSONObject();
         try {
-            requestBody.put("receiver", friendUsername);
+            requestBody.put("receiver", jamName);
             requestBody.put("content", message.getContent());
         } catch (JSONException e) {
-            Log.e("DMActivity", "Error creating JSON for WebSocket", e);
+            Log.e("IndividualJamActivity", "Error creating JSON for WebSocket", e);
         }
 
         if (webSocketClient != null && webSocketClient.isOpen()) {
             webSocketClient.send(requestBody.toString());
-            Log.d("DMActivity", "Sent message: " + requestBody.toString());
+            Log.d("IndividualJamActivity", "Sent message: " + requestBody.toString());
         } else {
-            Log.e("DMActivity", "WebSocket is not connected!");
+            Log.e("IndividualJamActivity", "WebSocket is not connected!");
             Toast.makeText(this, "Failed to send: Not connected", Toast.LENGTH_SHORT).show();
         }
     }
