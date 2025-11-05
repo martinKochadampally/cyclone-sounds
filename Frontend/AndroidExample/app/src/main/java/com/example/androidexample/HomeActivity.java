@@ -15,6 +15,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button musicButton;
     private Button jamsButton;
     private Button createButton;
+    private Button myPlaylistsButton;
 
     private String currentUsername; // Variable to safely hold the username
 
@@ -29,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        myPlaylistsButton = findViewById(R.id.my_playlists_btn);
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("USERNAME")) {
@@ -39,6 +41,12 @@ public class HomeActivity extends AppCompatActivity {
             messageText.setText("Cyclone Sounds");
             usernameText.setVisibility(View.INVISIBLE);
         }
+
+        myPlaylistsButton.setOnClickListener(view -> {
+            Intent myPlaylistsIntent = new Intent(HomeActivity.this, MyPlaylistsActivity.class);
+            myPlaylistsIntent.putExtra("USERNAME", currentUsername);
+            startActivity(myPlaylistsIntent);
+        });
 
         musicButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(HomeActivity.this, MusicActivity.class);
