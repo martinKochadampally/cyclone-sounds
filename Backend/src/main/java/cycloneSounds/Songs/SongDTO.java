@@ -1,5 +1,11 @@
 package cycloneSounds.Songs;
 
+/**
+ * Song Data Transfer Object
+ * Ensures that unnecessary data isn't sent in search get requests.
+ *
+ * @author Martin Kochadampally
+ */
 public class SongDTO {
     private Integer songId;
     private String songName;

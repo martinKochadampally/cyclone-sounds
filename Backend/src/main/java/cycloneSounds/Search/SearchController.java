@@ -43,6 +43,12 @@ public class SearchController {
             .collect(Collectors.toList());
     }
 
+    /**
+     * PUT endpoint that updates the number of views for the sepcified songID and return the updated Profile Object.
+     *
+     * @param username
+     * @return
+     */
     @PutMapping(path = "search/profiles/{username}")
     public Profile updateProfileViewsbyUsername(@PathVariable String username) {
         Profile res = profileRepository.findById(username).orElse(null);
@@ -67,6 +73,11 @@ public class SearchController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * PUT endpoint that updates the number of searches for the sepcified songID and return the updated Song Object.
+     * @param songID
+     * @return
+     */
     @PutMapping(path = "search/songs/{songID}")
     public Song updateSongSearchesbySongID(@PathVariable int songID) {
         Song res = songRepository.findById(songID).orElse(null);
