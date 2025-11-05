@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@ServerEndpoint(value = "/chat/{username}", configurator = CustomSpringConfigurator.class)
+@ServerEndpoint(value = "/websocket/chat/{username}", configurator = CustomSpringConfigurator.class)
 public class ChatSocket {
 
     private static final Map<Session, String> sessionUsernameMap = new ConcurrentHashMap<>();
@@ -81,7 +81,6 @@ public class ChatSocket {
             if (receiverSession != null && receiverSession.isOpen()) {
                 receiverSession.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
             }
-            session.getBasicRemote().sendText(objectMapper.writeValueAsString(payload));
 
         } catch (Exception e) {
             logger.error("Failed to process message or save to DB", e);

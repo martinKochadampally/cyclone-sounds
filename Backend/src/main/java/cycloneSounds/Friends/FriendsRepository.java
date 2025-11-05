@@ -10,14 +10,7 @@ import java.util.Optional;
 @Repository
 public interface FriendsRepository extends JpaRepository<Friends, String> {
 
-    List<Friends> findAllByRequesterAndStatusOrReceiverAndStatus(
-            Profile requester, Friends.Status status1, Profile receiver, Friends.Status status2);
-
-
-    Optional<Friends> findFirstByRequesterAndReceiverOrReceiverAndRequester(
-            Profile requester1, Profile receiver1, Profile receiver2, Profile requester2);
-
-
-    Optional<Friends> findByRequesterAndReceiverAndStatus(
-            Profile requester, Profile receiver, Friends.Status status);
+    List<Friends> findAllByRequesterAndStatusOrReceiverAndStatus(Profile requester, Friends.Status status1, Profile receiver, Friends.Status status2);
+    Optional<Friends> findFirstByRequesterAndReceiverOrReceiverAndRequester(Profile requester1, Profile receiver1, Profile receiver2, Profile requester2);
+    List<Friends> findByReceiverAndStatus(Profile receiver, Friends.Status status);
 }
