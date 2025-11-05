@@ -150,7 +150,8 @@ public class JamsActivity extends AppCompatActivity {
                             String jamName = jamObject.optString("name", "N/A");
                             String numParticipants = jamObject.optString("numParticipants", "N/A");
                             String status = jamObject.optString("status", "N/A");
-                            addJam(jamName, numParticipants, status, username);
+                            String admin = jamObject.optString("admin", "N/A");
+                            addJam(jamName, numParticipants, status, admin, username);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
@@ -163,7 +164,7 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
-    private void addJam(String name, String numParticipants, String status, String username) {
+    private void addJam(String name, String numParticipants, String status, String admin, String username) {
         TableRow newRow = new TableRow(this);
 
         TextView nameView = new TextView(this);
@@ -175,6 +176,7 @@ public class JamsActivity extends AppCompatActivity {
             Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
             intent.putExtra("USERNAME", username);
             intent.putExtra("JAM_NAME", name);
+            intent.putExtra("JAM_ADMIN", admin);
             startActivity(intent);
         });
 

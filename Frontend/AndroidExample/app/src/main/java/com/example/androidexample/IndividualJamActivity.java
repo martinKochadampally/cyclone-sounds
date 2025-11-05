@@ -34,6 +34,7 @@ public class IndividualJamActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
     private String currentUsername;
     private String jamName;
+    private String jamAdmin;
     private RecyclerView chatRecyclerView;
     private EditText messageInput;
     private Button sendButton;
@@ -52,8 +53,10 @@ public class IndividualJamActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         currentUsername = getIntent().getStringExtra("USERNAME");
-
         jamName = getIntent().getStringExtra("JAM_NAME");
+        jamAdmin = getIntent().getStringExtra("JAM_ADMIN");
+
+        Log.d("IndividualJamActivity", "Jam Admin: " + jamAdmin);
 
 
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jam/" + jamName + "/"+ currentUsername;
