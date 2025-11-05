@@ -1,6 +1,6 @@
 package cycloneSounds;
 
-import cycloneSounds.Reviews.*;
+import cycloneSounds.Songs.SongRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,13 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
-import cycloneSounds.profilePage.Profile;
-import cycloneSounds.profilePage.ProfileRepository;
-
-import cycloneSounds.Reviews.Review;
 import cycloneSounds.Reviews.ReviewRepository;
-
-import java.util.List;
 
 /**
  * @author Vivek Bengre
