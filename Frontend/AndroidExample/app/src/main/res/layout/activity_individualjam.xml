@@ -14,24 +14,40 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <ImageButton
-            android:id="@+id/backBtn"
+    <LinearLayout
+        android:id="@+id/jam_actions_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dm_toolbar"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/suggest_song_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="?attr/homeAsUpIndicator"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back" />
+            android:layout_margin="8dp"
+            android:text="Suggest Song" />
 
-    </androidx.appcompat.widget.Toolbar>
+        <Button
+            android:id="@+id/jam_settings_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="Jam Settings"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/dm_toolbar"
         android:layout_above="@+id/send_layout"
+        android:layout_below="@id/jam_actions_layout"
         android:padding="10dp" />
 
     <LinearLayout
