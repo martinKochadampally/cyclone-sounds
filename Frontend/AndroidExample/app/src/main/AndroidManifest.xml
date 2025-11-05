@@ -33,6 +33,9 @@
         <activity android:name=".JamsActivity" android:exported="false" />
         <activity android:name=".CreateActivity" android:exported="false" />
 
+        <activity android:name=".FriendsActivity" android:exported="false" />
+        <activity android:name=".DMActivity" android:exported="false" />
+
     </application>
 
 </manifest>
