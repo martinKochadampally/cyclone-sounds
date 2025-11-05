@@ -43,7 +43,7 @@ public class SearchController {
             .collect(Collectors.toList());
     }
 
-    @PutMapping(path = "search/profile/{username}")
+    @PutMapping(path = "search/profiles/{username}")
     public Profile updateProfileViewsbyUsername(@PathVariable String username) {
         Profile res = profileRepository.findById(username).orElse(null);
         res.incrementViews();
@@ -61,7 +61,7 @@ public class SearchController {
     public List<SongDTO> getSongsByName(@PathVariable String searchKey) {
         return songRepository.findTop15ByArtistContainingOrSongNameContainingOrderBySearchesDesc(searchKey, searchKey)
                 .stream()
-                .map(song -> new SongDTO(song.getSongId(), song.getSongName()))
+                .map(song -> new SongDTO(song.getSongId(), song.getSongName(), song.getArtist()))
                 .collect(Collectors.toList());
     }
 
