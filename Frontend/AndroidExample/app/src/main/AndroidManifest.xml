@@ -43,6 +43,10 @@
         <activity android:name=".CreateActivity" android:exported="false" />
         <activity android:name=".CreateReviewActivity" android:exported="false" />
         <activity android:name=".CreatePlaylistActivity" android:exported="false" />
+        <activity android:name=".MyPlaylistsActivity" android:exported="false" />
+        <activity android:name=".AddSongsActivity" android:exported="false" />
+
+
 
 
     </application>

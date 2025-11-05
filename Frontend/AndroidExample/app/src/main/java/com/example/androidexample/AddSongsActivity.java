@@ -37,7 +37,6 @@ public class AddSongsActivity extends AppCompatActivity {
     private String currentUsername;
     private String currentPlaylistName;
 
-    // Corrected the hostname from coms-3090 to coms-309
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
     private static final String PLAYLISTS_URL = BASE_URL + "/playlists/";
     private static final String SONGS_URL = BASE_URL + "/songs/";
