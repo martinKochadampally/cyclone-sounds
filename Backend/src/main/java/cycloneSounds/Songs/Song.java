@@ -1,4 +1,4 @@
-package cycloneSounds.Reviews;
+package cycloneSounds.Songs;
 
 import jakarta.persistence.*;
 
@@ -12,12 +12,14 @@ public class Song {
 
     private String songName;
     private String artist;
+    private int searches;
 
     public Song() {}
 
     public Song(String songName, String artist) {
         this.songName = songName;
         this.artist = artist;
+        this.searches = 0;
     }
 
     public int getSongId() {
@@ -42,5 +44,13 @@ public class Song {
 
     public void setArtist(String artist) {
         this.artist = artist;
+    }
+
+    public int getSearches() {
+        return searches;
+    }
+
+    public void incrementSearches() {
+        this.searches++;
     }
 }
