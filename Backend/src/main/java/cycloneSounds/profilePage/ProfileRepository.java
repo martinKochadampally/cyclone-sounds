@@ -14,4 +14,5 @@ import org.springframework.stereotype.Repository;
 public interface ProfileRepository extends JpaRepository<Profile, String> {
     List<Profile> findByUsernameContainingIgnoreCaseAndUsernameNot(String query, String myUsername);
     List<Profile> findTop10ByUsernameContainingOrderByViewsDesc(String searchKey);
+    Optional<Profile> findByUsername(String username);
 }
