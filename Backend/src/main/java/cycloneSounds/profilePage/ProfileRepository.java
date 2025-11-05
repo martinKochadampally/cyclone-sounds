@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 
- * @author Vivek Bengre
+ * The JPA repository for Profile.
+ *
+ * @author Martin Kochadampally
  * 
  */
 import org.springframework.stereotype.Repository;
