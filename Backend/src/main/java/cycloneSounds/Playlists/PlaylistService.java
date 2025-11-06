@@ -18,6 +18,12 @@ public class PlaylistService {
     @Autowired
     private SongRepository songRepository;
 
+    /**
+     * ALlows playlists to be created, needs to have a unique name no other playlist has
+     * @param playlistName
+     * @param username
+     * @return
+     */
     @Transactional
     public Playlist createPlaylist(String playlistName, String username) {
         if (playlistRepository.findById(playlistName).isPresent())
@@ -32,6 +38,11 @@ public class PlaylistService {
         return playlistRepository.save(playlist);
     }
 
+    /**
+     * Allows playlists to be deleted
+     * @param username
+     * @param playlistName
+     */
     @Transactional
     public void deletePlaylist(String username, String playlistName) {
         Playlist playlist = playlistRepository.findById(playlistName)
@@ -40,6 +51,14 @@ public class PlaylistService {
 
     }
 
+    /**
+     * Allows songs to be added to playlists. Search to make sure playlist and songs exist in the databases
+     * @param username
+     * @param playlistName
+     * @param songName
+     * @param artist
+     * @return
+     */
     @Transactional
     public Playlist addSongToPlaylist(String username, String playlistName, String songName, String artist) {
         Playlist playlist = playlistRepository.findById(playlistName)
@@ -52,14 +71,18 @@ public class PlaylistService {
         return playlistRepository.save(playlist);
     }
 
+    /**
+     * Allows playlists to be deleted by anyone. and checks if it actually exists
+     * @param username
+     * @param playlistName
+     * @param songName
+     * @param artist
+     * @return
+     */
     @Transactional
     public Playlist removeSongFromPlaylist(String username, String playlistName, String songName, String artist) {
         Playlist playlist = playlistRepository.findById(playlistName)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
-
-        if (!playlist.getUsername().equals(username)) {
-            throw new RuntimeException("User does not have permission to delete this playlist");
-        }
 
         Set<Song> songs = playlist.getSongs();
         if (songs.isEmpty()) {
@@ -74,12 +97,23 @@ public class PlaylistService {
         return playlistRepository.save(playlist);
     }
 
+    /**
+     * FInds all playlists that a user is a part of
+     * @param username
+     * @return
+     */
     @Transactional(readOnly = true)
     public List<Playlist> getPlaylistsByOwner(String username) {
 
         return playlistRepository.findByUsername(username);
     }
 
+    /**
+     * Searches for all songs in a playlist, if playlist exists
+     * @param username
+     * @param playlistName
+     * @return
+     */
     @Transactional(readOnly = true)
     public Set<Song> getSongsFromPlaylist(String username, String playlistName) {
         Playlist playlist = playlistRepository.findById(playlistName)

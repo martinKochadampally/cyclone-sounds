@@ -22,7 +22,6 @@ public class ChatMessageController {
 
     /**
      * An HTTP endpoint for clients to fetch the chat history between two users.
-     * Example: A client would send a GET request to /api/chat/history/alice/bob
      */
     @GetMapping("/history/{user1}/{user2}")
     public ResponseEntity<List<ChatMessage>> getChatHistory(
