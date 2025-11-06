@@ -23,7 +23,7 @@ public class ChatMessageService {
      */
     public void saveMessage(String sender, String receiver, String content) {
         ChatMessage message = new ChatMessage(sender, receiver, content);
-        chatMessageRepository.save(message); // This will now work
+        chatMessageRepository.save(message);
     }
 
     /**
