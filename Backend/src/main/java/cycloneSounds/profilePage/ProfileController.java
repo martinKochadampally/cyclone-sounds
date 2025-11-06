@@ -48,6 +48,7 @@ public class ProfileController {
     public Profile getProfilebyUsername(@PathVariable String username) {
         return profileRepository.findById(username).orElse(null);
     }
+
     /**
      * POST endpoint to create a new profile. (Create)
      *
