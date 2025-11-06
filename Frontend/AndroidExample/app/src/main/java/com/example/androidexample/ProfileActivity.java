@@ -30,6 +30,10 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         nameEditText = findViewById(R.id.profile_name_edt);
         songEditText = findViewById(R.id.profile_song_edt);
         genreEditText = findViewById(R.id.profile_genre_edt);
@@ -67,6 +71,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateButton.setOnClickListener(v -> updateUserData());
         deleteButton.setOnClickListener(v -> deleteUserAccount());
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     private void makeProfileReadOnly() {
@@ -158,7 +168,16 @@ public class ProfileActivity extends AppCompatActivity {
         musicButton.setOnClickListener(view -> navigateTo(MusicActivity.class));
         createButton.setOnClickListener(view -> navigateTo(CreateActivity.class));
         jamsButton.setOnClickListener(view -> navigateTo(JamsActivity.class));
-        profileButton.setOnClickListener(view -> {});
+
+        profileButton.setOnClickListener(view -> {
+            if (loggedInUsername.equals(profileToViewUsername)) {
+                return;
+            }
+            Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+            intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
+            intent.putExtra("PROFILE_TO_VIEW", loggedInUsername);
+            startActivity(intent);
+        });
     }
 
     private void navigateTo(Class<?> activityClass) {

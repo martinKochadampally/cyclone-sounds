@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class HomeActivity extends AppCompatActivity {
@@ -15,7 +16,9 @@ public class HomeActivity extends AppCompatActivity {
     private Button musicButton;
     private Button jamsButton;
     private Button createButton;
+    private Button myPlaylistsButton;
     private Button friendsButton;
+    private ImageButton searchButton;
 
     private String currentUsername;
 
@@ -30,7 +33,9 @@ public class HomeActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        myPlaylistsButton = findViewById(R.id.my_playlists_btn);
         friendsButton = findViewById(R.id.friends_button_btn);
+        searchButton = findViewById(R.id.search_button);
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("USERNAME")) {
@@ -42,6 +47,18 @@ public class HomeActivity extends AppCompatActivity {
             usernameText.setVisibility(View.INVISIBLE);
         }
 
+        myPlaylistsButton.setOnClickListener(view -> {
+            Intent myPlaylistsIntent = new Intent(HomeActivity.this, MyPlaylistsActivity.class);
+            myPlaylistsIntent.putExtra("USERNAME", currentUsername);
+            startActivity(myPlaylistsIntent);
+        });
+
+        searchButton.setOnClickListener(view -> {
+            Intent searchIntent = new Intent(HomeActivity.this, SearchActivity.class);
+            searchIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            startActivity(searchIntent);
+        });
+
         musicButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(HomeActivity.this, MusicActivity.class);
             musicIntent.putExtra("USERNAME", currentUsername);
@@ -50,10 +67,8 @@ public class HomeActivity extends AppCompatActivity {
 
         profileButton.setOnClickListener(view -> {
             Intent profileIntent = new Intent(HomeActivity.this, ProfileActivity.class);
-            // --- THIS IS THE CHANGE ---
             profileIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             profileIntent.putExtra("PROFILE_TO_VIEW", currentUsername);
-            // --------------------------
             startActivity(profileIntent);
         });
 

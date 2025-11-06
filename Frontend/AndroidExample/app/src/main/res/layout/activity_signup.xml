@@ -69,6 +69,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
         android:layout_gravity="center"
         android:orientation="horizontal">
 
@@ -94,7 +95,60 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="100dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="19dp"
+            android:paddingRight="20dp"
+            android:textAlignment="center"
+            android:text="account type: "
+            android:textSize="20dp"
+            android:textColor="#000000">
+        </TextView>
+
+        <Spinner
+            android:layout_width="150dp"
+            android:layout_height="70dp"
+            android:id="@+id/account_type_spinner"
+            android:layout_gravity="center">
+        </Spinner>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/admin_password_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="admin password: "
+            android:textSize="20dp"
+            android:textColor="#000000">
+        </TextView>
+
+        <EditText
+            android:id="@+id/admin_password_edt"
+            android:layout_width="wrap_content"
+            android:inputType="textPassword"
+            android:layout_height="50dp"
+            android:textSize="20dp"
+            android:hint="Enter Admin Password">
+        </EditText>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
         android:orientation="horizontal">
 
         <Button
@@ -119,13 +173,7 @@
         </Button>
 
     </LinearLayout>
-    <TextView
-        android:id="@+id/msg_Response"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="16sp"
-        android:text="" />
+
 
 
 </androidx.appcompat.widget.LinearLayoutCompat>
