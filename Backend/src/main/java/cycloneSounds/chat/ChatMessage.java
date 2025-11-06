@@ -5,6 +5,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
+/**
+ * This class creates a DM table that tracks all the messages sent through the DM
+ */
 @Entity
 @Table(name = "DMmessages")
 public class ChatMessage {

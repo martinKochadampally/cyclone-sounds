@@ -2,6 +2,9 @@ package cycloneSounds.Songs;
 
 import jakarta.persistence.*;
 
+/**
+ * Song table that is updated from spotify API. Songs can be manually added through a post method through artist or song name
+ */
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(columnNames = {"spotifyId"})})
 public class Song {

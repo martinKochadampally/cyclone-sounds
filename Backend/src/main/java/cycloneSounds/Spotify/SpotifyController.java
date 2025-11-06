@@ -12,6 +12,12 @@ public class SpotifyController {
     @Autowired
     private SpotifyService spotifyService;
 
+    /**
+     * Post mapping that allows songs to be added to the database
+     * Only for backend population of the table
+     * @param query
+     * @return
+     */
     @PostMapping("/api/songs/search")
     public Mono<String> searchAndSave(@RequestParam String query) {
         return spotifyService.searchAndSaveTracks(query)

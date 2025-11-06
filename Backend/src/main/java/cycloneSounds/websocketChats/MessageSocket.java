@@ -1,5 +1,9 @@
 package cycloneSounds.websocketChats;
 
+
+/**
+ * This class controls how the DM functionality works. Determines DM by sender and reciever which contains the content
+ */
 public class MessageSocket {
     private String sender;
     private String receiver;
@@ -7,6 +11,7 @@ public class MessageSocket {
 
     public MessageSocket() {
     }
+
 
     public MessageSocket(String sender, String receiver, String content) {
         this.sender = sender;
