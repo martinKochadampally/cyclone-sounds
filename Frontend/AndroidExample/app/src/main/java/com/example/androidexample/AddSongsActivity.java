@@ -88,7 +88,15 @@ public class AddSongsActivity extends AppCompatActivity {
 
         saveButton.setOnClickListener(view -> {
             // The save button just goes back, maybe it should do more? For now, this is what it did.
-            navigateTo(CreateActivity.class);
+            if (extras.getString("PREVIOUS_PAGE").equals("CREATE")) {
+                Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(AddSongsActivity.this, MyPlaylistsActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            }
         });
     }
 
