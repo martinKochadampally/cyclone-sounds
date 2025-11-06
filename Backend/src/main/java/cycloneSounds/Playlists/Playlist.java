@@ -23,9 +23,8 @@ public class Playlist {
     @Column(nullable = false, unique = true)
     private String playlistName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private Profile owner;
+    @JoinColumn(name = "owner_id")
+    private String username;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "playlist_songs", joinColumns = @JoinColumn(name = "playlist_name"), inverseJoinColumns = @JoinColumn(name = "song_id"))
@@ -42,12 +41,12 @@ public class Playlist {
         this.playlistName = playlistName;
     }
 
-    public Profile getOwner() {
-        return owner;
+    public String getUsername() {
+        return username;
     }
 
-    public void setOwner(Profile owner) {
-        this.owner = owner;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Set<Song> getSongs() {

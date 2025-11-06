@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface PlaylistRepository extends JpaRepository<Playlist, String> {
 
-    List<Playlist> findByOwner(Profile owner);
+    List<Playlist> findByUsername(String username);
 
 }
