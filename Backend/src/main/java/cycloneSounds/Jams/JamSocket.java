@@ -40,7 +40,10 @@ public class JamSocket {
             return;
         }
 
-        logger.info("User " + username + " connected to jam: " + jamName);
+        logger.info("========== USER CONNECTING ==========");
+        logger.info("User: " + username);
+        logger.info("Jam: " + jamName);
+        logger.info("Session ID: " + session.getId());
 
         sessionJamMap.put(session, jamName);
         sessionUsernameMap.put(session, username);
@@ -48,18 +51,26 @@ public class JamSocket {
         jamSessions.putIfAbsent(jamName, new ConcurrentHashMap<>());
         jamSessions.get(jamName).put(session, username);
 
+        logger.info("Total users in jam '" + jamName + "': " + jamSessions.get(jamName).size());
+        logger.info("All users in jam: " + jamSessions.get(jamName).values());
+
         try {
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             addMemberToJam(jamRepository, jamName, username);
 
             JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
-            sendMessageToUser(session, getChatHistory(jamMessageRepository, jamName));
+            String history = getChatHistory(jamMessageRepository, jamName);
+            logger.info("Sending chat history (" + history.length() + " characters)");
+            sendMessageToUser(session, history);
 
+            logger.info("Broadcasting join message...");
             broadcastToJam(jamName, username + " has joined the jam!");
         } catch (Exception e) {
             logger.error("Error on opening WebSocket for user " + username, e);
             session.close(new jakarta.websocket.CloseReason(jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, e.getMessage()));
         }
+
+        logger.info("========== USER CONNECTED SUCCESSFULLY ==========");
     }
 
     @OnMessage
@@ -110,35 +121,6 @@ public class JamSocket {
             logger.error("Failed to process message", e);
             session.getBasicRemote().sendText("{\"error\":\"Failed to send message: " + e.getMessage() + "\"}");
         }
-//        logger.info("Received message: " + message);
-//        String jamName = sessionJamMap.get(session);
-//        String username = sessionUsernameMap.get(session);
-//        if (username == null || jamName == null) {
-//            logger.warn("Received message from unknown session");
-//            return;
-//        }
-//
-//        try {
-//            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
-//
-//            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
-//            Optional<Jam> jamOpt = jamRepository.findById(jamName);
-//            if (jamOpt.isEmpty()) {
-//                logger.warn("Jam not found: " + jamName);
-//                return;
-//            }
-//            Jam jam = jamOpt.get();
-//
-//            // Create and save message entity
-//            JamMessage jamMessage = new JamMessage(username, jam, message);
-//            jamMessageRepository.save(jamMessage);
-//
-//            // Broadcast message to all sessions in this jam
-//            broadcastToJam(jamName, username + ": " + message);
-//        } catch (Exception e) {
-//            logger.error("Failed to process message", e);
-//            session.getBasicRemote().sendText("{\"error\":\"Failed to send message: " + e.getMessage() + "\"}");
-//        }
     }
 
     @OnClose
@@ -186,19 +168,52 @@ public class JamSocket {
     }
 
     private void broadcastToJam(String jamName, String message) {
+        logger.info("========== BROADCAST START ==========");
+        logger.info("Jam name: " + jamName);
+        logger.info("Message: " + message);
+
         Map<Session, String> users = jamSessions.get(jamName);
-        if (users != null) {
-            users.keySet().forEach(session -> {
-                try {
-                    if (session.isOpen()) {
-                        session.getBasicRemote().sendText(message);
-                    }
-                } catch (IOException e) {
-                    logger.error("Error sending message", e);
-                }
-            });
+
+        if (users == null) {
+            logger.error("No user map found for jam: " + jamName);
+            logger.info("Available jams: " + jamSessions.keySet());
+            return;
         }
+
+        logger.info("Found " + users.size() + " users in jam");
+        logger.info("Users: " + users.values());
+
+        users.forEach((session, username) -> {
+            try {
+                logger.info("Attempting to send to user: " + username + " (session open: " + session.isOpen() + ")");
+                if (session.isOpen()) {
+                    session.getBasicRemote().sendText(message);
+                    logger.info("Successfully sent to: " + username);
+                } else {
+                    logger.warn("Session closed for user: " + username);
+                }
+            } catch (IOException e) {
+                logger.error("Error sending message to " + username, e);
+            }
+        });
+
+        logger.info("========== BROADCAST END ==========");
     }
+
+//    private void broadcastToJam(String jamName, String message) {
+//        Map<Session, String> users = jamSessions.get(jamName);
+//        if (users != null) {
+//            users.keySet().forEach(session -> {
+//                try {
+//                    if (session.isOpen()) {
+//                        session.getBasicRemote().sendText(message);
+//                    }
+//                } catch (IOException e) {
+//                    logger.error("Error sending message", e);
+//                }
+//            });
+//        }
+//    }
 
     private void sendMessageToUser(Session session, String message) {
         try {
