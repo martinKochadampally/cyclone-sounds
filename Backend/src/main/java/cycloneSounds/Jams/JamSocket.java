@@ -73,7 +73,6 @@ public class JamSocket {
         try {
             JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
 
-            // Assuming message is plain text you want to save and broadcast, or customize as per your model
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             Optional<Jam> jamOpt = jamRepository.findById(jamName);
             if (jamOpt.isEmpty()) {
