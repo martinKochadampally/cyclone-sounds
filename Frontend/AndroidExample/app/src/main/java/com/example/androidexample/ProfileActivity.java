@@ -18,7 +18,7 @@ import org.json.JSONObject;
 public class ProfileActivity extends AppCompatActivity {
 
     private EditText nameEditText, songEditText, genreEditText, artistEditText, bioEditText;
-    private Button updateButton, deleteButton;
+    private Button updateButton, deleteButton, logoutButton;
     private Button homeButton, musicButton, createButton, jamsButton, profileButton;
     private TextView profileTitleTextView; // TextView declaration
 
@@ -47,6 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateButton = findViewById(R.id.profile_update_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
+        logoutButton = findViewById(R.id.profile_logout_btn);
         homeButton = findViewById(R.id.home_button_btn);
         musicButton = findViewById(R.id.music_button_btn);
         createButton = findViewById(R.id.create_button_btn);
@@ -62,12 +63,12 @@ public class ProfileActivity extends AppCompatActivity {
             if (loggedInUsername.equals(profileToViewUsername)) {
                 profileTitleTextView.setText("Edit Your Profile");
             } else {
-                profileTitleTextView.setText(profileToViewUsername + "'s Profile");
+                profileTitleTextView.setText(profileToViewUsername + "\'s Profile");
             }
 
             if(getSupportActionBar() != null) {
                 // This still sets the title for the ActionBar/Toolbar
-                getSupportActionBar().setTitle(profileToViewUsername + "'s Profile");
+                getSupportActionBar().setTitle(profileToViewUsername + "\'s Profile");
             }
 
             fetchUserData();
@@ -84,6 +85,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateButton.setOnClickListener(v -> updateUserData());
         deleteButton.setOnClickListener(v -> deleteUserAccount());
+        logoutButton.setOnClickListener(v -> {
+            Intent logoutIntent = new Intent(ProfileActivity.this, LoginActivity.class);
+            logoutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(logoutIntent);
+            finish();
+        });
     }
 
     @Override
@@ -101,6 +108,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateButton.setVisibility(View.GONE);
         deleteButton.setVisibility(View.GONE);
+        logoutButton.setVisibility(View.GONE);
 
         homeButton.setVisibility(View.VISIBLE);
         musicButton.setVisibility(View.VISIBLE);
@@ -195,7 +203,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(ProfileActivity.this, activityClass);
-        intent.putExtra("USERNAME", loggedInUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
         startActivity(intent);
     }
 }
