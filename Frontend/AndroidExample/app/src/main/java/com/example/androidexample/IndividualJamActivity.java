@@ -219,6 +219,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             // Send plain text for chat messages
             webSocketClient.send(message.getContent());
+            Log.d(message.getSender(), message.getContent());
         } else {
             Toast.makeText(this, "Not connected to WebSocket", Toast.LENGTH_SHORT).show();
         }
@@ -258,6 +259,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                 suggestionJson.put("suggester", currentUsername);
                 suggestionJson.put("receiver", jamAdmin);
                 webSocketClient.send(suggestionJson.toString());
+                Log.d("Song Suggestion", suggestionJson.toString());
                 Toast.makeText(this, "Song suggested!", Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -246,6 +246,7 @@ public class AddSongsActivity extends AppCompatActivity {
     private TextView createTextView(String text) {
         TextView textView = new TextView(this);
         textView.setText(text);
+        textView.setWidth(20);
         textView.setPadding(8, 8, 8, 8);
         return textView;
     }
