@@ -94,8 +94,5 @@ public class SearchController {
      * @param searchKey
      * @return
      */
-//    @GetMapping("/search/playlist/{searchKey}")
-//    public List<Playlist> getPlaylistByName(@PathVariable String searchKey) {
-//        return playlistRepository.findTop15ByNameContainingOrderByViewsDesc(searchKey);
-//    }
+
 }

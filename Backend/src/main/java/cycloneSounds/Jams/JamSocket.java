@@ -18,6 +18,8 @@ import jakarta.websocket.server.ServerEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 
 @Component
@@ -71,8 +73,25 @@ public class JamSocket {
         }
 
         try {
-            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+            // Check if message is JSON (for special message types like song suggestions)
+            if (message.trim().startsWith("{")) {
+                JSONObject messageJson = new JSONObject(message);
+                String type = messageJson.optString("type", "chat");
 
+                if ("song_suggestion".equals(type)) {
+                    // Handle song suggestion - broadcast JSON to admin
+                    String adminUsername = messageJson.getString("receiver");
+                    broadcastToSpecificUser(jamName, adminUsername, message);
+                    return;
+                }
+                // If it's a chat type JSON, extract content
+                else if ("chat".equals(type)) {
+                    message = messageJson.getString("content");
+                }
+            }
+
+            // Handle regular chat message (plain text)
+            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             Optional<Jam> jamOpt = jamRepository.findById(jamName);
             if (jamOpt.isEmpty()) {
@@ -91,6 +110,35 @@ public class JamSocket {
             logger.error("Failed to process message", e);
             session.getBasicRemote().sendText("{\"error\":\"Failed to send message: " + e.getMessage() + "\"}");
         }
+//        logger.info("Received message: " + message);
+//        String jamName = sessionJamMap.get(session);
+//        String username = sessionUsernameMap.get(session);
+//        if (username == null || jamName == null) {
+//            logger.warn("Received message from unknown session");
+//            return;
+//        }
+//
+//        try {
+//            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+//
+//            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
+//            Optional<Jam> jamOpt = jamRepository.findById(jamName);
+//            if (jamOpt.isEmpty()) {
+//                logger.warn("Jam not found: " + jamName);
+//                return;
+//            }
+//            Jam jam = jamOpt.get();
+//
+//            // Create and save message entity
+//            JamMessage jamMessage = new JamMessage(username, jam, message);
+//            jamMessageRepository.save(jamMessage);
+//
+//            // Broadcast message to all sessions in this jam
+//            broadcastToJam(jamName, username + ": " + message);
+//        } catch (Exception e) {
+//            logger.error("Failed to process message", e);
+//            session.getBasicRemote().sendText("{\"error\":\"Failed to send message: " + e.getMessage() + "\"}");
+//        }
     }
 
     @OnClose
@@ -195,5 +243,22 @@ public class JamSocket {
             }
         }
         return sb.toString();
+    }
+
+    private void broadcastToSpecificUser(String jamName, String targetUsername, String message) {
+        Map<Session, String> users = jamSessions.get(jamName);
+        if (users != null) {
+            users.forEach((session, username) -> {
+                if (username.equals(targetUsername)) {
+                    try {
+                        if (session.isOpen()) {
+                            session.getBasicRemote().sendText(message);
+                        }
+                    } catch (IOException e) {
+                        logger.error("Error sending message to specific user", e);
+                    }
+                }
+            });
+        }
     }
 }
