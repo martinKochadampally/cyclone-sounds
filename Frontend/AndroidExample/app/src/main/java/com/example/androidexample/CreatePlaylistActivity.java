@@ -35,7 +35,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
         }
 
         backButton.setOnClickListener(view -> navigateTo(CreateActivity.class));
@@ -65,7 +65,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
                     Log.d("Volley Response", response);
                     Toast.makeText(this, "Playlist Created", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(CreatePlaylistActivity.this, AddSongsActivity.class);
-                    intent.putExtra("USERNAME", user);
+                    intent.putExtra("LOGGED_IN_USERNAME", user);
                     intent.putExtra("PLAYLIST_NAME", playlistName);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -89,7 +89,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(CreatePlaylistActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
     }
 }

@@ -38,8 +38,8 @@ public class HomeActivity extends AppCompatActivity {
         searchButton = findViewById(R.id.search_button);
 
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("USERNAME")) {
-            currentUsername = intent.getStringExtra("USERNAME");
+        if (intent != null && intent.hasExtra("LOGGED_IN_USERNAME")) {
+            currentUsername = intent.getStringExtra("LOGGED_IN_USERNAME");
             messageText.setText("Welcome");
             usernameText.setText(currentUsername);
         } else {
@@ -49,7 +49,7 @@ public class HomeActivity extends AppCompatActivity {
 
         myPlaylistsButton.setOnClickListener(view -> {
             Intent myPlaylistsIntent = new Intent(HomeActivity.this, MyPlaylistsActivity.class);
-            myPlaylistsIntent.putExtra("USERNAME", currentUsername);
+            myPlaylistsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(myPlaylistsIntent);
         });
 
@@ -61,7 +61,7 @@ public class HomeActivity extends AppCompatActivity {
 
         musicButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(HomeActivity.this, MusicActivity.class);
-            musicIntent.putExtra("USERNAME", currentUsername);
+            musicIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(musicIntent);
         });
 
@@ -74,19 +74,19 @@ public class HomeActivity extends AppCompatActivity {
 
         jamsButton.setOnClickListener(view -> {
             Intent jamsIntent = new Intent(HomeActivity.this, JamsActivity.class);
-            jamsIntent.putExtra("USERNAME", currentUsername);
+            jamsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(jamsIntent);
         });
 
         createButton.setOnClickListener(view -> {
             Intent createIntent = new Intent(HomeActivity.this, CreateActivity.class);
-            createIntent.putExtra("USERNAME", currentUsername);
+            createIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(createIntent);
         });
 
         friendsButton.setOnClickListener(view -> {
             Intent friendsIntent = new Intent(HomeActivity.this, FriendsActivity.class);
-            friendsIntent.putExtra("USERNAME", currentUsername);
+            friendsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(friendsIntent);
         });
     }

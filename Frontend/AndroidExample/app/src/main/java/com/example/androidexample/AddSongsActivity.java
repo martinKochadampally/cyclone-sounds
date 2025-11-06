@@ -57,7 +57,7 @@ public class AddSongsActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
             currentPlaylistName = extras.getString("PLAYLIST_NAME");
             playlistNameTextView.setText(currentPlaylistName);
         }
@@ -283,7 +283,7 @@ public class AddSongsActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(AddSongsActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
     }
 }

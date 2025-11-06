@@ -39,11 +39,11 @@ public class CreateJamActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
         }
         backButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(CreateJamActivity.this, JamsActivity.class);
-            musicIntent.putExtra("USERNAME", currentUsername);
+            musicIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(musicIntent);
         });
 
@@ -51,9 +51,12 @@ public class CreateJamActivity extends AppCompatActivity {
             if (jamName.getText().toString().isEmpty() || genre.getText().toString().isEmpty()) {
                 Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show();
             } else {
-                String jamNameString = jamName.getText().toString();
-                String genreString = genre.getText().toString();
-                createJamRequest(currentUsername, jamNameString, genreString);
+                if (jamName.getText().toString().contains(" ")) {
+                    jamName.setText(jamName.getText().toString().replace(" ", "_"));
+                }
+                    String jamNameString = jamName.getText().toString();
+                    String genreString = genre.getText().toString();
+                    createJamRequest(currentUsername, jamNameString, genreString);
             }
         });
     }
@@ -66,7 +69,7 @@ public class CreateJamActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Jam Created Successfully!", Toast.LENGTH_LONG).show();
 
                     Intent intent = new Intent(CreateJamActivity.this, IndividualJamActivity.class);
-                    intent.putExtra("USERNAME", user);
+                    intent.putExtra("LOGGED_IN_USERNAME", user);
                     intent.putExtra("JAM_NAME", jamName);
                     intent.putExtra("JAM_ADMIN", currentUsername);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

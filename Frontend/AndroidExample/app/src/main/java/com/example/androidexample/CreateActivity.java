@@ -33,27 +33,27 @@ public class CreateActivity extends AppCompatActivity {
         homeButton = findViewById(R.id.home_button_btn);
 
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("USERNAME")) {
-            currentUsername = intent.getStringExtra("USERNAME");
+        if (intent != null && intent.hasExtra("LOGGED_IN_USERNAME")) {
+            currentUsername = intent.getStringExtra("LOGGED_IN_USERNAME");
         } else {
 
         }
 
         createReviewButton.setOnClickListener(view -> {
             Intent createReviewIntent = new Intent(CreateActivity.this, CreateReviewActivity.class);
-            createReviewIntent.putExtra("USERNAME", currentUsername);
+            createReviewIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(createReviewIntent);
         });
 
         createPlaylistButton.setOnClickListener(view -> {
             Intent createPlaylistIntent = new Intent(CreateActivity.this, CreatePlaylistActivity.class);
-            createPlaylistIntent.putExtra("USERNAME", currentUsername);
+            createPlaylistIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(createPlaylistIntent);
         });
 
         homeButton.setOnClickListener(view -> {
             Intent homeIntent = new Intent(CreateActivity.this, HomeActivity.class);
-            homeIntent.putExtra("USERNAME", currentUsername);
+            homeIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(homeIntent);
         });
 
@@ -66,13 +66,13 @@ public class CreateActivity extends AppCompatActivity {
 
         musicButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(CreateActivity.this, MusicActivity.class);
-            musicIntent.putExtra("USERNAME", currentUsername);
+            musicIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(musicIntent);
         });
 
         jamsButton.setOnClickListener(view -> {
             Intent jamsIntent = new Intent(CreateActivity.this, JamsActivity.class);
-            jamsIntent.putExtra("USERNAME", currentUsername);
+            jamsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(jamsIntent);
         });
     }

@@ -14,14 +14,16 @@
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:textSize="30sp"
-        android:textColor="#fc0303" /> <EditText
-    android:id="@+id/profile_name_edt"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@id/profile_title_txt"
-    android:hint="Name"
-    android:inputType="textPersonName"
-    android:layout_marginBottom="8dp"/>
+        android:textColor="#fc0303" />
+
+    <EditText
+        android:id="@+id/profile_name_edt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_title_txt"
+        android:hint="Name"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="8dp"/>
 
     <EditText
         android:id="@+id/profile_song_edt"
@@ -71,17 +73,31 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottom_button_layout"
+        android:layout_above="@id/bottom_button_layout"
         android:layout_below="@id/profile_update_btn">
 
-        <Button
-            android:id="@+id/profile_delete_btn"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:backgroundTint="#FF5252"
-            android:text="Delete Account"
-            android:textColor="@android:color/white" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/profile_delete_btn"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FF5252"
+                android:text="Delete Account"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/profile_logout_btn"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Logout" />
+        </LinearLayout>
 
     </RelativeLayout>
 

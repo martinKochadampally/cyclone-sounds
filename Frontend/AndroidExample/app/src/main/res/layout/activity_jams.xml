@@ -28,8 +28,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Jams"
-        android:layout_marginLeft="25dp"
+        android:text="All Jams"
+        android:layout_marginLeft="10dp"
         android:textSize="20dp"
         android:textColor="#fc0303"
         android:textStyle="bold">
@@ -56,6 +56,7 @@
                 <TextView android:text="Jam Name" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="Participants" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="Admin" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
+                <TextView android:text="" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
             </TableRow>
 
         </TableLayout>

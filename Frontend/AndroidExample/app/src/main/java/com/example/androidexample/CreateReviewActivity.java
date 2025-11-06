@@ -41,7 +41,7 @@ public class CreateReviewActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
         }
 
         backButton.setOnClickListener(view -> navigateTo(CreateActivity.class));
@@ -80,7 +80,7 @@ public class CreateReviewActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Review Submitted Successfully!", Toast.LENGTH_LONG).show();
 
                     Intent intent = new Intent(CreateReviewActivity.this, MusicActivity.class);
-                    intent.putExtra("USERNAME", user);
+                    intent.putExtra("LOGGED_IN_USERNAME", user);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
@@ -106,7 +106,7 @@ public class CreateReviewActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(CreateReviewActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
     }
 }

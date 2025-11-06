@@ -46,7 +46,7 @@ public class FriendsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
 
-        currentUsername = getIntent().getStringExtra("USERNAME");
+        currentUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -97,7 +97,7 @@ public class FriendsActivity extends AppCompatActivity {
 
             } else if (options[item].equals("Send DM")) {
                 Intent dmIntent = new Intent(FriendsActivity.this, DMActivity.class);
-                dmIntent.putExtra("CURRENT_USERNAME", currentUsername);
+                dmIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
                 dmIntent.putExtra("FRIEND_USERNAME", friendUsername);
                 startActivity(dmIntent);
             }
@@ -330,7 +330,7 @@ public class FriendsActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(FriendsActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
     }
 }

@@ -52,7 +52,7 @@ public class DMActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.dm_toolbar);
         setSupportActionBar(toolbar);
 
-        currentUsername = getIntent().getStringExtra("CURRENT_USERNAME");
+        currentUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
         friendUsername = getIntent().getStringExtra("FRIEND_USERNAME");
 
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/chat/" + currentUsername;
