@@ -96,6 +96,7 @@ public class MyPlaylistsActivity extends AppCompatActivity {
             Intent intent = new Intent(MyPlaylistsActivity.this, AddSongsActivity.class);
             intent.putExtra("LOGGED_IN_USERNAME", username);
             intent.putExtra("PLAYLIST_NAME", playlistName);
+            intent.putExtra("PREVIOUS_PAGE", "MY_PLAYLISTS");
             startActivity(intent);
         });
         return button;

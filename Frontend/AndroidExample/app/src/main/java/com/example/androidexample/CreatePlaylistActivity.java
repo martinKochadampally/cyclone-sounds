@@ -67,6 +67,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
                     Intent intent = new Intent(CreatePlaylistActivity.this, AddSongsActivity.class);
                     intent.putExtra("LOGGED_IN_USERNAME", user);
                     intent.putExtra("PLAYLIST_NAME", playlistName);
+                    intent.putExtra("PREVIOUS_PAGE", "CREATE");
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
