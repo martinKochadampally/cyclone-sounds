@@ -2,8 +2,16 @@ package com.example.androidexample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -20,6 +28,7 @@ public class MusicActivity extends AppCompatActivity {
     private Button homeButton;
     private Button jamsButton;
     private Button createButton;
+    private TableLayout tableLayout;
 
     private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/reviews";
     private static final String UP_VOTE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/review/upvote/";
@@ -31,7 +40,6 @@ public class MusicActivity extends AppCompatActivity {
     interface AccountTypeCallback {
         void onComplete();
     }
-    private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +50,12 @@ public class MusicActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        tableLayout = findViewById(R.id.song_table);
 
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("USERNAME")) {
-            currentUsername = intent.getStringExtra("USERNAME");
+        Bundle extras = getIntent().getExtras();
+        String username = "";
+        if (extras != null) {
+            username = extras.getString("USERNAME");
         }
 
         String finalUsername = username;
@@ -166,31 +176,59 @@ public class MusicActivity extends AppCompatActivity {
             } else {
                 voteForSong(reviewId, username, DOWN_VOTE_URL);
             }
-=======
-        homeButton.setOnClickListener(view -> {
-            Intent homeIntent = new Intent(MusicActivity.this, HomeActivity.class);
-            homeIntent.putExtra("USERNAME", currentUsername);
-            startActivity(homeIntent);
->>>>>>> Frontend/AndroidExample/app/src/main/java/com/example/androidexample/MusicActivity.java
         });
+        return button;
+    }
 
-        profileButton.setOnClickListener(view -> {
-            Intent profileIntent = new Intent(MusicActivity.this, ProfileActivity.class);
-            profileIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
-            profileIntent.putExtra("PROFILE_TO_VIEW", currentUsername);
-            startActivity(profileIntent);
-        });
+    private Button createDeleteButton(String text, final String reviewId, final String username) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextSize(10);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+        params.width = 110;
+        button.setLayoutParams(params);
+        button.setOnClickListener(view -> deleteRating(reviewId, username));
+        return button;
+    }
 
-        jamsButton.setOnClickListener(view -> {
-            Intent jamsIntent = new Intent(MusicActivity.this, JamsActivity.class);
-            jamsIntent.putExtra("USERNAME", currentUsername);
-            startActivity(jamsIntent);
-        });
+    private void deleteRating(final String reviewId, final String username) {
+        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, DELETE_URL + reviewId,
+                response -> {
+                    Log.d("Delete Response", response);
+                    Toast.makeText(MusicActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
+                    fetchMusicData(username);
+                },
+                error -> {
+                    Log.e("Delete Error", error.toString());
+                    Toast.makeText(MusicActivity.this, "Delete Error", Toast.LENGTH_SHORT).show();
+                });
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
 
-        createButton.setOnClickListener(view -> {
-            Intent createIntent = new Intent(MusicActivity.this, CreateActivity.class);
-            createIntent.putExtra("USERNAME", currentUsername);
-            startActivity(createIntent);
-        });
+    private void voteForSong(final String reviewId, final String username, String url) {
+        StringRequest stringRequest = new StringRequest(Request.Method.PUT, url + reviewId,
+                response -> {
+                    Log.d("Vote Response", response);
+                    Toast.makeText(MusicActivity.this, "Voted", Toast.LENGTH_SHORT).show();
+                    fetchMusicData(username);
+                },
+                error -> {
+                    Log.e("Vote Error", error.toString());
+                    Toast.makeText(MusicActivity.this, "Vote Error", Toast.LENGTH_SHORT).show();
+                });
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void clearTable() {
+        int childCount = tableLayout.getChildCount();
+        if (childCount > 1) {
+            tableLayout.removeViews(1, childCount - 1);
+        }
+    }
+
+    private void navigateTo(Class<?> activityClass, String username) {
+        Intent intent = new Intent(MusicActivity.this, activityClass);
+        intent.putExtra("USERNAME", username);
+        startActivity(intent);
     }
 }
