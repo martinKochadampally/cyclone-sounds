@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -19,6 +20,7 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText nameEditText, songEditText, genreEditText, artistEditText, bioEditText;
     private Button updateButton, deleteButton;
     private Button homeButton, musicButton, createButton, jamsButton, profileButton;
+    private TextView profileTitleTextView; // TextView declaration
 
     private String profileToViewUsername;
     private String loggedInUsername;
@@ -40,6 +42,9 @@ public class ProfileActivity extends AppCompatActivity {
         artistEditText = findViewById(R.id.profile_artist_edt);
         bioEditText = findViewById(R.id.profile_bio_edt);
 
+        // Initialize the title TextView
+        profileTitleTextView = findViewById(R.id.profile_title_txt);
+
         updateButton = findViewById(R.id.profile_update_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
         homeButton = findViewById(R.id.home_button_btn);
@@ -53,7 +58,15 @@ public class ProfileActivity extends AppCompatActivity {
             loggedInUsername = intent.getStringExtra("LOGGED_IN_USERNAME");
             profileToViewUsername = intent.getStringExtra("PROFILE_TO_VIEW");
 
+            // Dynamic Title Logic: Set the text for the on-screen TextView
+            if (loggedInUsername.equals(profileToViewUsername)) {
+                profileTitleTextView.setText("Edit Your Profile");
+            } else {
+                profileTitleTextView.setText(profileToViewUsername + "'s Profile");
+            }
+
             if(getSupportActionBar() != null) {
+                // This still sets the title for the ActionBar/Toolbar
                 getSupportActionBar().setTitle(profileToViewUsername + "'s Profile");
             }
 
