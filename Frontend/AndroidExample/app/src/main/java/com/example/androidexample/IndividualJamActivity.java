@@ -14,6 +14,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -25,6 +30,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,6 +45,7 @@ public class IndividualJamActivity extends AppCompatActivity {
 
     private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
     private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
+    private static final String SONGS_SEARCH_URL = "http://coms-3090-008.class.las.iastate.edu:8080/search/songs";
     private String WEB_SOCKET_URL;
     private RequestQueue requestQueue;
     private String currentUsername;
@@ -230,23 +237,123 @@ public class IndividualJamActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Suggest a Song");
 
-        final EditText song = new EditText(this);
-        song.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(song);
-        final EditText artist = new EditText(this);
-        artist.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(artist);
+        // Create a layout for the dialog
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 50, 50, 50);
 
-        builder.setPositiveButton("Suggest", (dialog, which) -> {
-            String songName = song.getText().toString();
-            String artistName = artist.getText().toString();
-            if (!songName.isEmpty()) {
-                sendSongSuggestion(songName, artistName);
+        // Search input and button in a horizontal layout
+        LinearLayout searchLayout = new LinearLayout(this);
+        searchLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        final EditText searchInput = new EditText(this);
+        searchInput.setHint("Enter song name");
+        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1.0f
+        );
+        searchInput.setLayoutParams(editTextParams);
+        searchLayout.addView(searchInput);
+
+        Button searchButton = new Button(this);
+        searchButton.setText("Search");
+        searchLayout.addView(searchButton);
+
+        layout.addView(searchLayout);
+
+        // Results table in a ScrollView
+        ScrollView scrollView = new ScrollView(this);
+        TableLayout resultsTable = new TableLayout(this);
+        resultsTable.setStretchAllColumns(true);
+
+        // Add a header row to the table
+        TableRow headerRow = new TableRow(this);
+        headerRow.addView(createTextViewForDialog("Song"));
+        headerRow.addView(createTextViewForDialog("Artist"));
+        headerRow.addView(createTextViewForDialog("")); // for button
+        resultsTable.addView(headerRow);
+
+        scrollView.addView(resultsTable);
+        layout.addView(scrollView);
+
+        AlertDialog dialog = builder.setView(layout)
+                .setNegativeButton("Close", (d, which) -> d.cancel())
+                .create();
+
+        searchButton.setOnClickListener(v -> {
+            String query = searchInput.getText().toString().trim();
+            if (!query.isEmpty()) {
+                searchSongsForSuggestion(query, resultsTable);
+            } else {
+                Toast.makeText(this, "Please enter a song to search", Toast.LENGTH_SHORT).show();
             }
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
-        builder.show();
+        dialog.show();
+    }
+
+    private void searchSongsForSuggestion(String query, TableLayout resultsTable) {
+        String url = SONGS_SEARCH_URL + "/" + query;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        populateSuggestionSearchTable(response, resultsTable);
+                    } catch (JSONException e) {
+                        Log.e("IndividualJamActivity", "JSON parsing error in search", e);
+                        Toast.makeText(this, "Error parsing search results", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    Log.e("Volley Error", "Error searching songs: " + error.toString());
+                    Toast.makeText(getApplicationContext(), "Song not found", Toast.LENGTH_SHORT).show();
+                    // Clear previous results
+                    int childCount = resultsTable.getChildCount();
+                    if (childCount > 1) { // Keep header
+                        resultsTable.removeViews(1, childCount - 1);
+                    }
+                });
+
+        requestQueue.add(jsonArrayRequest);
+    }
+
+    private void populateSuggestionSearchTable(JSONArray songs, TableLayout table) throws JSONException {
+        // Clear previous results, keeping the header
+        int childCount = table.getChildCount();
+        if (childCount > 1) {
+            table.removeViews(1, childCount - 1);
+        }
+
+        for (int i = 0; i < songs.length(); i++) {
+            JSONObject song = songs.getJSONObject(i);
+            String songName = song.optString("songName", "N/A");
+            String artist = song.optString("artist", "N/A");
+
+            TableRow tableRow = new TableRow(this);
+            tableRow.addView(createTextViewForDialog(songName));
+            tableRow.addView(createTextViewForDialog(artist));
+            tableRow.addView(createSuggestButton(songName, artist));
+
+            table.addView(tableRow);
+        }
+    }
+
+    private TextView createTextViewForDialog(String text) {
+        TextView textView = new TextView(this);
+        textView.setText(text);
+        textView.setPadding(8, 8, 8, 8);
+        textView.setWidth(10);
+        return textView;
+    }
+
+    private Button createSuggestButton(final String songName, final String artist) {
+        Button button = new Button(this);
+        button.setText("Suggest");
+        button.setOnClickListener(v -> {
+            sendSongSuggestion(songName, artist);
+        });
+        return button;
     }
 
     private void sendSongSuggestion(String songName, String artist) {
@@ -305,6 +412,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                 return params;
             }
         };
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
     private void showApprovalDialog(String song, String artist, String suggester) {
