@@ -10,21 +10,18 @@
         android:id="@+id/profile_title_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Edit Your Profile"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:textSize="30sp"
-        android:textColor="#fc0303" />
-
-    <EditText
-        android:id="@+id/profile_name_edt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/profile_title_txt"
-        android:hint="Name"
-        android:inputType="textPersonName"
-        android:layout_marginBottom="8dp"/>
+        android:textColor="#fc0303" /> <EditText
+    android:id="@+id/profile_name_edt"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/profile_title_txt"
+    android:hint="Name"
+    android:inputType="textPersonName"
+    android:layout_marginBottom="8dp"/>
 
     <EditText
         android:id="@+id/profile_song_edt"
