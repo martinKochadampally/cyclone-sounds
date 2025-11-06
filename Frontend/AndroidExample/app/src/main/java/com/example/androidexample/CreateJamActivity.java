@@ -24,7 +24,7 @@ public class CreateJamActivity extends AppCompatActivity {
     private EditText jamName;
     private EditText genre;
     private String currentUsername; // Variable to safely hold the username
-    private String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams/";
+    private String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams";
 
 
     @Override
@@ -60,7 +60,7 @@ public class CreateJamActivity extends AppCompatActivity {
     private void createJamRequest(final String user, final String jamName, final String genre) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
-                URL_STRING_REQ + currentUsername + "/" + jamName,
+                URL_STRING_REQ + "/" + currentUsername + "/" + jamName,
                 response -> {
                     Log.d("Volley Response", response);
                     Toast.makeText(getApplicationContext(), "Jam Created Successfully!", Toast.LENGTH_LONG).show();

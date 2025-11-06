@@ -30,7 +30,7 @@ public class JamsActivity extends AppCompatActivity {
     private Button createJamButton;
     private TableLayout jamsTable;
 
-    private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams/";
+    private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams";
     private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
 
     interface AccountTypeCallback {
