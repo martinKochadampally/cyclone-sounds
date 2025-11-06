@@ -1,5 +1,6 @@
 package cycloneSounds.Search;
 
+import cycloneSounds.Playlists.*;
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongDTO;
 import cycloneSounds.Songs.SongRepository;
@@ -28,6 +29,9 @@ public class SearchController {
 
     @Autowired
     SongRepository songRepository;
+
+    @Autowired
+    PlaylistRepository playlistRepository;
 
     /**
      * GET endpoint to search for other user's profiles.
@@ -94,8 +98,26 @@ public class SearchController {
      * @param searchKey
      * @return
      */
-//    @GetMapping("/search/playlist/{searchKey}")
-//    public List<Playlist> getPlaylistByName(@PathVariable String searchKey) {
-//        return playlistRepository.findTop15ByNameContainingOrderByViewsDesc(searchKey);
-//    }
+    @GetMapping("/search/playlist/{searchKey}")
+    public List<PlaylistDTO> getPlaylistByName(@PathVariable String searchKey) {
+        return playlistRepository.findTop10ByUsernameContainingOrPlaylistNameContainingOrderBySearchesDesc(searchKey, searchKey)
+                .stream()
+                .map(playlist -> new PlaylistDTO(playlist.getPlaylistName(), playlist.getUsername()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * PUT endpoint that updates the number of searches for the sepcified songID and return the updated Song Object.
+     * @param playlistName
+     * @return
+     */
+    @PutMapping(path = "search/playlist/{playlistName}")
+    public Playlist updatePlaylistSearchesByPlaylistName(@PathVariable String playlistName) {
+        Playlist res = playlistRepository.findById(playlistName).orElse(null);
+        if (res != null) {
+            res.incrementSearches();
+            playlistRepository.save(res);
+        }
+        return res;
+    }
 }

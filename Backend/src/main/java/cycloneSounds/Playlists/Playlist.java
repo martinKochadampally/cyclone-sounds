@@ -3,6 +3,10 @@ package cycloneSounds.Playlists;
 import cycloneSounds.Songs.Song;
 import jakarta.persistence.*;
 
+import cycloneSounds.profilePage.Profile;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +29,16 @@ public class Playlist {
     @JoinTable(name = "playlist_songs", joinColumns = @JoinColumn(name = "playlist_name"), inverseJoinColumns = @JoinColumn(name = "song_id"))
     private Set<Song> songs = new HashSet<>();
 
+    @Getter
+    private int searches;
+
     public Playlist() {
+    }
+
+    public Playlist(String playlistName, String username) {
+        this.playlistName = playlistName;
+        this.username = username;
+        this.searches = 0;
     }
 
     public String getPlaylistName() {
@@ -58,5 +71,9 @@ public class Playlist {
 
     public void removeSong(Song song) {
         this.songs.remove(song);
+    }
+
+    public void incrementSearches() {
+        this.searches++;
     }
 }

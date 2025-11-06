@@ -11,4 +11,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
 
     List<Playlist> findByUsername(String username);
 
+    List<Playlist> findTop10ByUsernameContainingOrPlaylistNameContainingOrderBySearchesDesc(String username, String playlistName);
+
 }
