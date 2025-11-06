@@ -16,6 +16,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button musicButton;
     private Button jamsButton;
     private Button createButton;
+    private Button myPlaylistsButton;
     private Button friendsButton;
     private ImageButton searchButton;
 
@@ -32,6 +33,7 @@ public class HomeActivity extends AppCompatActivity {
         profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
         createButton = findViewById(R.id.create_button_btn);
+        myPlaylistsButton = findViewById(R.id.my_playlists_btn);
         friendsButton = findViewById(R.id.friends_button_btn);
         searchButton = findViewById(R.id.search_button);
 
@@ -44,6 +46,12 @@ public class HomeActivity extends AppCompatActivity {
             messageText.setText("Cyclone Sounds");
             usernameText.setVisibility(View.INVISIBLE);
         }
+
+        myPlaylistsButton.setOnClickListener(view -> {
+            Intent myPlaylistsIntent = new Intent(HomeActivity.this, MyPlaylistsActivity.class);
+            myPlaylistsIntent.putExtra("USERNAME", currentUsername);
+            startActivity(myPlaylistsIntent);
+        });
 
         searchButton.setOnClickListener(view -> {
             Intent searchIntent = new Intent(HomeActivity.this, SearchActivity.class);

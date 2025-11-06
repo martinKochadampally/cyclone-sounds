@@ -17,6 +17,32 @@
         android:src="@android:drawable/ic_menu_search"
         android:contentDescription="Search" />
 
+    <TextView
+        android:id="@+id/home_username_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="{{username}}"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="100dp"
+        android:textSize="30dp"
+        android:textColor="#000000">
+    </TextView>
+    <Button
+        android:id="@+id/my_playlists_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="100dp"
+        android:layout_gravity="center"
+        android:text="My Playlists"
+        android:textSize="20dp" >
+
+    </Button>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
     <LinearLayout
         android:id="@+id/bottom_button_layout"
         android:layout_width="match_parent"

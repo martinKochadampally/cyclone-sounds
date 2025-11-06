@@ -1,33 +1,55 @@
 package com.example.androidexample;
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class CreateActivity extends AppCompatActivity {
-
+    private Button createReviewButton;
+    private Button createPlaylistButton;
     private Button profileButton;
-    private Button homeButton;
     private Button musicButton;
     private Button jamsButton;
+    private Button homeButton;
 
-    private String currentUsername;
+    private String currentUsername; // Variable to safely hold the username
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
-        homeButton = findViewById(R.id.home_button_btn);
-        profileButton = findViewById(R.id.profile_button_btn);
+        createReviewButton = findViewById(R.id.create_review_btn);
+        createPlaylistButton = findViewById(R.id.create_playlist_btn);
+
         musicButton = findViewById(R.id.music_button_btn);
+        profileButton = findViewById(R.id.profile_button_btn);
         jamsButton = findViewById(R.id.jams_button_btn);
+        homeButton = findViewById(R.id.home_button_btn);
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("USERNAME")) {
             currentUsername = intent.getStringExtra("USERNAME");
+        } else {
+
         }
+
+        createReviewButton.setOnClickListener(view -> {
+            Intent createReviewIntent = new Intent(CreateActivity.this, CreateReviewActivity.class);
+            createReviewIntent.putExtra("USERNAME", currentUsername);
+            startActivity(createReviewIntent);
+        });
+
+        createPlaylistButton.setOnClickListener(view -> {
+            Intent createPlaylistIntent = new Intent(CreateActivity.this, CreatePlaylistActivity.class);
+            createPlaylistIntent.putExtra("USERNAME", currentUsername);
+            startActivity(createPlaylistIntent);
+        });
 
         homeButton.setOnClickListener(view -> {
             Intent homeIntent = new Intent(CreateActivity.this, HomeActivity.class);
