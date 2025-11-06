@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 
+/**
+ * Service class for interacting with the Spotify API.
+ * Handles token retrieval, track searching and database persistence.
+ */
 @Service
 public class SpotifyService {
 
@@ -29,6 +33,11 @@ public class SpotifyService {
     @Autowired
     private SongRepository songRepository;
 
+    /**
+     * Constructor initializes Spotify service with credentials.
+     * @param clientId
+     * @param clientSecret
+     */
     public SpotifyService(@Value("${spotify.client.id}") String clientId,
                           @Value("${spotify.client.secret}") String clientSecret) {
         this.clientId = clientId;
@@ -38,6 +47,10 @@ public class SpotifyService {
                 .build();
     }
 
+    /**
+     * Retrieves an access token from Spotify using client credentials.
+     * @return mono
+     */
     public Mono<String> getAccessToken() {
         WebClient authClient = WebClient.builder()
                 .baseUrl("https://accounts.spotify.com/api/token")
@@ -54,6 +67,11 @@ public class SpotifyService {
                 .map(SpotifyTokenResponse::access_token);
     }
 
+    /**
+     * Searches for tracks on Spotify using a query and saves new tracks to the database
+     * @param query
+     * @return
+     */
     public Mono<Void> searchAndSaveTracks(String query) {
         return getAccessToken().flatMap(token -> {
             return webClient.get()
@@ -74,6 +92,11 @@ public class SpotifyService {
         }).then();
     }
 
+    /**
+     * Saves new tracks from Spotify to the local database.
+     * Ensures no duplicate entries exist by checking Spotify ID.
+     * @param spotifyTracks
+     */
     private void saveTracksToDatabase(List<SpotifyTrack> spotifyTracks) {
         if (spotifyTracks == null) {
             return;
