@@ -14,7 +14,7 @@ public class Jam {
     @ElementCollection
     private List<String> members;
 
-    @OneToMany(mappedBy = "jam", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "jam", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<JamMessage> messages;
 
     // Constructors
@@ -47,6 +47,10 @@ public class Jam {
 
     public List<String> getMembers() {
         return members;
+    }
+
+    public int getMembersSize() {
+        return members.size();
     }
 
     public void setMembers(List<String> members) {

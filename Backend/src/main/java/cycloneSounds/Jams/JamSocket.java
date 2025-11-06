@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cycloneSounds.websocketChats.CustomSpringConfigurator;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
@@ -16,34 +17,27 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 
-@Controller
-@ServerEndpoint(value = "/websocket/jams/{jamName}/{username}")
+
+@Component
+@ServerEndpoint(value = "/websocket/jams/{jamName}/{username}", configurator = CustomSpringConfigurator.class)
 public class JamSocket {
 
-    private static JamRepository jamRepository;
-    private static JamMessageRepository jamMessageRepository;  // Add this field
-
-    @Autowired
-    public void setJamsRepository(JamRepository repo) {
-        jamRepository = repo;
-    }
-
-    @Autowired
-    public void setJamMessageRepository(JamMessageRepository repo) {
-        jamMessageRepository = repo;
-    }
-
-    private static Map<Session, String> sessionJamMap = new Hashtable<>();
-    private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
-    private static Map<String, Map<Session, String>> jamSessions = new ConcurrentHashMap<>();
+    private static final Map<Session, String> sessionJamMap = new Hashtable<>();
+    private static final Map<Session, String> sessionUsernameMap = new Hashtable<>();
+    private static final Map<String, Map<Session, String>> jamSessions = new ConcurrentHashMap<>();
 
     private final Logger logger = LoggerFactory.getLogger(JamSocket.class);
 
     @OnOpen
     public void onOpen(Session session, @PathParam("jamName") String jamName, @PathParam("username") String username) throws IOException {
+        if (jamName == null || jamName.isEmpty() || username == null || username.isEmpty()) {
+            session.close(new jakarta.websocket.CloseReason(
+                    jakarta.websocket.CloseReason.CloseCodes.VIOLATED_POLICY, "Jam name and username are required"));
+            return;
+        }
+
         logger.info("User " + username + " connected to jam: " + jamName);
 
         sessionJamMap.put(session, jamName);
@@ -52,45 +46,75 @@ public class JamSocket {
         jamSessions.putIfAbsent(jamName, new ConcurrentHashMap<>());
         jamSessions.get(jamName).put(session, username);
 
-        // Add user to Jams entity members list
-        addMemberToJam(jamName, username);
+        try {
+            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
+            addMemberToJam(jamRepository, jamName, username);
 
-        // Send chat history to the newly connected user
-        sendMessageToUser(session, getChatHistory(jamName));
+            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+            sendMessageToUser(session, getChatHistory(jamMessageRepository, jamName));
 
-        // Broadcast join message to others in jam
-        broadcastToJam(jamName, username + " has joined the jam!");
+            broadcastToJam(jamName, username + " has joined the jam!");
+        } catch (Exception e) {
+            logger.error("Error on opening WebSocket for user " + username, e);
+            session.close(new jakarta.websocket.CloseReason(jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, e.getMessage()));
+        }
     }
 
     @OnMessage
     public void onMessage(Session session, String message) throws IOException {
+        logger.info("Received message: " + message);
         String jamName = sessionJamMap.get(session);
         String username = sessionUsernameMap.get(session);
-        String messageContent = message;
-
-        // Load Jam entity by jamName from repository
-        Optional<Jam> optionalJam = jamRepository.findById(jamName);
-        if (optionalJam.isEmpty()) {
-            // Handle error: jam not found, reject or log message
-            logger.error("Jam not found: " + jamName);
+        if (username == null || jamName == null) {
+            logger.warn("Received message from unknown session");
             return;
         }
 
-        Jam jam = optionalJam.get();
+        try {
+            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
 
-        // Create JamMessage entity with Jam object
-        JamMessage jamMessage = new JamMessage(username, jam, messageContent);
-        jamMessageRepository.save(jamMessage);
+            // Assuming message is plain text you want to save and broadcast, or customize as per your model
+            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
+            Optional<Jam> jamOpt = jamRepository.findById(jamName);
+            if (jamOpt.isEmpty()) {
+                logger.warn("Jam not found: " + jamName);
+                return;
+            }
+            Jam jam = jamOpt.get();
+
+            // Create and save message entity
+            JamMessage jamMessage = new JamMessage(username, jam, message);
+            jamMessageRepository.save(jamMessage);
+
+            // Broadcast message to all sessions in this jam
+            broadcastToJam(jamName, username + ": " + message);
+        } catch (Exception e) {
+            logger.error("Failed to process message", e);
+            session.getBasicRemote().sendText("{\"error\":\"Failed to send message: " + e.getMessage() + "\"}");
+        }
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        String jamName = sessionJamMap.get(session);
         String username = sessionUsernameMap.get(session);
-        logger.info("User " + username + " disconnected from jam: " + jamName);
+        String jamName = sessionJamMap.get(session);
 
-        sessionJamMap.remove(session);
+        if (username != null && jamName != null) {
+            logger.info("User " + username + " disconnected from jam: " + jamName);
+
+            try {
+                JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
+                removeMemberFromJam(jamRepository, jamName, username);
+
+                broadcastToJam(jamName, username + " has left the jam.");
+            } catch (Exception e) {
+                logger.error("Error during WebSocket close handling for user " + username, e);
+                // Allow disconnect to proceed despite error
+            }
+        }
+
         sessionUsernameMap.remove(session);
+        sessionJamMap.remove(session);
 
         if (jamName != null) {
             Map<Session, String> users = jamSessions.get(jamName);
@@ -100,14 +124,18 @@ public class JamSocket {
                     jamSessions.remove(jamName);
                 }
             }
-            removeMemberFromJam(jamName, username);
-            broadcastToJam(jamName, username + " has left the jam.");
         }
     }
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        logger.error("WebSocket error", throwable);
+        logger.error("WebSocket error for session " + session.getId(), throwable);
+        try {
+            session.close(new jakarta.websocket.CloseReason(
+                    jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, throwable.getMessage()));
+        } catch (IOException e) {
+            logger.error("Failed to close session on error", e);
+        }
     }
 
     private void broadcastToJam(String jamName, String message) {
@@ -115,7 +143,9 @@ public class JamSocket {
         if (users != null) {
             users.keySet().forEach(session -> {
                 try {
-                    session.getBasicRemote().sendText(message);
+                    if (session.isOpen()) {
+                        session.getBasicRemote().sendText(message);
+                    }
                 } catch (IOException e) {
                     logger.error("Error sending message", e);
                 }
@@ -125,14 +155,16 @@ public class JamSocket {
 
     private void sendMessageToUser(Session session, String message) {
         try {
-            session.getBasicRemote().sendText(message);
+            if (session.isOpen()) {
+                session.getBasicRemote().sendText(message);
+            }
         } catch (IOException e) {
             logger.error("Error sending private message", e);
         }
     }
 
-    private void addMemberToJam(String jamName, String username) {
-        var jamOpt = jamRepository.findById(jamName);
+    private void addMemberToJam(JamRepository jamRepository, String jamName, String username) {
+        var jamOpt = jamRepository.findByIdWithMembers(jamName);
         jamOpt.ifPresent(jam -> {
             var members = jam.getMembers();
             if (!members.contains(username)) {
@@ -143,8 +175,8 @@ public class JamSocket {
         });
     }
 
-    private void removeMemberFromJam(String jamName, String username) {
-        var jamOpt = jamRepository.findById(jamName);
+    private void removeMemberFromJam(JamRepository jamRepository, String jamName, String username) {
+        var jamOpt = jamRepository.findByIdWithMembers(jamName);
         jamOpt.ifPresent(jam -> {
             var members = jam.getMembers();
             if (members.contains(username)) {
@@ -155,7 +187,7 @@ public class JamSocket {
         });
     }
 
-    private String getChatHistory(String jamName) {
+    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
         var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
         StringBuilder sb = new StringBuilder();
         if (messages != null && !messages.isEmpty()) {
