@@ -2,8 +2,9 @@ package cycloneSounds.Jams;
 
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -18,137 +19,150 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-@Controller      // this is needed for this to be an endpoint to springboot
-@ServerEndpoint(value = "/chat/{username}")  // this is Websocket url
-public class ChatSocket {
+@Controller
+@ServerEndpoint(value = "/websocket/jams/{jamName}/{username}")
+public class JamSocket {
 
-    // cannot autowire static directly (instead we do it by the below
-    // method
-    private static MessageRepository msgRepo;
+    private static JamRepository jamRepository;
+    private static JamMessageRepository jamMessageRepository;  // Add this field
 
-    /*
-     * Grabs the MessageRepository singleton from the Spring Application
-     * Context.  This works because of the @Controller annotation on this
-     * class and because the variable is declared as static.
-     * There are other ways to set this. However, this approach is
-     * easiest.
-     */
     @Autowired
-    public void setMessageRepository(MessageRepository repo) {
-        msgRepo = repo;  // we are setting the static variable
+    public void setJamsRepository(JamRepository repo) {
+        jamRepository = repo;
     }
 
-    // Store all socket session and their corresponding username.
-    private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
-    private static Map<String, Session> usernameSessionMap = new Hashtable<>();
+    @Autowired
+    public void setJamMessageRepository(JamMessageRepository repo) {
+        jamMessageRepository = repo;
+    }
 
-    private final Logger logger = LoggerFactory.getLogger(ChatSocket.class);
+    private static Map<Session, String> sessionJamMap = new Hashtable<>();
+    private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
+    private static Map<String, Map<Session, String>> jamSessions = new ConcurrentHashMap<>();
+
+    private final Logger logger = LoggerFactory.getLogger(JamSocket.class);
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("username") String username)
-            throws IOException {
+    public void onOpen(Session session, @PathParam("jamName") String jamName, @PathParam("username") String username) throws IOException {
+        logger.info("User " + username + " connected to jam: " + jamName);
 
-        logger.info("Entered into Open");
-
-        // store connecting user information
+        sessionJamMap.put(session, jamName);
         sessionUsernameMap.put(session, username);
-        usernameSessionMap.put(username, session);
 
-        //Send chat history to the newly connected user
-        sendMessageToPArticularUser(username, getChatHistory());
+        jamSessions.putIfAbsent(jamName, new ConcurrentHashMap<>());
+        jamSessions.get(jamName).put(session, username);
 
-        // broadcast that new user joined
-        String message = "User:" + username + " has Joined the Chat";
-        broadcast(message);
+        // Add user to Jams entity members list
+        addMemberToJam(jamName, username);
+
+        // Send chat history to the newly connected user
+        sendMessageToUser(session, getChatHistory(jamName));
+
+        // Broadcast join message to others in jam
+        broadcastToJam(jamName, username + " has joined the jam!");
     }
-
 
     @OnMessage
     public void onMessage(Session session, String message) throws IOException {
-
-        // Handle new messages
-        logger.info("Entered into Message: Got Message:" + message);
+        String jamName = sessionJamMap.get(session);
         String username = sessionUsernameMap.get(session);
+        String messageContent = message;
 
-        // Direct message to a user using the format "@username <message>"
-        if (message.startsWith("@")) {
-            String destUsername = message.split(" ")[0].substring(1);
-
-            // send the message to the sender and receiver
-            sendMessageToPArticularUser(destUsername, "[DM] " + username + ": " + message);
-            sendMessageToPArticularUser(username, "[DM] " + username + ": " + message);
-
-        }
-        else { // broadcast
-            broadcast(username + ": " + message);
+        // Load Jam entity by jamName from repository
+        Optional<Jam> optionalJam = jamRepository.findById(jamName);
+        if (optionalJam.isEmpty()) {
+            // Handle error: jam not found, reject or log message
+            logger.error("Jam not found: " + jamName);
+            return;
         }
 
-        // Saving chat history to repository
-        msgRepo.save(new Message(username, message));
+        Jam jam = optionalJam.get();
+
+        // Create JamMessage entity with Jam object
+        JamMessage jamMessage = new JamMessage(username, jam, messageContent);
+        jamMessageRepository.save(jamMessage);
     }
-
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        logger.info("Entered into Close");
-
-        // remove the user connection information
+        String jamName = sessionJamMap.get(session);
         String username = sessionUsernameMap.get(session);
+        logger.info("User " + username + " disconnected from jam: " + jamName);
+
+        sessionJamMap.remove(session);
         sessionUsernameMap.remove(session);
-        usernameSessionMap.remove(username);
 
-        // broadcase that the user disconnected
-        String message = username + " disconnected";
-        broadcast(message);
+        if (jamName != null) {
+            Map<Session, String> users = jamSessions.get(jamName);
+            if (users != null) {
+                users.remove(session);
+                if (users.isEmpty()) {
+                    jamSessions.remove(jamName);
+                }
+            }
+            removeMemberFromJam(jamName, username);
+            broadcastToJam(jamName, username + " has left the jam.");
+        }
     }
-
 
     @OnError
     public void onError(Session session, Throwable throwable) {
-        // Do error handling here
-        logger.info("Entered into Error");
-        throwable.printStackTrace();
+        logger.error("WebSocket error", throwable);
     }
 
+    private void broadcastToJam(String jamName, String message) {
+        Map<Session, String> users = jamSessions.get(jamName);
+        if (users != null) {
+            users.keySet().forEach(session -> {
+                try {
+                    session.getBasicRemote().sendText(message);
+                } catch (IOException e) {
+                    logger.error("Error sending message", e);
+                }
+            });
+        }
+    }
 
-    private void sendMessageToPArticularUser(String username, String message) {
+    private void sendMessageToUser(Session session, String message) {
         try {
-            usernameSessionMap.get(username).getBasicRemote().sendText(message);
-        }
-        catch (IOException e) {
-            logger.info("Exception: " + e.getMessage().toString());
-            e.printStackTrace();
+            session.getBasicRemote().sendText(message);
+        } catch (IOException e) {
+            logger.error("Error sending private message", e);
         }
     }
 
-
-    private void broadcast(String message) {
-        sessionUsernameMap.forEach((session, username) -> {
-            try {
-                session.getBasicRemote().sendText(message);
+    private void addMemberToJam(String jamName, String username) {
+        var jamOpt = jamRepository.findById(jamName);
+        jamOpt.ifPresent(jam -> {
+            var members = jam.getMembers();
+            if (!members.contains(username)) {
+                members.add(username);
+                jam.setMembers(members);
+                jamRepository.save(jam);
             }
-            catch (IOException e) {
-                logger.info("Exception: " + e.getMessage().toString());
-                e.printStackTrace();
-            }
-
         });
-
     }
 
+    private void removeMemberFromJam(String jamName, String username) {
+        var jamOpt = jamRepository.findById(jamName);
+        jamOpt.ifPresent(jam -> {
+            var members = jam.getMembers();
+            if (members.contains(username)) {
+                members.remove(username);
+                jam.setMembers(members);
+                jamRepository.save(jam);
+            }
+        });
+    }
 
-    // Gets the Chat history from the repository
-    private String getChatHistory() {
-        List<Message> messages = msgRepo.findAll();
-
-        // convert the list to a string
+    private String getChatHistory(String jamName) {
+        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
         StringBuilder sb = new StringBuilder();
-        if(messages != null && messages.size() != 0) {
-            for (Message message : messages) {
-                sb.append(message.getUserName() + ": " + message.getContent() + "\n");
+        if (messages != null && !messages.isEmpty()) {
+            for (JamMessage message : messages) {
+                sb.append(message.getUserName()).append(": ").append(message.getContent()).append("\n");
             }
         }
         return sb.toString();
     }
-
-} // end of Class
+}
