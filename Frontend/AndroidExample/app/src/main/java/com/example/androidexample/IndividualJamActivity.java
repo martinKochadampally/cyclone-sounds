@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -19,6 +20,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.java_websocket.client.WebSocketClient;
@@ -29,13 +31,15 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IndividualJamActivity extends AppCompatActivity {
 
     private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
     private String WEB_SOCKET_URL;
-
     private RequestQueue requestQueue;
     private String currentUsername;
     private String jamName;
@@ -79,7 +83,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         suggestSongButton = findViewById(R.id.suggest_song_btn);
         jamSettingsButton = findViewById(R.id.jam_settings_btn);
 
-        if (currentUsername != null && currentUsername.equals("jamManager")) {
+        if (currentUsername != null && currentUsername.equals(jamAdmin)) {
             jamSettingsButton.setVisibility(View.VISIBLE);
         }
 
@@ -155,32 +159,38 @@ public class IndividualJamActivity extends AppCompatActivity {
             @Override
             public void onMessage(String message) {
                 Log.d("IndividualJamActivity", "Received message: " + message);
-                try {
-                    JSONObject messageJson = new JSONObject(message);
-                    String type = messageJson.optString("type", "chat");
 
-                    if ("song_suggestion".equals(type)) {
-                        if (currentUsername.equals(jamAdmin)) {
-                            String song = messageJson.getString("song");
-                            String suggester = messageJson.getString("suggester");
-                            runOnUiThread(() -> {
-                                showApprovalDialog(song, suggester);
-                            });
+                // Check if message is JSON
+                if (message.trim().startsWith("{")) {
+                    try {
+                        JSONObject messageJson = new JSONObject(message);
+                        String type = messageJson.optString("type", "chat");
+
+                        if ("song_suggestion".equals(type)) {
+                            if (currentUsername.equals(jamAdmin)) {
+                                String song = messageJson.getString("song");
+                                String artist = messageJson.getString("artist");
+                                String suggester = messageJson.getString("suggester");
+                                runOnUiThread(() -> showApprovalDialog(song, artist, suggester));
+                            }
+                            return;
                         }
-                    } else {
-                        String sender = messageJson.getString("sender");
-                        String content = messageJson.getString("content");
-
-                        runOnUiThread(() -> {
-                            messageList.add(new ChatMessage(sender, content));
-                            chatAdapter.notifyItemInserted(messageList.size() - 1);
-                            chatRecyclerView.scrollToPosition(messageList.size() - 1);
-                        });
+                    } catch (JSONException e) {
+                        Log.e("IndividualJamActivity", "Error parsing JSON message", e);
                     }
-
-                } catch (JSONException e) {
-                    Log.e("IndividualJamActivity", "Error parsing received message", e);
                 }
+
+                // Handle plain text message (format: "username: content")
+                runOnUiThread(() -> {
+                    String[] parts = message.split(": ", 2);
+                    if (parts.length == 2) {
+                        messageList.add(new ChatMessage(parts[0], parts[1]));
+                    } else {
+                        messageList.add(new ChatMessage("System", message));
+                    }
+                    chatAdapter.notifyItemInserted(messageList.size() - 1);
+                    chatRecyclerView.scrollToPosition(messageList.size() - 1);
+                });
             }
 
             @Override
@@ -207,16 +217,8 @@ public class IndividualJamActivity extends AppCompatActivity {
 
     private void sendMessageToBackend(ChatMessage message, String jamName) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
-            JSONObject messageJson = new JSONObject();
-            try {
-                messageJson.put("type", "chat");
-                messageJson.put("sender", message.getSender());
-                messageJson.put("content", message.getContent());
-                messageJson.put("receiver", jamName);
-                webSocketClient.send(messageJson.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            // Send plain text for chat messages
+            webSocketClient.send(message.getContent());
         } else {
             Toast.makeText(this, "Not connected to WebSocket", Toast.LENGTH_SHORT).show();
         }
@@ -227,14 +229,18 @@ public class IndividualJamActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Suggest a Song");
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
+        final EditText song = new EditText(this);
+        song.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(song);
+        final EditText artist = new EditText(this);
+        artist.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(artist);
 
         builder.setPositiveButton("Suggest", (dialog, which) -> {
-            String songName = input.getText().toString();
+            String songName = song.getText().toString();
+            String artistName = artist.getText().toString();
             if (!songName.isEmpty()) {
-                sendSongSuggestion(songName);
+                sendSongSuggestion(songName, artistName);
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
@@ -242,12 +248,13 @@ public class IndividualJamActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void sendSongSuggestion(String songName) {
+    private void sendSongSuggestion(String songName, String artist) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject suggestionJson = new JSONObject();
             try {
                 suggestionJson.put("type", "song_suggestion");
                 suggestionJson.put("song", songName);
+                suggestionJson.put("artist", artist);
                 suggestionJson.put("suggester", currentUsername);
                 suggestionJson.put("receiver", jamAdmin);
                 webSocketClient.send(suggestionJson.toString());
@@ -267,7 +274,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         builder.setTitle("Jam Settings");
         builder.setItems(options, (dialog, item) -> {
             if (options[item].equals("Create Jam Playlist")) {
-                createJamPlaylist();
+                createPlaylistRequest(currentUsername, jamName);
             } else if (options[item].equals("Cancel")) {
                 dialog.dismiss();
             }
@@ -275,41 +282,67 @@ public class IndividualJamActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void createJamPlaylist() {
-        String url = HTTP_BASE_URL + "/playlists";
-
-        JSONObject requestBody = new JSONObject();
-        try {
-            requestBody.put("name", jamName);
-            requestBody.put("owner", currentUsername);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, requestBody,
+    private void createPlaylistRequest(final String user, final String playlistName) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.POST,
+                URL_STRING_REQ + "create",
                 response -> {
-                    Toast.makeText(this, "Playlist '" + jamName + "' created successfully.", Toast.LENGTH_LONG).show();
+                    Log.d("Volley Response", response);
+                    Toast.makeText(this, "Playlist Created", Toast.LENGTH_SHORT).show();
                 },
                 error -> {
-                    Toast.makeText(this, "Failed to create playlist.", Toast.LENGTH_LONG).show();
+                    Log.e("Volley Error", error.toString());
+                    Toast.makeText(getApplicationContext(), "Submission Error", Toast.LENGTH_LONG).show();
                 }
-        );
-        requestQueue.add(jsonObjectRequest);
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("playlistName", playlistName);
+                params.put("username", user);
+                return params;
+            }
+        };
     }
 
-    private void showApprovalDialog(String song, String suggester) {
+    private void showApprovalDialog(String song, String artist, String suggester) {
         new AlertDialog.Builder(this)
                 .setTitle("Song Suggestion")
                 .setMessage(suggester + " suggested adding \"" + song + "\" to the playlist. Approve?")
                 .setPositiveButton("Approve", (dialog, which) -> {
                     // TODO: Add song to the playlist
+                    addSongToPlaylist(song, artist);
                     Toast.makeText(this, song + " approved!", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Reject", null)
                 .show();
     }
 
+    private void addSongToPlaylist(final String songName, final String artist) {
+        String url = URL_STRING_REQ + currentUsername + "/" + jamName + "/add";
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    Log.d("Volley Response", "Add song: " + response);
+                    Toast.makeText(getApplicationContext(), "Song added", Toast.LENGTH_SHORT).show();
+                    // Refresh the playlist to show the newly added song
+                },
+                error -> {
+                    Log.e("Volley Error", "Error adding song: " + error.toString());
+                    Toast.makeText(getApplicationContext(), "Failed to add song", Toast.LENGTH_LONG).show();
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("songName", songName);
+                params.put("artist", artist);
+
+                return params;
+            }
+        };
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
 
     @Override
     protected void onDestroy() {

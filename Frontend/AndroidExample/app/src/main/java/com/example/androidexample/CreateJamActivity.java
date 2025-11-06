@@ -68,6 +68,7 @@ public class CreateJamActivity extends AppCompatActivity {
                     Intent intent = new Intent(CreateJamActivity.this, IndividualJamActivity.class);
                     intent.putExtra("USERNAME", user);
                     intent.putExtra("JAM_NAME", jamName);
+                    intent.putExtra("JAM_ADMIN", currentUsername);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
