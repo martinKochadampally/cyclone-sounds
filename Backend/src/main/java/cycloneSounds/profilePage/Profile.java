@@ -24,6 +24,7 @@ public class Profile {
     private String favArtist;
     private String favGenre;
     private String biography;
+    private int views;
 
     /*
      * @OneToOne creates a relation between the current entity/table(Laptop) with the entity/table defined below it(User)
@@ -42,12 +43,12 @@ public class Profile {
         this.favArtist = favArtist;
         this.favGenre = favGenre;
         this.biography = biography;
+        this.views = 0;
     }
 
     public Profile() {
     }
 
-    // =============================== Getters and Setters for each field ================================== //
     public String getUsername(){
         return username;
     }
@@ -87,6 +88,12 @@ public class Profile {
     }
 
     public void setBiography(String biography) { this.biography = biography;}
+
+    public int getViews(){
+        return views;
+    }
+
+    public void incrementViews() { this.views++;}
 
 
 }

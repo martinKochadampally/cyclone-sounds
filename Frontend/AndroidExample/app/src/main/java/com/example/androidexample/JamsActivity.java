@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -38,6 +37,9 @@ public class JamsActivity extends AppCompatActivity {
     interface AccountTypeCallback {
         void onResult(String accountType);
     }
+    private Button friendsButton;
+
+    private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

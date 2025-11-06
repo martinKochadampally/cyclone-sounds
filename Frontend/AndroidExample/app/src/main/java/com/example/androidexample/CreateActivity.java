@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Button;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class CreateActivity extends AppCompatActivity {
     private Button createReviewButton;
@@ -49,7 +51,18 @@ public class CreateActivity extends AppCompatActivity {
             startActivity(createPlaylistIntent);
         });
 
+        homeButton.setOnClickListener(view -> {
+            Intent homeIntent = new Intent(CreateActivity.this, HomeActivity.class);
+            homeIntent.putExtra("USERNAME", currentUsername);
+            startActivity(homeIntent);
+        });
 
+        profileButton.setOnClickListener(view -> {
+            Intent profileIntent = new Intent(CreateActivity.this, ProfileActivity.class);
+            profileIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            profileIntent.putExtra("PROFILE_TO_VIEW", currentUsername);
+            startActivity(profileIntent);
+        });
 
         musicButton.setOnClickListener(view -> {
             Intent musicIntent = new Intent(CreateActivity.this, MusicActivity.class);
@@ -57,22 +70,10 @@ public class CreateActivity extends AppCompatActivity {
             startActivity(musicIntent);
         });
 
-        profileButton.setOnClickListener(view -> {
-            Intent profileIntent = new Intent(CreateActivity.this, ProfileActivity.class);
-            profileIntent.putExtra("USERNAME", currentUsername);
-            startActivity(profileIntent);
-        });
-
         jamsButton.setOnClickListener(view -> {
             Intent jamsIntent = new Intent(CreateActivity.this, JamsActivity.class);
             jamsIntent.putExtra("USERNAME", currentUsername);
             startActivity(jamsIntent);
-        });
-
-        homeButton.setOnClickListener(view -> {
-            Intent createIntent = new Intent(CreateActivity.this, HomeActivity.class);
-            createIntent.putExtra("USERNAME", currentUsername);
-            startActivity(createIntent);
         });
     }
 }

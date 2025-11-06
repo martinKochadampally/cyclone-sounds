@@ -53,13 +53,11 @@
         <activity android:name=".CreatePlaylistActivity" android:exported="false" />
         <activity android:name=".MyPlaylistsActivity" android:exported="false" />
         <activity android:name=".AddSongsActivity" android:exported="false" />
-
-
-
         <activity android:name=".IndividualJamActivity" android:exported="false" />
         <activity android:name=".CreateJamActivity" android:exported="false" />
-
-
+        <activity android:name=".FriendsActivity" android:exported="false" />
+        <activity android:name=".DMActivity" android:exported="false" />
+        <activity android:name=".SearchActivity" android:exported="false" />
     </application>
 
 </manifest>
