@@ -1,22 +1,17 @@
 package cycloneSounds.Playlists;
 
-import cycloneSounds.Credentials.Credentials;
 import cycloneSounds.Songs.Song;
 import jakarta.persistence.*;
-
-import cycloneSounds.profilePage.Profile;
 
 import java.util.HashSet;
 import java.util.Set;
 
-/*
- * @OneToOne creates a relation between the current entity/table(Laptop) with the entity/table defined below it(User)
- * cascade is responsible propagating all changes, even to children of the class Eg: changes made to laptop within a user object will be reflected
- * in the database (more info : https://www.baeldung.com/jpa-cascade-types)
- * @JoinColumn defines the ownership of the foreign key i.e. the user table will have a field called laptop_id
+/**
+ * Playlist class that makes the table in my SQL. Has owner and allows for a many to many relationship.
+ * THis relationship allows there to many playlists and the same song to be in many playlists.
  */
 @Entity
-@Table(name = "playlist") // Added this to ensure the table name is correct
+@Table(name = "playlist")
 public class Playlist {
 
     @Id

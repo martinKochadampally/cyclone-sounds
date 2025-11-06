@@ -2,6 +2,9 @@ package cycloneSounds.Spotify.SpotifyDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Artist class
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SpotifyArtist {
 
