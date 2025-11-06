@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface PlaylistRepository extends JpaRepository<Playlist, String> {
+
     List<Playlist> findByUsername(String username);
-    //List<Playlist> findByUsername(String username);
-    List<Playlist> findTop10ByUsernameContainingOrPlaylistNameContainingOrderBySearchesDesc(String userUsername, String playlistName);
+
+    List<Playlist> findTop10ByUsernameContainingOrPlaylistNameContainingOrderBySearchesDesc(String username, String playlistName);
+
 }
