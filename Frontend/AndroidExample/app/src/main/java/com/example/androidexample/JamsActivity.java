@@ -30,10 +30,9 @@ public class JamsActivity extends AppCompatActivity {
     private Button createJamButton;
     private TableLayout jamsTable;
 
-    private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/jams/";
+    private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams/";
     private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
 
-    // Callback interface for asynchronous calls
     interface AccountTypeCallback {
         void onResult(String accountType);
     }
@@ -55,10 +54,11 @@ public class JamsActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            String username = extras.getString("LOGGED_IN_USERNAME");
-            if (username != null) {
-                getAccountType(username);
-                getJams(username);
+            currentUsername = extras.getString("USERNAME");
+
+            if (currentUsername != null) {
+                getAccountType(currentUsername);
+                getJams(currentUsername);
             } else {
                 handleNoUsername();
             }
@@ -68,33 +68,25 @@ public class JamsActivity extends AppCompatActivity {
 
         homeButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, HomeActivity.class);
-            if (extras != null) {
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));
-            }
+            intent.putExtra("USERNAME", currentUsername);
             startActivity(intent);
         });
 
         profileButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, ProfileActivity.class);
-            if (extras != null) {
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));
-            }
+            intent.putExtra("USERNAME", currentUsername);
             startActivity(intent);
         });
 
         musicButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, MusicActivity.class);
-            if (extras != null) {
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));
-            }
+            intent.putExtra("USERNAME", currentUsername);
             startActivity(intent);
         });
 
         createButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, CreateActivity.class);
-            if (extras != null) {
-                intent.putExtra("USERNAME", extras.getString("USERNAME"));
-            }
+            intent.putExtra("USERNAME", currentUsername);
             startActivity(intent);
         });
     }
