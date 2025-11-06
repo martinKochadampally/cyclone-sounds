@@ -24,7 +24,7 @@ public class Main {
     /**
      * Creates a CommandLineRunner bean to insert dummy data into the database upon application startup.
      * This is useful for testing and demonstration purposes.
-     *
+     *`
      * @param reviewRepository The repository for the Profile entity.
      * @return A CommandLineRunner that creates and saves three sample profiles.
      */

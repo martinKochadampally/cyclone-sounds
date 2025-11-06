@@ -3,7 +3,7 @@ package cycloneSounds.Songs;
 import jakarta.persistence.*;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(columnNames = {"songName", "artist"})})
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = {"spotifyId"})})
 public class Song {
 
     @Id
@@ -13,6 +13,9 @@ public class Song {
     private String songName;
     private String artist;
     private int searches;
+
+    @Column(name = "spotifyId")
+    private String spotifyId;
 
     public Song() {}
 
@@ -50,7 +53,17 @@ public class Song {
         return searches;
     }
 
+    public void setSearches(int searches) {this.searches = searches;}
+
     public void incrementSearches() {
         this.searches++;
+    }
+
+    public String getSpotifyId() {
+        return spotifyId;
+    }
+
+    public void setSpotifyId(String spotifyId) {
+        this.spotifyId = spotifyId;
     }
 }
