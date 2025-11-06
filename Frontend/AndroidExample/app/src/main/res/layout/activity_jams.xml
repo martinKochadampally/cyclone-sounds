@@ -55,7 +55,7 @@
 
                 <TextView android:text="Jam Name" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="Participants" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
-                <TextView android:text="Status" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
+                <TextView android:text="Admin" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
             </TableRow>
 
         </TableLayout>

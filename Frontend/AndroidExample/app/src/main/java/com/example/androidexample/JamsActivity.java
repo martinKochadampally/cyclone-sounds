@@ -150,10 +150,9 @@ public class JamsActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject jamObject = response.getJSONObject(i);
                             String jamName = jamObject.optString("name", "N/A");
-                            String numParticipants = jamObject.optString("numParticipants", "N/A");
-                            String status = jamObject.optString("status", "N/A");
+                            String numParticipants = jamObject.optString("numParticipants");
                             String admin = jamObject.optString("admin", "N/A");
-                            addJam(jamName, numParticipants, status, admin, username);
+                            addJam(jamName, numParticipants, admin, username);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
@@ -166,7 +165,7 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
-    private void addJam(String name, String numParticipants, String status, String admin, String username) {
+    private void addJam(String name, String numParticipants, String admin, String username) {
         TableRow newRow = new TableRow(this);
 
         TextView nameView = new TextView(this);
@@ -187,14 +186,14 @@ public class JamsActivity extends AppCompatActivity {
         participantsView.setPadding(8, 8, 8, 8);
         participantsView.setGravity(Gravity.START);
 
-        TextView statusView = new TextView(this);
-        statusView.setText(status);
-        statusView.setPadding(8, 8, 8, 8);
-        statusView.setGravity(Gravity.START);
+        TextView adminView = new TextView(this);
+        adminView.setText(admin);
+        adminView.setPadding(8, 8, 8, 8);
+        adminView.setGravity(Gravity.START);
 
         newRow.addView(nameView);
         newRow.addView(participantsView);
-        newRow.addView(statusView);
+        newRow.addView(adminView);
 
         jamsTable.addView(newRow);
     }
