@@ -23,7 +23,7 @@ public class JamController {
     @PostMapping("/{username}/{jamName}")
     public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName) {
         Credentials creds = credentialRepository.findById(username).orElse(null);
-        if (creds == null || (!creds.getAccountType().equals("jamManager") && !creds.getAccountType().equals("jamManager"))) {
+        if (creds == null || (!creds.getAccountType().equals("jamManager") && !creds.getAccountType().equals("admin"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (jamRepository.existsById(jamName)) {

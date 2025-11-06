@@ -200,21 +200,6 @@ public class JamSocket {
         logger.info("========== BROADCAST END ==========");
     }
 
-//    private void broadcastToJam(String jamName, String message) {
-//        Map<Session, String> users = jamSessions.get(jamName);
-//        if (users != null) {
-//            users.keySet().forEach(session -> {
-//                try {
-//                    if (session.isOpen()) {
-//                        session.getBasicRemote().sendText(message);
-//                    }
-//                } catch (IOException e) {
-//                    logger.error("Error sending message", e);
-//                }
-//            });
-//        }
-//    }
-
     private void sendMessageToUser(Session session, String message) {
         try {
             if (session.isOpen()) {
