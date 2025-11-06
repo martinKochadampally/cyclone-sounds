@@ -105,10 +105,10 @@ public class IndividualJamActivity extends AppCompatActivity {
         sendButton.setOnClickListener(view -> sendMessage());
         suggestSongButton.setOnClickListener(view -> showSuggestSongDialog());
         jamSettingsButton.setOnClickListener(view -> showAdminMenu());
-
-        if (jamName != null) {
-            fetchChatHistory(jamName);
-        }
+//
+//        if (jamName != null) {
+//            fetchChatHistory(jamName);
+//        }
 
         createWebSocketClient();
     }
@@ -119,34 +119,34 @@ public class IndividualJamActivity extends AppCompatActivity {
         return true;
     }
 
-    private void fetchChatHistory(String jamName) {
-        String url = HTTP_BASE_URL + "/api/jam/" + jamName + "/history/";
-
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                response -> {
-                    try {
-                        messageList.clear();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject messageJson = response.getJSONObject(i);
-                            String sender = messageJson.getString("sender");
-                            String content = messageJson.getString("content");
-
-                            messageList.add(new ChatMessage(sender, content));
-                        }
-                        chatAdapter.notifyDataSetChanged();
-                        chatRecyclerView.scrollToPosition(messageList.size() - 1);
-
-                    } catch (JSONException e) {
-                        Log.e("IndividualJamActivity", "JSON parsing error", e);
-                    }
-                },
-                error -> {
-                    Toast.makeText(this, "Error loading chat history", Toast.LENGTH_LONG).show();
-                }
-        );
-
-        requestQueue.add(jsonArrayRequest);
-    }
+//    private void fetchChatHistory(String jamName) {
+//        String url = HTTP_BASE_URL + "/api/jam/" + jamName + "/history/";
+//
+//        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+//                response -> {
+//                    try {
+//                        messageList.clear();
+//                        for (int i = 0; i < response.length(); i++) {
+//                            JSONObject messageJson = response.getJSONObject(i);
+//                            String sender = messageJson.getString("sender");
+//                            String content = messageJson.getString("content");
+//
+//                            messageList.add(new ChatMessage(sender, content));
+//                        }
+//                        chatAdapter.notifyDataSetChanged();
+//                        chatRecyclerView.scrollToPosition(messageList.size() - 1);
+//
+//                    } catch (JSONException e) {
+//                        Log.e("IndividualJamActivity", "JSON parsing error", e);
+//                    }
+//                },
+//                error -> {
+//                    Toast.makeText(this, "Error loading chat history", Toast.LENGTH_LONG).show();
+//                }
+//        );
+//
+//        requestQueue.add(jsonArrayRequest);
+//    }
 
     private void createWebSocketClient() {
         URI uri;
