@@ -38,14 +38,18 @@ public class SearchActivity extends AppCompatActivity {
     private Button searchSubmitButton;
     private ListView profileResultsList;
     private ListView songResultsList;
+    // private ListView playlistResultsList;
     private TextView profilesHeader;
     private TextView songsHeader;
+    // private TextView playlistsHeader;
 
     private ArrayAdapter<String> profileAdapter;
     private ArrayAdapter<Song> songAdapter;
+    // private ArrayAdapter<Playlist> playlistAdapter;
 
     private ArrayList<String> profileUsernames;
     private ArrayList<Song> songList;
+    // private ArrayList<Playlist> playlistList;
 
     private RequestQueue requestQueue;
     private String loggedInUsername;
@@ -73,6 +77,28 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /*
+    private static class Playlist {
+        private final String playlistName;
+        private final String username;
+
+        public Playlist(String playlistName, String username) {
+            this.playlistName = playlistName;
+            this.username = username;
+        }
+
+        public String getPlaylistName() {
+            return playlistName;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return playlistName + " by " + username;
+        }
+    }
+    */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,8 +119,10 @@ public class SearchActivity extends AppCompatActivity {
         searchSubmitButton = findViewById(R.id.search_submit_button);
         profileResultsList = findViewById(R.id.profile_results_list);
         songResultsList = findViewById(R.id.song_results_list);
+        // playlistResultsList = findViewById(R.id.playlist_results_list);
         profilesHeader = findViewById(R.id.profiles_header);
         songsHeader = findViewById(R.id.songs_header);
+        // playlistsHeader = findViewById(R.id.playlists_header);
 
         profileUsernames = new ArrayList<>();
         profileAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, profileUsernames);
@@ -104,6 +132,10 @@ public class SearchActivity extends AppCompatActivity {
         songAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, songList);
         songResultsList.setAdapter(songAdapter);
 
+        // playlistList = new ArrayList<>();
+        // playlistAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, playlistList);
+        // playlistResultsList.setAdapter(playlistAdapter);
+
         setupSpinner();
         setupSearchView();
         setupButtonListener();
@@ -111,7 +143,8 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupSpinner() {
-        String[] searchTypes = {"Profiles", "Songs", "Playlists"};
+        // String[] searchTypes = {"Profiles", "Songs", "Playlists"};
+        String[] searchTypes = {"Profiles", "Songs"}; // Removed "Playlists"
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, searchTypes);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         searchTypeSpinner.setAdapter(spinnerAdapter);
@@ -136,29 +169,32 @@ public class SearchActivity extends AppCompatActivity {
     private void updateVisibleList() {
         clearResults();
 
+        profilesHeader.setVisibility(View.GONE);
+        profileResultsList.setVisibility(View.GONE);
+        songsHeader.setVisibility(View.GONE);
+        songResultsList.setVisibility(View.GONE);
+        // playlistsHeader.setVisibility(View.GONE);
+        // playlistResultsList.setVisibility(View.GONE);
+
         if (currentSearchType.equals("Profiles")) {
             profilesHeader.setVisibility(View.VISIBLE);
             profileResultsList.setVisibility(View.VISIBLE);
-            songsHeader.setVisibility(View.GONE);
-            songResultsList.setVisibility(View.GONE);
             searchView.setQueryHint("Search for users...");
         } else if (currentSearchType.equals("Songs")) {
-            profilesHeader.setVisibility(View.GONE);
-            profileResultsList.setVisibility(View.GONE);
             songsHeader.setVisibility(View.VISIBLE);
             songResultsList.setVisibility(View.VISIBLE);
             searchView.setQueryHint("Search for songs or artists...");
-        } else if (currentSearchType.equals("Playlists")) {
-            profilesHeader.setVisibility(View.GONE);
-            profileResultsList.setVisibility(View.GONE);
-            songsHeader.setVisibility(View.GONE);
-            songResultsList.setVisibility(View.GONE);
+        }
+        /*
+        else if (currentSearchType.equals("Playlists")) {
+            playlistsHeader.setVisibility(View.VISIBLE);
+            playlistResultsList.setVisibility(View.VISIBLE);
             searchView.setQueryHint("Search for playlists...");
         }
+        */
     }
 
     private void setupSearchView() {
-        // This line was fixed (removed extra dot)
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -199,6 +235,14 @@ public class SearchActivity extends AppCompatActivity {
             incrementSongSearches(clickedSong.getSongId());
             Toast.makeText(this, "Clicked on: " + clickedSong.toString(), Toast.LENGTH_SHORT).show();
         });
+
+        /*
+        playlistResultsList.setOnItemClickListener((parent, view, position, id) -> {
+            Playlist clickedPlaylist = playlistList.get(position);
+            incrementPlaylistSearches(clickedPlaylist.getPlaylistName());
+            Toast.makeText(this, "Clicked on: " + clickedPlaylist.toString(), Toast.LENGTH_SHORT).show();
+        });
+        */
     }
 
     private void runSearch(String query) {
@@ -206,16 +250,21 @@ public class SearchActivity extends AppCompatActivity {
             searchProfiles(query);
         } else if (currentSearchType.equals("Songs")) {
             searchSongs(query);
-        } else if (currentSearchType.equals("Playlists")) {
-            Toast.makeText(SearchActivity.this, "Playlist search not implemented yet", Toast.LENGTH_SHORT).show();
         }
+        /*
+        else if (currentSearchType.equals("Playlists")) {
+            searchPlaylists(query);
+        }
+        */
     }
 
     private void clearResults() {
         profileUsernames.clear();
         songList.clear();
+        // playlistList.clear();
         profileAdapter.notifyDataSetChanged();
         songAdapter.notifyDataSetChanged();
+        // playlistAdapter.notifyDataSetChanged();
     }
 
     private void searchProfiles(String query) {
@@ -273,6 +322,36 @@ public class SearchActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
+    /*
+    private void searchPlaylists(String query) {
+        String url = BASE_URL + "/search/playlist/" + query;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        playlistList.clear();
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject playlistJson = response.getJSONObject(i);
+                            String playlistName = playlistJson.getString("playlistName");
+                            String username = playlistJson.getString("username");
+                            playlistList.add(new Playlist(playlistName, username));
+                        }
+                        playlistAdapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        Log.e("SearchActivity", "JSON playlist parsing error", e);
+                    }
+                },
+                error -> {
+                    String errorMessage = (error.networkResponse != null) ?
+                            "Status Code: " + error.networkResponse.statusCode :
+                            "No response/UnknownHost.";
+                    Log.e("SearchActivity", "Volley playlist search error: " + error.toString());
+                    Log.e("SearchActivity", "Volley Error Details: " + errorMessage);
+                }
+        );
+        requestQueue.add(jsonArrayRequest);
+    }
+    */
+
     private void incrementProfileViews(String username) {
         String url = BASE_URL + "/search/profiles/" + username;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
@@ -294,6 +373,19 @@ public class SearchActivity extends AppCompatActivity {
         );
         requestQueue.add(putRequest);
     }
+
+    /*
+    private void incrementPlaylistSearches(String playlistName) {
+        String url = BASE_URL + "/search/playlist/" + playlistName;
+        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
+                response -> Log.d("SearchActivity", "Playlist search incremented: " + playlistName),
+                error -> {
+                    Log.e("SearchActivity", "Failed to increment playlist searches: " + error.toString());
+                }
+        );
+        requestQueue.add(putRequest);
+    }
+    */
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

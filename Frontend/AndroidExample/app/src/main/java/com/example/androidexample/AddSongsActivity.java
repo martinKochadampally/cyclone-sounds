@@ -10,6 +10,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.net.Uri;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -211,7 +212,9 @@ public class AddSongsActivity extends AppCompatActivity {
      * @param songName The name of the song to remove.
      */
     private void removeSongFromPlaylist(final String songName, final String artist) {
-        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/remove";
+        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName +
+                "/remove?songName=" + Uri.encode(songName) +
+                "&artist=" + Uri.encode(artist);
 
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
                 response -> {
