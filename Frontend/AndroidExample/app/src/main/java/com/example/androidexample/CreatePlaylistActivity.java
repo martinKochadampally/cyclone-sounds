@@ -22,7 +22,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
     private Button submitButton;
     private String currentUsername;
 
-    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/playlists/";
+    private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,17 +50,17 @@ public class CreatePlaylistActivity extends AppCompatActivity {
                 return;
             }
             try {
-                makePostRequest(currentUsername, playlist);
+                createPlaylistRequest(currentUsername, playlist);
             } catch (NumberFormatException e) {
                 Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void makePostRequest(final String user, final String playlistName) {
+    private void createPlaylistRequest(final String user, final String playlistName) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
-                URL_STRING_REQ + user,
+                URL_STRING_REQ + "create",
                 response -> {
                     Log.d("Volley Response", response);
                     Toast.makeText(this, "Playlist Created", Toast.LENGTH_SHORT).show();
@@ -80,6 +80,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("playlistName", playlistName);
+                params.put("username", user);
                 return params;
             }
         };

@@ -25,7 +25,7 @@ public class MyPlaylistsActivity extends AppCompatActivity {
     private TableLayout tableLayout;
     private String currentUsername;
 
-    private static final String PLAYLISTS_URL = "http://coms-3090-008.class.las.iastate.edu:8080/playlists/";
+    private static final String PLAYLISTS_URL = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +42,12 @@ public class MyPlaylistsActivity extends AppCompatActivity {
 
         fetchPlaylists(currentUsername);
 
-        backButton.setOnClickListener(view -> navigateTo(CreateActivity.class, currentUsername));
+        backButton.setOnClickListener(view -> navigateTo(HomeActivity.class, currentUsername));
     }
 
     private void fetchPlaylists(final String username) {
         clearTable();
-        String url = PLAYLISTS_URL + username;
+        String url = PLAYLISTS_URL + "owner/" + username;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
@@ -58,7 +58,7 @@ public class MyPlaylistsActivity extends AppCompatActivity {
                     try {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject playlistObject = response.getJSONObject(i);
-                            String playlistName = playlistObject.optString("name", "N/A");
+                            String playlistName = playlistObject.optString("playlistName", "N/A");
                             JSONArray songs = playlistObject.optJSONArray("songs");
                             int songCount = (songs != null) ? songs.length() : 0;
 

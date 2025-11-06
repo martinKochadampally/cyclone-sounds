@@ -38,8 +38,8 @@ public class AddSongsActivity extends AppCompatActivity {
     private String currentPlaylistName;
 
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
-    private static final String PLAYLISTS_URL = BASE_URL + "/playlists/";
-    private static final String SONGS_URL = BASE_URL + "/songs/";
+    private static final String PLAYLISTS_URL = BASE_URL + "/api/playlists/";
+    private static final String SONGS_URL = BASE_URL + "/search/songs/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,15 +85,12 @@ public class AddSongsActivity extends AppCompatActivity {
      * Fetches the list of songs in the current playlist from the server.
      */
     private void getPlaylistSongs() {
-        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName;
+        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/songs";
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
-                        if (response.has("songs")) {
-                            JSONArray songs = response.getJSONArray("songs");
-                            populatePlaylistTable(songs);
-                        }
+                        populatePlaylistTable(response);
                     } catch (JSONException e) {
                         Log.e("Volley JSON Error", "Error parsing playlist songs: " + e.getMessage());
                         Toast.makeText(getApplicationContext(), "Error parsing playlist", Toast.LENGTH_SHORT).show();
@@ -124,7 +121,7 @@ public class AddSongsActivity extends AppCompatActivity {
             TableRow tableRow = new TableRow(this);
             tableRow.addView(createTextView(songName));
             tableRow.addView(createTextView(artist));
-            tableRow.addView(createRemoveButton(songName));
+            tableRow.addView(createRemoveButton(songName, artist));
             playlistSongsTable.addView(tableRow);
         }
     }
@@ -135,7 +132,7 @@ public class AddSongsActivity extends AppCompatActivity {
      * @param query The song name to search for.
      */
     private void searchSongs(String query) {
-        String url = SONGS_URL + query; // Assuming endpoint is /songs/{name}
+        String url = SONGS_URL + query; // Assuming endpoint is /search/songs/{name}
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 this::populateSearchTable,
@@ -164,7 +161,7 @@ public class AddSongsActivity extends AppCompatActivity {
                 TableRow tableRow = new TableRow(this);
                 tableRow.addView(createTextView(songName));
                 tableRow.addView(createTextView(artist));
-                tableRow.addView(createAddButton(songName));
+                tableRow.addView(createAddButton(songName, artist));
 
                 songSearchTable.addView(tableRow);
             }
@@ -180,10 +177,10 @@ public class AddSongsActivity extends AppCompatActivity {
      *
      * @param songName The name of the song to add.
      */
-    private void addSongToPlaylist(final String songName) {
-        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName;
+    private void addSongToPlaylist(final String songName, final String artist) {
+        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/add";
 
-        StringRequest stringRequest = new StringRequest(Request.Method.PUT, url,
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d("Volley Response", "Add song: " + response);
                     Toast.makeText(getApplicationContext(), "Song added", Toast.LENGTH_SHORT).show();
@@ -199,6 +196,8 @@ public class AddSongsActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("songName", songName);
+                params.put("artist", artist);
+
                 return params;
             }
         };
@@ -211,8 +210,8 @@ public class AddSongsActivity extends AppCompatActivity {
      *
      * @param songName The name of the song to remove.
      */
-    private void removeSongFromPlaylist(final String songName) {
-        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/" + songName;
+    private void removeSongFromPlaylist(final String songName, final String artist) {
+        String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/remove";
 
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
                 response -> {
@@ -224,7 +223,17 @@ public class AddSongsActivity extends AppCompatActivity {
                     Log.e("Volley Error", "Error removing song: " + error.toString());
                     Toast.makeText(getApplicationContext(), "Failed to remove song", Toast.LENGTH_LONG).show();
                 }
-        );
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("songName", songName);
+                params.put("artist", artist);
+                return params;
+            }
+        };
+
+
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
@@ -241,20 +250,20 @@ public class AddSongsActivity extends AppCompatActivity {
     /**
      * Creates an "Add" button for the search results table.
      */
-    private Button createAddButton(final String songName) {
+    private Button createAddButton(final String songName, final String artist) {
         Button button = new Button(this);
         button.setText("Add");
-        button.setOnClickListener(v -> addSongToPlaylist(songName));
+        button.setOnClickListener(v -> addSongToPlaylist(songName, artist));
         return button;
     }
 
     /**
      * Creates a "Remove" button for the playlist table.
      */
-    private Button createRemoveButton(final String songName) {
+    private Button createRemoveButton(final String songName, final String artist) {
         Button button = new Button(this);
         button.setText("Remove");
-        button.setOnClickListener(v -> removeSongFromPlaylist(songName));
+        button.setOnClickListener(v -> removeSongFromPlaylist(songName, artist));
         return button;
     }
 

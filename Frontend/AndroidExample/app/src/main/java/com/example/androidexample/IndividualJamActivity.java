@@ -64,7 +64,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         Log.d("IndividualJamActivity", "Jam Admin: " + jamAdmin);
 
 
-        WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jam/" + jamName + "/"+ currentUsername;
+        WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jams/" + jamName + "/"+ currentUsername;
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -79,7 +79,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         suggestSongButton = findViewById(R.id.suggest_song_btn);
         jamSettingsButton = findViewById(R.id.jam_settings_btn);
 
-        if (currentUsername != null && currentUsername.equals(jamAdmin)) {
+        if (currentUsername != null && currentUsername.equals("jamManager")) {
             jamSettingsButton.setVisibility(View.VISIBLE);
         }
 

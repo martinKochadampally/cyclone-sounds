@@ -55,7 +55,7 @@ public class JamsActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            String username = extras.getString("USERNAME");
+            String username = extras.getString("LOGGED_IN_USERNAME");
             if (username != null) {
                 getAccountType(username);
                 getJams(username);
@@ -150,8 +150,8 @@ public class JamsActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject jamObject = response.getJSONObject(i);
                             String jamName = jamObject.optString("name", "N/A");
-                            String numParticipants = jamObject.optString("numParticipants");
-                            String admin = jamObject.optString("admin", "N/A");
+                            String numParticipants = jamObject.optString("membersSize");
+                            String admin = jamObject.optString("manager", "N/A");
                             addJam(jamName, numParticipants, admin, username);
                         }
                     } catch (JSONException e) {
