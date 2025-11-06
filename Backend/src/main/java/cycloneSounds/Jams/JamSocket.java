@@ -18,6 +18,8 @@ import jakarta.websocket.server.ServerEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 
 @Component
@@ -38,7 +40,10 @@ public class JamSocket {
             return;
         }
 
-        logger.info("User " + username + " connected to jam: " + jamName);
+        logger.info("========== USER CONNECTING ==========");
+        logger.info("User: " + username);
+        logger.info("Jam: " + jamName);
+        logger.info("Session ID: " + session.getId());
 
         sessionJamMap.put(session, jamName);
         sessionUsernameMap.put(session, username);
@@ -46,18 +51,26 @@ public class JamSocket {
         jamSessions.putIfAbsent(jamName, new ConcurrentHashMap<>());
         jamSessions.get(jamName).put(session, username);
 
+        logger.info("Total users in jam '" + jamName + "': " + jamSessions.get(jamName).size());
+        logger.info("All users in jam: " + jamSessions.get(jamName).values());
+
         try {
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             addMemberToJam(jamRepository, jamName, username);
 
             JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
-            sendMessageToUser(session, getChatHistory(jamMessageRepository, jamName));
+            String history = getChatHistory(jamMessageRepository, jamName);
+            logger.info("Sending chat history (" + history.length() + " characters)");
+            sendMessageToUser(session, history);
 
+            logger.info("Broadcasting join message...");
             broadcastToJam(jamName, username + " has joined the jam!");
         } catch (Exception e) {
             logger.error("Error on opening WebSocket for user " + username, e);
             session.close(new jakarta.websocket.CloseReason(jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, e.getMessage()));
         }
+
+        logger.info("========== USER CONNECTED SUCCESSFULLY ==========");
     }
 
     @OnMessage
@@ -71,8 +84,25 @@ public class JamSocket {
         }
 
         try {
-            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+            // Check if message is JSON (for special message types like song suggestions)
+            if (message.trim().startsWith("{")) {
+                JSONObject messageJson = new JSONObject(message);
+                String type = messageJson.optString("type", "chat");
 
+                if ("song_suggestion".equals(type)) {
+                    // Handle song suggestion - broadcast JSON to admin
+                    String adminUsername = messageJson.getString("receiver");
+                    broadcastToSpecificUser(jamName, adminUsername, message);
+                    return;
+                }
+                // If it's a chat type JSON, extract content
+                else if ("chat".equals(type)) {
+                    message = messageJson.getString("content");
+                }
+            }
+
+            // Handle regular chat message (plain text)
+            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             Optional<Jam> jamOpt = jamRepository.findById(jamName);
             if (jamOpt.isEmpty()) {
@@ -138,18 +168,36 @@ public class JamSocket {
     }
 
     private void broadcastToJam(String jamName, String message) {
+        logger.info("========== BROADCAST START ==========");
+        logger.info("Jam name: " + jamName);
+        logger.info("Message: " + message);
+
         Map<Session, String> users = jamSessions.get(jamName);
-        if (users != null) {
-            users.keySet().forEach(session -> {
-                try {
-                    if (session.isOpen()) {
-                        session.getBasicRemote().sendText(message);
-                    }
-                } catch (IOException e) {
-                    logger.error("Error sending message", e);
-                }
-            });
+
+        if (users == null) {
+            logger.error("No user map found for jam: " + jamName);
+            logger.info("Available jams: " + jamSessions.keySet());
+            return;
         }
+
+        logger.info("Found " + users.size() + " users in jam");
+        logger.info("Users: " + users.values());
+
+        users.forEach((session, username) -> {
+            try {
+                logger.info("Attempting to send to user: " + username + " (session open: " + session.isOpen() + ")");
+                if (session.isOpen()) {
+                    session.getBasicRemote().sendText(message);
+                    logger.info("Successfully sent to: " + username);
+                } else {
+                    logger.warn("Session closed for user: " + username);
+                }
+            } catch (IOException e) {
+                logger.error("Error sending message to " + username, e);
+            }
+        });
+
+        logger.info("========== BROADCAST END ==========");
     }
 
     private void sendMessageToUser(Session session, String message) {
@@ -195,5 +243,22 @@ public class JamSocket {
             }
         }
         return sb.toString();
+    }
+
+    private void broadcastToSpecificUser(String jamName, String targetUsername, String message) {
+        Map<Session, String> users = jamSessions.get(jamName);
+        if (users != null) {
+            users.forEach((session, username) -> {
+                if (username.equals(targetUsername)) {
+                    try {
+                        if (session.isOpen()) {
+                            session.getBasicRemote().sendText(message);
+                        }
+                    } catch (IOException e) {
+                        logger.error("Error sending message to specific user", e);
+                    }
+                }
+            });
+        }
     }
 }
