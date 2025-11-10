@@ -109,10 +109,10 @@ public class IndividualJamActivity extends AppCompatActivity {
         sendButton.setOnClickListener(view -> sendMessage());
         suggestSongButton.setOnClickListener(view -> showSuggestSongDialog());
         jamSettingsButton.setOnClickListener(view -> showAdminMenu());
-//
-//        if (jamName != null) {
-//            fetchChatHistory(jamName);
-//        }
+
+        if (jamName != null) {
+            fetchChatHistory(jamName);
+        }
 
         createWebSocketClient();
         fetchPlaylistsAndSetupSuggestionsButton();
@@ -124,6 +124,45 @@ public class IndividualJamActivity extends AppCompatActivity {
         return true;
     }
 
+
+    private void fetchChatHistory(String jamName) {
+        String url = HTTP_BASE_URL + "/api/jam/chatHistory/" + jamName;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        messageList.clear();
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject messageJson = response.getJSONObject(i);
+                            String sender = messageJson.getString("sender");
+                            String content = messageJson.getString("content");
+
+                            messageList.add(new ChatMessage(sender, content));
+                        }
+                        chatAdapter.notifyDataSetChanged();
+                        chatRecyclerView.scrollToPosition(messageList.size() - 1);
+
+                    } catch (JSONException e) {
+                        Log.e("IndividualJamActivity", "JSON parsing error", e);
+                    }
+                },
+                error -> {
+                    String errorMessage = "Error loading chat history";
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        try {
+                            String responseBody = new String(error.networkResponse.data, "utf-8");
+                            errorMessage = "Error: " + error.networkResponse.statusCode + " " + responseBody;
+                        } catch (Exception e) {
+                            Log.e("IndividualJamActivity", "Error parsing error response", e);
+                        }
+                    }
+                    Log.e("IndividualJamActivity", "Volley error: " + errorMessage, error);
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                }
+        );
+
+        requestQueue.add(jsonArrayRequest);
+    }
     private void fetchPlaylistsAndSetupSuggestionsButton() {
         String url = URL_STRING_REQ + "owner/" + jamAdmin;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -318,6 +357,7 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         requestQueue.add(jsonArrayRequest);
     }
+
 
     private void populateSuggestionSearchTable(JSONArray songs, TableLayout table) throws JSONException {
         // Clear previous results, keeping the header
