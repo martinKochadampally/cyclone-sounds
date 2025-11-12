@@ -134,10 +134,18 @@ public class IndividualJamActivity extends AppCompatActivity {
                         messageList.clear();
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject messageJson = response.getJSONObject(i);
-                            String sender = messageJson.getString("sender");
                             String content = messageJson.getString("content");
-
-                            messageList.add(new ChatMessage(sender, content));
+                            String[] messages = content.split("\\r?\\n");
+                            for (String msg : messages) {
+                                // Parse each line for sender and content, similar to WebSocket onMessage
+                                String[] parts = msg.split(": ", 2);
+                                if (parts.length == 2) {
+                                    messageList.add(new ChatMessage(parts[0], parts[1]));
+                                } else if (!msg.trim().isEmpty()){
+                                    // Fallback for messages without a specific sender
+                                    messageList.add(new ChatMessage("System", msg));
+                                }
+                            }
                         }
                         chatAdapter.notifyDataSetChanged();
                         chatRecyclerView.scrollToPosition(messageList.size() - 1);
