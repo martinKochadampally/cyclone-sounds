@@ -40,14 +40,30 @@ public class JamController {
     // Get all Jams
     @GetMapping
     public List<Jam> getAllJams() {
-        return jamRepository.findAll();
+        List<Jam> jams = jamRepository.findAll();
+        return jams;
     }
+
+//    @GetMapping
+//    public ResponseEntity<List<Jam>> getAllJams() {
+//        List<Jam> jams = jamRepository.findAll();
+//        if (jams.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(jams);
+//    }
 
     // Get a specific Jam by name
     @GetMapping("/{name}")
     public ResponseEntity<Jam> getJam(@PathVariable String name) {
         Optional<Jam> jamOpt = jamRepository.findById(name);
         return jamOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/chatHistory/{name}")
+    public List<Jam> getJamChatHistory(@PathVariable String name) {
+        //TODO
+        return null;
     }
 
     // Optional: Delete a Jam
