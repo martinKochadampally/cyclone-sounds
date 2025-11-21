@@ -104,7 +104,7 @@ public class FriendsActivity extends AppCompatActivity {
      * @param friendUsername The username of the friend that was clicked.
      */
     private void showFriendOptionsDialog(String friendUsername) {
-        CharSequence[] options = {"View Profile", "Send DM"};
+        CharSequence[] options = {"View Profile", "Send DM", "Play Favorite Song"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(friendUsername);
         builder.setItems(options, (dialog, item) -> {
@@ -118,6 +118,8 @@ public class FriendsActivity extends AppCompatActivity {
                 dmIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
                 dmIntent.putExtra("FRIEND_USERNAME", friendUsername);
                 startActivity(dmIntent);
+            } else if (options[item].equals("Play Favorite Song")) {
+                MusicPlayer.getInstance().playFavoriteSong(this, friendUsername);
             }
         });
         builder.show();
@@ -349,5 +351,11 @@ public class FriendsActivity extends AppCompatActivity {
         Intent intent = new Intent(FriendsActivity.this, activityClass);
         intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MusicPlayer.getInstance().release();
     }
 }

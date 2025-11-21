@@ -63,6 +63,7 @@ public class SearchActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
     private String loggedInUsername;
     private String currentSearchType;
+    private boolean playingSong;
 
     /**
      * Inner class to represent a Song object.
@@ -278,6 +279,8 @@ public class SearchActivity extends AppCompatActivity {
             Song clickedSong = songList.get(position);
             incrementSongSearches(clickedSong.getSongId());
             Toast.makeText(this, "Clicked on: " + clickedSong.toString(), Toast.LENGTH_SHORT).show();
+             MusicPlayer.getInstance().getSongIdAndPlay(SearchActivity.this, clickedSong.songName);
+             playingSong = true;
         });
 
         /*
@@ -315,6 +318,7 @@ public class SearchActivity extends AppCompatActivity {
         // playlistList.clear();
         profileAdapter.notifyDataSetChanged();
         songAdapter.notifyDataSetChanged();
+        MusicPlayer.getInstance().stop();
         // playlistAdapter.notifyDataSetChanged();
     }
 
@@ -453,6 +457,12 @@ public class SearchActivity extends AppCompatActivity {
         requestQueue.add(putRequest);
     }
     */
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MusicPlayer.getInstance().release();
+    }
 
     /**
      * Handles action bar item clicks. Specifically, handles the back button press.
