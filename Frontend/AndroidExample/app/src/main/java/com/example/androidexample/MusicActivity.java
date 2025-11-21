@@ -55,7 +55,7 @@ public class MusicActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         String username = "";
         if (extras != null) {
-            username = extras.getString("USERNAME");
+            username = extras.getString("LOGGED_IN_USERNAME");
         }
 
         String finalUsername = username;
@@ -228,7 +228,8 @@ public class MusicActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass, String username) {
         Intent intent = new Intent(MusicActivity.this, activityClass);
-        intent.putExtra("USERNAME", username);
+        intent.putExtra("LOGGED_IN_USERNAME", username);
+        intent.putExtra("PROFILE_TO_VIEW", username);
         startActivity(intent);
     }
 }

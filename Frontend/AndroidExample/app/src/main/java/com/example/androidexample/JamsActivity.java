@@ -32,6 +32,7 @@ public class JamsActivity extends AppCompatActivity {
 
     private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams";
     private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
+    private static final String PLAYLISTS_URL = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
 
     interface AccountTypeCallback {
         void onResult(String accountType);
@@ -39,6 +40,7 @@ public class JamsActivity extends AppCompatActivity {
     private Button friendsButton;
 
     private String currentUsername;
+    private String accountType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +56,7 @@ public class JamsActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
 
             if (currentUsername != null) {
                 getAccountType(currentUsername);
@@ -68,25 +70,26 @@ public class JamsActivity extends AppCompatActivity {
 
         homeButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, HomeActivity.class);
-            intent.putExtra("USERNAME", currentUsername);
+            intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(intent);
         });
 
         profileButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, ProfileActivity.class);
-            intent.putExtra("USERNAME", currentUsername);
+            intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            intent.putExtra("PROFILE_TO_VIEW", currentUsername);
             startActivity(intent);
         });
 
         musicButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, MusicActivity.class);
-            intent.putExtra("USERNAME", currentUsername);
+            intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(intent);
         });
 
         createButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, CreateActivity.class);
-            intent.putExtra("USERNAME", currentUsername);
+            intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(intent);
         });
     }
@@ -99,6 +102,8 @@ public class JamsActivity extends AppCompatActivity {
         finish();
     }
 
+
+
     private void getAccountType(final String username) {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
@@ -108,11 +113,12 @@ public class JamsActivity extends AppCompatActivity {
                     try {
                         String accountType = response.getString("accountType");
                         Log.d("JamsActivity", "Account Type: " + accountType);
+                        this.accountType = accountType;
                         if (accountType.equals("jamManager") || accountType.equals("admin")) {
                             createJamButton.setVisibility(View.VISIBLE);
                             createJamButton.setOnClickListener(view -> {
                                 Intent intent = new Intent(JamsActivity.this, CreateJamActivity.class);
-                                intent.putExtra("USERNAME", username);
+                                intent.putExtra("LOGGED_IN_USERNAME", username);
                                 startActivity(intent);
                             });
                         } else {
@@ -167,7 +173,7 @@ public class JamsActivity extends AppCompatActivity {
         nameView.setClickable(true);
         nameView.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
-            intent.putExtra("USERNAME", username);
+            intent.putExtra("LOGGED_IN_USERNAME", username);
             intent.putExtra("JAM_NAME", name);
             intent.putExtra("JAM_ADMIN", admin);
             startActivity(intent);
@@ -187,9 +193,46 @@ public class JamsActivity extends AppCompatActivity {
         newRow.addView(participantsView);
         newRow.addView(adminView);
 
+        if (admin.equals(username) || accountType.equals("admin")) {
+            Button deleteButton = new Button(this);
+            deleteButton.setText("Delete");
+            deleteButton.setOnClickListener(view -> {
+                deleteJam(name);
+            });
+            newRow.addView(deleteButton);
+        }
+
         jamsTable.addView(newRow);
     }
 
+
+    private void deleteJam(String jamName) {
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.DELETE, server + "/" + jamName,
+                response -> {
+                    Toast.makeText(JamsActivity.this, "Jam deleted", Toast.LENGTH_SHORT).show();
+                    getJams(currentUsername); // Refresh the list
+                },
+                error -> {
+                    Log.e("JamsActivity", "Deletion Error: " + error.toString());
+                    Toast.makeText(getApplicationContext(), "Failed to delete jam", Toast.LENGTH_LONG).show();
+                }
+        );
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+
+        String url = PLAYLISTS_URL + currentUsername + "/" + jamName;
+
+        StringRequest stringRequestPlaylist = new StringRequest(Request.Method.DELETE, url,
+                response -> {
+                    Log.d("Delete Response", response);
+                    Toast.makeText(JamsActivity.this, "Playlist associated deleted", Toast.LENGTH_SHORT).show();
+                },
+                error -> {
+                    Log.e("Delete Error", error.toString());
+                    Toast.makeText(JamsActivity.this, "Delete failed", Toast.LENGTH_SHORT).show();
+                });
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequestPlaylist);
+    }
     private void clearTable() {
         int childCount = jamsTable.getChildCount();
         if (childCount > 1) {

@@ -57,7 +57,7 @@ public class AddSongsActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            currentUsername = extras.getString("USERNAME");
+            currentUsername = extras.getString("LOGGED_IN_USERNAME");
             currentPlaylistName = extras.getString("PLAYLIST_NAME");
             playlistNameTextView.setText(currentPlaylistName);
         }
@@ -74,11 +74,29 @@ public class AddSongsActivity extends AppCompatActivity {
             }
         });
 
-        backButton.setOnClickListener(view -> navigateTo(CreateActivity.class));
+        backButton.setOnClickListener(view -> {
+            if (extras.getString("PREVIOUS_PAGE").equals("CREATE")) {
+                Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(AddSongsActivity.this, MyPlaylistsActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            }
+        });
 
         saveButton.setOnClickListener(view -> {
             // The save button just goes back, maybe it should do more? For now, this is what it did.
-            navigateTo(CreateActivity.class);
+            if (extras.getString("PREVIOUS_PAGE").equals("CREATE")) {
+                Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(AddSongsActivity.this, MyPlaylistsActivity.class);
+                intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                startActivity(intent);
+            }
         });
     }
 
@@ -246,6 +264,7 @@ public class AddSongsActivity extends AppCompatActivity {
     private TextView createTextView(String text) {
         TextView textView = new TextView(this);
         textView.setText(text);
+        textView.setWidth(20);
         textView.setPadding(8, 8, 8, 8);
         return textView;
     }
@@ -282,7 +301,7 @@ public class AddSongsActivity extends AppCompatActivity {
 
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(AddSongsActivity.this, activityClass);
-        intent.putExtra("USERNAME", currentUsername);
+        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
         startActivity(intent);
     }
 }
