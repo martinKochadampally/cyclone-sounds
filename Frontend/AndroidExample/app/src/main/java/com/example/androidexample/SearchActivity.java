@@ -29,10 +29,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+/**
+ * Activity for searching for different types of content within the app, such as user profiles and songs.
+ * It allows users to select a search category and enter a query.
+ */
 public class SearchActivity extends AppCompatActivity {
 
+    // Base URL for the backend API.
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
 
+    // UI elements for search functionality.
     private SearchView searchView;
     private Spinner searchTypeSpinner;
     private Button searchSubmitButton;
@@ -43,18 +49,24 @@ public class SearchActivity extends AppCompatActivity {
     private TextView songsHeader;
     // private TextView playlistsHeader;
 
+    // Adapters for the result lists.
     private ArrayAdapter<String> profileAdapter;
     private ArrayAdapter<Song> songAdapter;
     // private ArrayAdapter<Playlist> playlistAdapter;
 
+    // Data lists to hold search results.
     private ArrayList<String> profileUsernames;
     private ArrayList<Song> songList;
     // private ArrayList<Playlist> playlistList;
 
+    // Volley request queue for handling network requests.
     private RequestQueue requestQueue;
     private String loggedInUsername;
     private String currentSearchType;
 
+    /**
+     * Inner class to represent a Song object.
+     */
     private static class Song {
         private final int songId;
         private final String songName;
@@ -99,11 +111,20 @@ public class SearchActivity extends AppCompatActivity {
     }
     */
 
+    /**
+     * Called when the activity is first created. Initializes UI components, adapters,
+     * and sets up listeners.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        // Set up the toolbar with a title and back button.
         Toolbar toolbar = findViewById(R.id.search_toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -114,6 +135,7 @@ public class SearchActivity extends AppCompatActivity {
         loggedInUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
         requestQueue = Volley.newRequestQueue(this);
 
+        // Initialize UI components.
         searchView = findViewById(R.id.search_view);
         searchTypeSpinner = findViewById(R.id.search_type_spinner);
         searchSubmitButton = findViewById(R.id.search_submit_button);
@@ -124,6 +146,7 @@ public class SearchActivity extends AppCompatActivity {
         songsHeader = findViewById(R.id.songs_header);
         // playlistsHeader = findViewById(R.id.playlists_header);
 
+        // Initialize data lists and adapters.
         profileUsernames = new ArrayList<>();
         profileAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, profileUsernames);
         profileResultsList.setAdapter(profileAdapter);
@@ -136,12 +159,16 @@ public class SearchActivity extends AppCompatActivity {
         // playlistAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, playlistList);
         // playlistResultsList.setAdapter(playlistAdapter);
 
+        // Set up the various UI interaction components.
         setupSpinner();
         setupSearchView();
         setupButtonListener();
         setupClickListeners();
     }
 
+    /**
+     * Sets up the spinner for selecting the search type (e.g., "Profiles", "Songs").
+     */
     private void setupSpinner() {
         // String[] searchTypes = {"Profiles", "Songs", "Playlists"};
         String[] searchTypes = {"Profiles", "Songs"}; // Removed "Playlists"
@@ -154,7 +181,7 @@ public class SearchActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 currentSearchType = parent.getItemAtPosition(position).toString();
                 updateVisibleList();
-                searchView.setQuery("", false);
+                searchView.setQuery("", false); // Clear query on type change.
             }
 
             @Override
@@ -162,13 +189,17 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        currentSearchType = searchTypes[0];
+        currentSearchType = searchTypes[0]; // Default search type.
         updateVisibleList();
     }
 
+    /**
+     * Updates the visibility of the results lists and headers based on the selected search type.
+     */
     private void updateVisibleList() {
         clearResults();
 
+        // Hide all lists and headers initially.
         profilesHeader.setVisibility(View.GONE);
         profileResultsList.setVisibility(View.GONE);
         songsHeader.setVisibility(View.GONE);
@@ -176,6 +207,7 @@ public class SearchActivity extends AppCompatActivity {
         // playlistsHeader.setVisibility(View.GONE);
         // playlistResultsList.setVisibility(View.GONE);
 
+        // Show the relevant list and header based on the current search type.
         if (currentSearchType.equals("Profiles")) {
             profilesHeader.setVisibility(View.VISIBLE);
             profileResultsList.setVisibility(View.VISIBLE);
@@ -194,42 +226,54 @@ public class SearchActivity extends AppCompatActivity {
         */
     }
 
+    /**
+     * Sets up the SearchView, defining its behavior for text submission and changes.
+     */
     private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchView.clearFocus();
+                searchView.clearFocus(); // Hide keyboard on submit.
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                return false;
+                return false; // No action on text change, we use a submit button.
             }
         });
     }
 
+    /**
+     * Sets up the listener for the search submit button.
+     */
     private void setupButtonListener() {
         searchSubmitButton.setOnClickListener(v -> {
             String query = searchView.getQuery().toString();
             if (query != null && !query.isEmpty()) {
                 runSearch(query);
             }
-            searchView.clearFocus();
+            searchView.clearFocus(); // Hide keyboard after search.
         });
     }
 
+    /**
+     * Sets up click listeners for the items in the results lists.
+     */
     private void setupClickListeners() {
+        // Listener for profile search results.
         profileResultsList.setOnItemClickListener((parent, view, position, id) -> {
             String profileToView = profileUsernames.get(position);
             incrementProfileViews(profileToView);
 
+            // Navigate to the ProfileActivity of the selected user.
             Intent intent = new Intent(SearchActivity.this, ProfileActivity.class);
             intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
             intent.putExtra("PROFILE_TO_VIEW", profileToView);
             startActivity(intent);
         });
 
+        // Listener for song search results.
         songResultsList.setOnItemClickListener((parent, view, position, id) -> {
             Song clickedSong = songList.get(position);
             incrementSongSearches(clickedSong.getSongId());
@@ -245,6 +289,10 @@ public class SearchActivity extends AppCompatActivity {
         */
     }
 
+    /**
+     * Dispatches the search query to the appropriate search method based on the selected search type.
+     * @param query The search query string.
+     */
     private void runSearch(String query) {
         if (currentSearchType.equals("Profiles")) {
             searchProfiles(query);
@@ -258,6 +306,9 @@ public class SearchActivity extends AppCompatActivity {
         */
     }
 
+    /**
+     * Clears all current search results from the lists and notifies the adapters.
+     */
     private void clearResults() {
         profileUsernames.clear();
         songList.clear();
@@ -267,6 +318,10 @@ public class SearchActivity extends AppCompatActivity {
         // playlistAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Performs a network request to search for user profiles.
+     * @param query The username or partial username to search for.
+     */
     private void searchProfiles(String query) {
         String url = BASE_URL + "/search/profiles/" + query;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -293,6 +348,10 @@ public class SearchActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
+    /**
+     * Performs a network request to search for songs.
+     * @param query The song title or artist to search for.
+     */
     private void searchSongs(String query) {
         String url = BASE_URL + "/search/songs/" + query;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -352,6 +411,10 @@ public class SearchActivity extends AppCompatActivity {
     }
     */
 
+    /**
+     * Sends a PUT request to the server to increment the view count for a profile.
+     * @param username The username of the profile that was viewed.
+     */
     private void incrementProfileViews(String username) {
         String url = BASE_URL + "/search/profiles/" + username;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
@@ -363,6 +426,10 @@ public class SearchActivity extends AppCompatActivity {
         requestQueue.add(putRequest);
     }
 
+    /**
+     * Sends a PUT request to the server to increment the search count for a song.
+     * @param songId The ID of the song that was clicked.
+     */
     private void incrementSongSearches(int songId) {
         String url = BASE_URL + "/search/songs/" + songId;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
@@ -387,10 +454,16 @@ public class SearchActivity extends AppCompatActivity {
     }
     */
 
+    /**
+     * Handles action bar item clicks. Specifically, handles the back button press.
+     *
+     * @param item The menu item that was selected.
+     * @return boolean Return false to allow normal menu processing to proceed, true to consume it here.
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish();
+            finish(); // Go back to the previous activity.
             return true;
         }
         return super.onOptionsItemSelected(item);
