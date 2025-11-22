@@ -1,5 +1,8 @@
 package cycloneSounds.Spotify;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +21,12 @@ public class SpotifyController {
      * @param query
      * @return
      */
+    @Operation(summary = "Search and save songs from Spotify",
+            description = "Searches Spotify for tracks by query and saves new tracks to the database asynchronously.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Search completed successfully, songs added"),
+            @ApiResponse(responseCode = "500", description = "Error occurred during search or saving")
+    })
     @PostMapping("/api/songs/search")
     public Mono<String> searchAndSave(@RequestParam String query) {
         return spotifyService.searchAndSaveTracks(query)
