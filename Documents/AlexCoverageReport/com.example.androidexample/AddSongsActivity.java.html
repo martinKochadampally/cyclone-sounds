@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddSongsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">AddSongsActivity.java</span></div><h1>AddSongsActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.net.Uri;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="nc" id="L29">public class AddSongsActivity extends AppCompatActivity {</span>
+
+    private TextView playlistNameTextView;
+    private Button backButton;
+    private Button saveButton;
+    private Button searchButton;
+    private EditText songSearchEditText;
+    private TableLayout songSearchTable;
+    private TableLayout playlistSongsTable;
+    private String currentUsername;
+    private String currentPlaylistName;
+
+    private static final String BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080&quot;;
+    private static final String PLAYLISTS_URL = BASE_URL + &quot;/api/playlists/&quot;;
+    private static final String SONGS_URL = BASE_URL + &quot;/search/songs/&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L47">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L48">        setContentView(R.layout.activity_add_songs);</span>
+
+<span class="nc" id="L50">        playlistNameTextView = findViewById(R.id.playlist_name_txt);</span>
+<span class="nc" id="L51">        backButton = findViewById(R.id.back_btn);</span>
+<span class="nc" id="L52">        saveButton = findViewById(R.id.save_btn);</span>
+<span class="nc" id="L53">        searchButton = findViewById(R.id.search_button_btn);</span>
+<span class="nc" id="L54">        songSearchEditText = findViewById(R.id.song_search_edt);</span>
+<span class="nc" id="L55">        songSearchTable = findViewById(R.id.song_search_table);</span>
+<span class="nc" id="L56">        playlistSongsTable = findViewById(R.id.playlist_songs_table);</span>
+
+<span class="nc" id="L58">        Bundle extras = getIntent().getExtras();</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (extras != null) {</span>
+<span class="nc" id="L60">            currentUsername = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+<span class="nc" id="L61">            currentPlaylistName = extras.getString(&quot;PLAYLIST_NAME&quot;);</span>
+<span class="nc" id="L62">            playlistNameTextView.setText(currentPlaylistName);</span>
+        }
+
+        // Fetch and display songs already in the playlist
+<span class="nc" id="L66">        getPlaylistSongs();</span>
+
+<span class="nc" id="L68">        searchButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L69">            String query = songSearchEditText.getText().toString();</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">            if (!query.isEmpty()) {</span>
+<span class="nc" id="L71">                searchSongs(query);</span>
+            } else {
+<span class="nc" id="L73">                Toast.makeText(this, &quot;Please enter a song name to search&quot;, Toast.LENGTH_SHORT).show();</span>
+            }
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        backButton.setOnClickListener(view -&gt; {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (extras.getString(&quot;PREVIOUS_PAGE&quot;).equals(&quot;CREATE&quot;)) {</span>
+<span class="nc" id="L79">                Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);</span>
+<span class="nc" id="L80">                intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L81">                startActivity(intent);</span>
+<span class="nc" id="L82">            } else {</span>
+<span class="nc" id="L83">                Intent intent = new Intent(AddSongsActivity.this, MyPlaylistsActivity.class);</span>
+<span class="nc" id="L84">                intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L85">                startActivity(intent);</span>
+            }
+<span class="nc" id="L87">        });</span>
+
+<span class="nc" id="L89">        saveButton.setOnClickListener(view -&gt; {</span>
+            // The save button just goes back, maybe it should do more? For now, this is what it did.
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (extras.getString(&quot;PREVIOUS_PAGE&quot;).equals(&quot;CREATE&quot;)) {</span>
+<span class="nc" id="L92">                Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);</span>
+<span class="nc" id="L93">                intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L94">                startActivity(intent);</span>
+<span class="nc" id="L95">            } else {</span>
+<span class="nc" id="L96">                Intent intent = new Intent(AddSongsActivity.this, MyPlaylistsActivity.class);</span>
+<span class="nc" id="L97">                intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L98">                startActivity(intent);</span>
+            }
+<span class="nc" id="L100">        });</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Fetches the list of songs in the current playlist from the server.
+     */
+    private void getPlaylistSongs() {
+<span class="nc" id="L107">        String url = PLAYLISTS_URL + currentUsername + &quot;/&quot; + currentPlaylistName + &quot;/songs&quot;;</span>
+
+<span class="nc" id="L109">        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L112">                        populatePlaylistTable(response);</span>
+<span class="nc" id="L113">                    } catch (JSONException e) {</span>
+<span class="nc" id="L114">                        Log.e(&quot;Volley JSON Error&quot;, &quot;Error parsing playlist songs: &quot; + e.getMessage());</span>
+<span class="nc" id="L115">                        Toast.makeText(getApplicationContext(), &quot;Error parsing playlist&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L116">                    }</span>
+<span class="nc" id="L117">                },</span>
+                error -&gt; {
+<span class="nc" id="L119">                    Log.e(&quot;Volley Error&quot;, &quot;Error fetching playlist: &quot; + error.toString());</span>
+                    // It might be a new playlist, so an error (like 404) is okay.
+                    // Clear the table in case it had old data.
+<span class="nc" id="L122">                    clearTable(playlistSongsTable);</span>
+<span class="nc" id="L123">                });</span>
+
+<span class="nc" id="L125">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);</span>
+<span class="nc" id="L126">    }</span>
+
+    /**
+     * Populates the playlist songs table with data from the server.
+     *
+     * @param songs A JSONArray of song objects.
+     */
+    private void populatePlaylistTable(JSONArray songs) throws JSONException {
+<span class="nc" id="L134">        clearTable(playlistSongsTable);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        for (int i = 0; i &lt; songs.length(); i++) {</span>
+<span class="nc" id="L136">            JSONObject song = songs.getJSONObject(i);</span>
+<span class="nc" id="L137">            String songName = song.optString(&quot;songName&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L138">            String artist = song.optString(&quot;artist&quot;, &quot;N/A&quot;);</span>
+
+<span class="nc" id="L140">            TableRow tableRow = new TableRow(this);</span>
+<span class="nc" id="L141">            tableRow.addView(createTextView(songName));</span>
+<span class="nc" id="L142">            tableRow.addView(createTextView(artist));</span>
+<span class="nc" id="L143">            tableRow.addView(createRemoveButton(songName, artist));</span>
+<span class="nc" id="L144">            playlistSongsTable.addView(tableRow);</span>
+        }
+<span class="nc" id="L146">    }</span>
+
+    /**
+     * Searches for songs based on a query.
+     *
+     * @param query The song name to search for.
+     */
+    private void searchSongs(String query) {
+<span class="nc" id="L154">        String url = SONGS_URL + query; // Assuming endpoint is /search/songs/{name}</span>
+
+<span class="nc" id="L156">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                this::populateSearchTable,
+                error -&gt; {
+<span class="nc" id="L159">                    Log.e(&quot;Volley Error&quot;, &quot;Error searching songs: &quot; + error.toString());</span>
+<span class="nc" id="L160">                    Toast.makeText(getApplicationContext(), &quot;Song not found&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L161">                    clearTable(songSearchTable);</span>
+<span class="nc" id="L162">                });</span>
+
+<span class="nc" id="L164">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);</span>
+<span class="nc" id="L165">    }</span>
+
+    /**
+     * Populates the search results table with songs.
+     *
+     * @param songs A JSONArray of song objects from the search.
+     */
+    private void populateSearchTable(JSONArray songs) {
+<span class="nc" id="L173">        clearTable(songSearchTable);</span>
+        try {
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            for (int i = 0; i &lt; songs.length(); i++) {</span>
+<span class="nc" id="L176">                JSONObject song = songs.getJSONObject(i);</span>
+<span class="nc" id="L177">                String songName = song.optString(&quot;songName&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L178">                String artist = song.optString(&quot;artist&quot;, &quot;N/A&quot;);</span>
+
+<span class="nc" id="L180">                TableRow tableRow = new TableRow(this);</span>
+<span class="nc" id="L181">                tableRow.addView(createTextView(songName));</span>
+<span class="nc" id="L182">                tableRow.addView(createTextView(artist));</span>
+<span class="nc" id="L183">                tableRow.addView(createAddButton(songName, artist));</span>
+
+<span class="nc" id="L185">                songSearchTable.addView(tableRow);</span>
+            }
+<span class="nc" id="L187">        } catch (JSONException e) {</span>
+<span class="nc" id="L188">            Log.e(&quot;Volley JSON Error&quot;, &quot;Error parsing search results: &quot; + e.getMessage());</span>
+<span class="nc" id="L189">            Toast.makeText(getApplicationContext(), &quot;Error parsing search results&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L190">        }</span>
+<span class="nc" id="L191">    }</span>
+
+    /**
+     * Sends a request to add a song to the current playlist.
+     * On success, it refreshes the playlist table.
+     *
+     * @param songName The name of the song to add.
+     */
+    private void addSongToPlaylist(final String songName, final String artist) {
+<span class="nc" id="L200">        String url = PLAYLISTS_URL + currentUsername + &quot;/&quot; + currentPlaylistName + &quot;/add&quot;;</span>
+
+<span class="nc" id="L202">        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,</span>
+                response -&gt; {
+<span class="nc" id="L204">                    Log.d(&quot;Volley Response&quot;, &quot;Add song: &quot; + response);</span>
+<span class="nc" id="L205">                    Toast.makeText(getApplicationContext(), &quot;Song added&quot;, Toast.LENGTH_SHORT).show();</span>
+                    // Refresh the playlist to show the newly added song
+<span class="nc" id="L207">                    getPlaylistSongs();</span>
+<span class="nc" id="L208">                },</span>
+                error -&gt; {
+<span class="nc" id="L210">                    Log.e(&quot;Volley Error&quot;, &quot;Error adding song: &quot; + error.toString());</span>
+<span class="nc" id="L211">                    Toast.makeText(getApplicationContext(), &quot;Failed to add song&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L212">                }</span>
+<span class="nc" id="L213">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L216">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L217">                params.put(&quot;songName&quot;, songName);</span>
+<span class="nc" id="L218">                params.put(&quot;artist&quot;, artist);</span>
+
+<span class="nc" id="L220">                return params;</span>
+            }
+        };
+<span class="nc" id="L223">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L224">    }</span>
+
+    /**
+     * Sends a request to remove a song from the current playlist.
+     * On success, it refreshes the playlist table.
+     *
+     * @param songName The name of the song to remove.
+     */
+    private void removeSongFromPlaylist(final String songName, final String artist) {
+<span class="nc" id="L233">        String url = PLAYLISTS_URL + currentUsername + &quot;/&quot; + currentPlaylistName +</span>
+<span class="nc" id="L234">                &quot;/remove?songName=&quot; + Uri.encode(songName) +</span>
+<span class="nc" id="L235">                &quot;&amp;artist=&quot; + Uri.encode(artist);</span>
+
+<span class="nc" id="L237">        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,</span>
+                response -&gt; {
+<span class="nc" id="L239">                    Log.d(&quot;Volley Response&quot;, &quot;Remove song: &quot; + response);</span>
+<span class="nc" id="L240">                    Toast.makeText(getApplicationContext(), &quot;Song removed&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L241">                    getPlaylistSongs();</span>
+<span class="nc" id="L242">                },</span>
+                error -&gt; {
+<span class="nc" id="L244">                    Log.e(&quot;Volley Error&quot;, &quot;Error removing song: &quot; + error.toString());</span>
+<span class="nc" id="L245">                    Toast.makeText(getApplicationContext(), &quot;Failed to remove song&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L246">                }</span>
+<span class="nc" id="L247">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L250">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L251">                params.put(&quot;songName&quot;, songName);</span>
+<span class="nc" id="L252">                params.put(&quot;artist&quot;, artist);</span>
+<span class="nc" id="L253">                return params;</span>
+            }
+        };
+
+
+<span class="nc" id="L258">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L259">    }</span>
+
+    /**
+     * Creates a simple TextView for table cells.
+     */
+    private TextView createTextView(String text) {
+<span class="nc" id="L265">        TextView textView = new TextView(this);</span>
+<span class="nc" id="L266">        textView.setText(text);</span>
+<span class="nc" id="L267">        textView.setWidth(20);</span>
+<span class="nc" id="L268">        textView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L269">        return textView;</span>
+    }
+
+    /**
+     * Creates an &quot;Add&quot; button for the search results table.
+     */
+    private Button createAddButton(final String songName, final String artist) {
+<span class="nc" id="L276">        Button button = new Button(this);</span>
+<span class="nc" id="L277">        button.setText(&quot;Add&quot;);</span>
+<span class="nc" id="L278">        button.setOnClickListener(v -&gt; addSongToPlaylist(songName, artist));</span>
+<span class="nc" id="L279">        return button;</span>
+    }
+
+    /**
+     * Creates a &quot;Remove&quot; button for the playlist table.
+     */
+    private Button createRemoveButton(final String songName, final String artist) {
+<span class="nc" id="L286">        Button button = new Button(this);</span>
+<span class="nc" id="L287">        button.setText(&quot;Remove&quot;);</span>
+<span class="nc" id="L288">        button.setOnClickListener(v -&gt; removeSongFromPlaylist(songName, artist));</span>
+<span class="nc" id="L289">        return button;</span>
+    }
+
+    /**
+     * Clears all rows from a TableLayout, except for the header row (at index 0).
+     */
+    private void clearTable(TableLayout table) {
+<span class="nc" id="L296">        int childCount = table.getChildCount();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        if (childCount &gt; 1) {</span>
+<span class="nc" id="L298">            table.removeViews(1, childCount - 1);</span>
+        }
+<span class="nc" id="L300">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass) {
+<span class="nc" id="L303">        Intent intent = new Intent(AddSongsActivity.this, activityClass);</span>
+<span class="nc" id="L304">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L305">        startActivity(intent);</span>
+<span class="nc" id="L306">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignupActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">SignupActivity.java</span></div><h1>SignupActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="fc" id="L21">public class SignupActivity extends AppCompatActivity {</span>
+
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private EditText confirmEditText;
+    private EditText adminPasswordEditText;
+    private Button loginButton;
+    private Button signupButton;
+    private Spinner accountTypeSpinner;
+    private LinearLayout adminPasswordStuff;
+
+    private static final String URL_STRING_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/credentials&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="fc" id="L36">        super.onCreate(savedInstanceState);</span>
+<span class="fc" id="L37">        setContentView(R.layout.activity_signup);</span>
+
+<span class="fc" id="L39">        usernameEditText = findViewById(R.id.signup_username_edt);</span>
+<span class="fc" id="L40">        passwordEditText = findViewById(R.id.signup_password_edt);</span>
+<span class="fc" id="L41">        confirmEditText = findViewById(R.id.signup_confirm_edt);</span>
+<span class="fc" id="L42">        adminPasswordEditText = findViewById(R.id.admin_password_edt);</span>
+<span class="fc" id="L43">        loginButton = findViewById(R.id.signup_login_btn);</span>
+<span class="fc" id="L44">        signupButton = findViewById(R.id.signup_signup_btn);</span>
+<span class="fc" id="L45">        adminPasswordStuff = findViewById(R.id.admin_password_layout);</span>
+
+<span class="fc" id="L47">        accountTypeSpinner = findViewById(R.id.account_type_spinner);</span>
+<span class="fc" id="L48">        String[] accountTypes = new String[]{&quot;regular&quot;, &quot;admin&quot;, &quot;jamManager&quot;};</span>
+<span class="fc" id="L49">        ArrayAdapter&lt;String&gt; adapter = new ArrayAdapter&lt;&gt;(this, android.R.layout.simple_spinner_item, accountTypes);</span>
+<span class="fc" id="L50">        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);</span>
+<span class="fc" id="L51">        accountTypeSpinner.setAdapter(adapter);</span>
+
+
+<span class="fc" id="L54">        loginButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L55">            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);</span>
+<span class="nc" id="L56">            startActivity(intent);</span>
+<span class="nc" id="L57">        });</span>
+
+<span class="fc" id="L59">        signupButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L60">            String username = usernameEditText.getText().toString().trim();</span>
+<span class="nc" id="L61">            String password = passwordEditText.getText().toString().trim();</span>
+<span class="nc" id="L62">            String confirm = confirmEditText.getText().toString().trim();</span>
+<span class="nc" id="L63">            String accountType = accountTypeSpinner.getSelectedItem().toString();</span>
+
+
+<span class="nc bnc" id="L66" title="All 4 branches missed.">            if (username.isEmpty() || password.isEmpty()) {</span>
+<span class="nc" id="L67">                Toast.makeText(getApplicationContext(), &quot;Username and password cannot be empty&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L68">                return;</span>
+            }
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (password.equals(confirm)) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                if (accountType.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L73">                    String adminPassword = adminPasswordEditText.getText().toString().trim();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                    if (adminPassword.isEmpty()) {</span>
+<span class="nc" id="L75">                        Toast.makeText(getApplicationContext(), &quot;Admin password cannot be empty&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L76">                        return;</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                    } else if (!adminPassword.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L78">                        Toast.makeText(getApplicationContext(), &quot;Incorrect admin password&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L79">                        return;</span>
+                    } else {
+<span class="nc" id="L81">                        makePostRequest(username, password, accountType);</span>
+                    }
+<span class="nc" id="L83">                } else {</span>
+<span class="nc" id="L84">                    makePostRequest(username, password, accountType);</span>
+                }
+            } else {
+<span class="nc" id="L87">                Toast.makeText(getApplicationContext(), &quot;Passwords do not match&quot;, Toast.LENGTH_LONG).show();</span>
+            }
+<span class="nc" id="L89">        });</span>
+<span class="fc" id="L90">        accountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {</span>
+            @Override
+            public void onItemSelected(AdapterView&lt;?&gt; parentView, android.view.View selectedItemView, int position, long id) {
+<span class="fc" id="L93">                String selectedAccountType = parentView.getItemAtPosition(position).toString();</span>
+                // Do something with the selected account type
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">                if (selectedAccountType.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L96">                    adminPasswordStuff.setVisibility(LinearLayout.VISIBLE);</span>
+                } else {
+<span class="fc" id="L98">                    adminPasswordStuff.setVisibility(LinearLayout.GONE);</span>
+                }
+<span class="fc" id="L100">            }</span>
+
+            @Override
+            public void onNothingSelected(AdapterView&lt;?&gt; parentView) {
+                // Do nothing
+<span class="nc" id="L105">            }</span>
+
+        });
+<span class="fc" id="L108">    }</span>
+
+    private void makePostRequest(final String username, final String password, final String accountType) {
+<span class="nc" id="L111">        StringRequest stringRequest = new StringRequest(Request.Method.POST, URL_STRING_REQ,</span>
+                response -&gt; {
+<span class="nc" id="L113">                    Log.d(&quot;Volley Response&quot;, response);</span>
+                    try {
+<span class="nc" id="L115">                        JSONObject jsonResponse = new JSONObject(response);</span>
+<span class="nc" id="L116">                        String message = jsonResponse.getString(&quot;message&quot;);</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                        if (message.equals(&quot;success&quot;)) {</span>
+<span class="nc" id="L119">                            Toast.makeText(getApplicationContext(), &quot;Signup Successful!&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L120">                            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);</span>
+<span class="nc" id="L121">                            startActivity(intent);</span>
+<span class="nc" id="L122">                            finish();</span>
+<span class="nc" id="L123">                        } else {</span>
+<span class="nc" id="L124">                            Toast.makeText(getApplicationContext(), &quot;Signup Failed: User might already exist&quot;, Toast.LENGTH_LONG).show();</span>
+                        }
+<span class="nc" id="L126">                    } catch (JSONException e) {</span>
+<span class="nc" id="L127">                        Log.e(&quot;Volley JSON Error&quot;, &quot;Error parsing JSON: &quot; + e.getMessage());</span>
+<span class="nc" id="L128">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L129">                    }</span>
+<span class="nc" id="L130">                },</span>
+                error -&gt; {
+<span class="nc" id="L132">                    Log.e(&quot;Volley Error&quot;, error.toString());</span>
+<span class="nc" id="L133">                    Toast.makeText(getApplicationContext(), &quot;Volley Error: Could not connect to server&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L134">                }) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L137">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L138">                params.put(&quot;username&quot;, username);</span>
+<span class="nc" id="L139">                params.put(&quot;password&quot;, password);</span>
+<span class="nc" id="L140">                params.put(&quot;accountType&quot;, accountType);</span>
+<span class="nc" id="L141">                return params;</span>
+            }
+        };
+
+<span class="nc" id="L145">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L146">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

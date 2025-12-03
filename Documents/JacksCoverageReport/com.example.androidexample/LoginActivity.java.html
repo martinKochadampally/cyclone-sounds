@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">LoginActivity.java</span></div><h1>LoginActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+
+<span class="nc" id="L14">public class LoginActivity extends AppCompatActivity {</span>
+
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private Button loginButton;
+    private Button signupButton;
+
+    private static final String URL_LOGIN_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/login&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L25">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L26">        setContentView(R.layout.activity_login);</span>
+
+<span class="nc" id="L28">        usernameEditText = findViewById(R.id.login_username_edt);</span>
+<span class="nc" id="L29">        passwordEditText = findViewById(R.id.login_password_edt);</span>
+<span class="nc" id="L30">        loginButton = findViewById(R.id.login_login_btn);</span>
+<span class="nc" id="L31">        signupButton = findViewById(R.id.login_signup_btn);</span>
+
+<span class="nc" id="L33">        loginButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L34">            String username = usernameEditText.getText().toString().trim();</span>
+<span class="nc" id="L35">            String password = passwordEditText.getText().toString().trim();</span>
+
+<span class="nc bnc" id="L37" title="All 4 branches missed.">            if (!username.isEmpty() &amp;&amp; !password.isEmpty()) {</span>
+<span class="nc" id="L38">                makeLoginRequest(username, password);</span>
+            } else {
+<span class="nc" id="L40">                Toast.makeText(getApplicationContext(), &quot;Please enter username and password&quot;, Toast.LENGTH_SHORT).show();</span>
+            }
+<span class="nc" id="L42">        });</span>
+
+<span class="nc" id="L44">        signupButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L45">            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);</span>
+<span class="nc" id="L46">            startActivity(intent);</span>
+<span class="nc" id="L47">        });</span>
+<span class="nc" id="L48">    }</span>
+
+    private void makeLoginRequest(final String username, final String password) {
+<span class="nc" id="L51">        String urlWithParams = Uri.parse(URL_LOGIN_REQ)</span>
+<span class="nc" id="L52">                .buildUpon()</span>
+<span class="nc" id="L53">                .appendQueryParameter(&quot;username&quot;, username)</span>
+<span class="nc" id="L54">                .appendQueryParameter(&quot;password&quot;, password)</span>
+<span class="nc" id="L55">                .build().toString();</span>
+
+<span class="nc" id="L57">        Log.d(&quot;Login URL&quot;, &quot;Requesting URL: &quot; + urlWithParams);</span>
+
+<span class="nc" id="L59">        StringRequest stringRequest = new StringRequest(Request.Method.GET, urlWithParams,</span>
+                response -&gt; {
+<span class="nc" id="L61">                    Log.d(&quot;Volley Response&quot;, &quot;Server responded with: &quot; + response);</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                    if (response.trim().equalsIgnoreCase(&quot;true&quot;)) {</span>
+<span class="nc" id="L64">                        Toast.makeText(getApplicationContext(), &quot;Login Successful!&quot;, Toast.LENGTH_LONG).show();</span>
+
+<span class="nc" id="L66">                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);</span>
+<span class="nc" id="L67">                        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L68">                        startActivity(intent);</span>
+<span class="nc" id="L69">                        finish();</span>
+<span class="nc" id="L70">                    } else {</span>
+<span class="nc" id="L71">                        Toast.makeText(getApplicationContext(), &quot;Login Failed: Invalid username or password&quot;, Toast.LENGTH_LONG).show();</span>
+                    }
+<span class="nc" id="L73">                },</span>
+                error -&gt; {
+<span class="nc" id="L75">                    Log.e(&quot;Volley Error&quot;, error.toString());</span>
+<span class="nc" id="L76">                    Toast.makeText(getApplicationContext(), &quot;Error: Could not connect to server&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L77">                });</span>
+
+<span class="nc" id="L79">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L80">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>
