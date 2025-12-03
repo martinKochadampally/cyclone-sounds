@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">SearchActivity.java</span></div><h1>SearchActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+<span class="nc" id="L32">public class SearchActivity extends AppCompatActivity {</span>
+
+    private static final String BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080&quot;;
+
+    private SearchView searchView;
+    private Spinner searchTypeSpinner;
+    private Button searchSubmitButton;
+    private ListView profileResultsList;
+    private ListView songResultsList;
+    // private ListView playlistResultsList;
+    private TextView profilesHeader;
+    private TextView songsHeader;
+    // private TextView playlistsHeader;
+
+    private ArrayAdapter&lt;String&gt; profileAdapter;
+    private ArrayAdapter&lt;Song&gt; songAdapter;
+    // private ArrayAdapter&lt;Playlist&gt; playlistAdapter;
+
+    private ArrayList&lt;String&gt; profileUsernames;
+    private ArrayList&lt;Song&gt; songList;
+    // private ArrayList&lt;Playlist&gt; playlistList;
+
+    private RequestQueue requestQueue;
+    private String loggedInUsername;
+    private String currentSearchType;
+
+    private static class Song {
+        private final int songId;
+        private final String songName;
+        private final String artist;
+
+<span class="nc" id="L63">        public Song(int songId, String songName, String artist) {</span>
+<span class="nc" id="L64">            this.songId = songId;</span>
+<span class="nc" id="L65">            this.songName = songName;</span>
+<span class="nc" id="L66">            this.artist = artist;</span>
+<span class="nc" id="L67">        }</span>
+
+        public int getSongId() {
+<span class="nc" id="L70">            return songId;</span>
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+<span class="nc" id="L76">            return songName + &quot; by &quot; + artist;</span>
+        }
+    }
+
+    /*
+    private static class Playlist {
+        private final String playlistName;
+        private final String username;
+
+        public Playlist(String playlistName, String username) {
+            this.playlistName = playlistName;
+            this.username = username;
+        }
+
+        public String getPlaylistName() {
+            return playlistName;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return playlistName + &quot; by &quot; + username;
+        }
+    }
+    */
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L104">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L105">        setContentView(R.layout.activity_search);</span>
+
+<span class="nc" id="L107">        Toolbar toolbar = findViewById(R.id.search_toolbar);</span>
+<span class="nc" id="L108">        setSupportActionBar(toolbar);</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="nc" id="L110">            getSupportActionBar().setDisplayHomeAsUpEnabled(true);</span>
+<span class="nc" id="L111">            getSupportActionBar().setTitle(&quot;Search&quot;);</span>
+        }
+
+<span class="nc" id="L114">        loggedInUsername = getIntent().getStringExtra(&quot;LOGGED_IN_USERNAME&quot;);</span>
+<span class="nc" id="L115">        requestQueue = Volley.newRequestQueue(this);</span>
+
+<span class="nc" id="L117">        searchView = findViewById(R.id.search_view);</span>
+<span class="nc" id="L118">        searchTypeSpinner = findViewById(R.id.search_type_spinner);</span>
+<span class="nc" id="L119">        searchSubmitButton = findViewById(R.id.search_submit_button);</span>
+<span class="nc" id="L120">        profileResultsList = findViewById(R.id.profile_results_list);</span>
+<span class="nc" id="L121">        songResultsList = findViewById(R.id.song_results_list);</span>
+        // playlistResultsList = findViewById(R.id.playlist_results_list);
+<span class="nc" id="L123">        profilesHeader = findViewById(R.id.profiles_header);</span>
+<span class="nc" id="L124">        songsHeader = findViewById(R.id.songs_header);</span>
+        // playlistsHeader = findViewById(R.id.playlists_header);
+
+<span class="nc" id="L127">        profileUsernames = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L128">        profileAdapter = new ArrayAdapter&lt;&gt;(this, android.R.layout.simple_list_item_1, profileUsernames);</span>
+<span class="nc" id="L129">        profileResultsList.setAdapter(profileAdapter);</span>
+
+<span class="nc" id="L131">        songList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L132">        songAdapter = new ArrayAdapter&lt;&gt;(this, android.R.layout.simple_list_item_1, songList);</span>
+<span class="nc" id="L133">        songResultsList.setAdapter(songAdapter);</span>
+
+        // playlistList = new ArrayList&lt;&gt;();
+        // playlistAdapter = new ArrayAdapter&lt;&gt;(this, android.R.layout.simple_list_item_1, playlistList);
+        // playlistResultsList.setAdapter(playlistAdapter);
+
+<span class="nc" id="L139">        setupSpinner();</span>
+<span class="nc" id="L140">        setupSearchView();</span>
+<span class="nc" id="L141">        setupButtonListener();</span>
+<span class="nc" id="L142">        setupClickListeners();</span>
+<span class="nc" id="L143">    }</span>
+
+    private void setupSpinner() {
+        // String[] searchTypes = {&quot;Profiles&quot;, &quot;Songs&quot;, &quot;Playlists&quot;};
+<span class="nc" id="L147">        String[] searchTypes = {&quot;Profiles&quot;, &quot;Songs&quot;}; // Removed &quot;Playlists&quot;</span>
+<span class="nc" id="L148">        ArrayAdapter&lt;String&gt; spinnerAdapter = new ArrayAdapter&lt;&gt;(this, android.R.layout.simple_spinner_item, searchTypes);</span>
+<span class="nc" id="L149">        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);</span>
+<span class="nc" id="L150">        searchTypeSpinner.setAdapter(spinnerAdapter);</span>
+
+<span class="nc" id="L152">        searchTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {</span>
+            @Override
+            public void onItemSelected(AdapterView&lt;?&gt; parent, View view, int position, long id) {
+<span class="nc" id="L155">                currentSearchType = parent.getItemAtPosition(position).toString();</span>
+<span class="nc" id="L156">                updateVisibleList();</span>
+<span class="nc" id="L157">                searchView.setQuery(&quot;&quot;, false);</span>
+<span class="nc" id="L158">            }</span>
+
+            @Override
+            public void onNothingSelected(AdapterView&lt;?&gt; parent) {
+<span class="nc" id="L162">            }</span>
+        });
+
+<span class="nc" id="L165">        currentSearchType = searchTypes[0];</span>
+<span class="nc" id="L166">        updateVisibleList();</span>
+<span class="nc" id="L167">    }</span>
+
+    private void updateVisibleList() {
+<span class="nc" id="L170">        clearResults();</span>
+
+<span class="nc" id="L172">        profilesHeader.setVisibility(View.GONE);</span>
+<span class="nc" id="L173">        profileResultsList.setVisibility(View.GONE);</span>
+<span class="nc" id="L174">        songsHeader.setVisibility(View.GONE);</span>
+<span class="nc" id="L175">        songResultsList.setVisibility(View.GONE);</span>
+        // playlistsHeader.setVisibility(View.GONE);
+        // playlistResultsList.setVisibility(View.GONE);
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (currentSearchType.equals(&quot;Profiles&quot;)) {</span>
+<span class="nc" id="L180">            profilesHeader.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L181">            profileResultsList.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L182">            searchView.setQueryHint(&quot;Search for users...&quot;);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        } else if (currentSearchType.equals(&quot;Songs&quot;)) {</span>
+<span class="nc" id="L184">            songsHeader.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L185">            songResultsList.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L186">            searchView.setQueryHint(&quot;Search for songs or artists...&quot;);</span>
+        }
+        /*
+        else if (currentSearchType.equals(&quot;Playlists&quot;)) {
+            playlistsHeader.setVisibility(View.VISIBLE);
+            playlistResultsList.setVisibility(View.VISIBLE);
+            searchView.setQueryHint(&quot;Search for playlists...&quot;);
+        }
+        */
+<span class="nc" id="L195">    }</span>
+
+    private void setupSearchView() {
+<span class="nc" id="L198">        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {</span>
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+<span class="nc" id="L201">                searchView.clearFocus();</span>
+<span class="nc" id="L202">                return true;</span>
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+<span class="nc" id="L207">                return false;</span>
+            }
+        });
+<span class="nc" id="L210">    }</span>
+
+    private void setupButtonListener() {
+<span class="nc" id="L213">        searchSubmitButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L214">            String query = searchView.getQuery().toString();</span>
+<span class="nc bnc" id="L215" title="All 4 branches missed.">            if (query != null &amp;&amp; !query.isEmpty()) {</span>
+<span class="nc" id="L216">                runSearch(query);</span>
+            }
+<span class="nc" id="L218">            searchView.clearFocus();</span>
+<span class="nc" id="L219">        });</span>
+<span class="nc" id="L220">    }</span>
+
+    private void setupClickListeners() {
+<span class="nc" id="L223">        profileResultsList.setOnItemClickListener((parent, view, position, id) -&gt; {</span>
+<span class="nc" id="L224">            String profileToView = profileUsernames.get(position);</span>
+<span class="nc" id="L225">            incrementProfileViews(profileToView);</span>
+
+<span class="nc" id="L227">            Intent intent = new Intent(SearchActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L228">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, loggedInUsername);</span>
+<span class="nc" id="L229">            intent.putExtra(&quot;PROFILE_TO_VIEW&quot;, profileToView);</span>
+<span class="nc" id="L230">            startActivity(intent);</span>
+<span class="nc" id="L231">        });</span>
+
+<span class="nc" id="L233">        songResultsList.setOnItemClickListener((parent, view, position, id) -&gt; {</span>
+<span class="nc" id="L234">            Song clickedSong = songList.get(position);</span>
+<span class="nc" id="L235">            incrementSongSearches(clickedSong.getSongId());</span>
+<span class="nc" id="L236">            Toast.makeText(this, &quot;Clicked on: &quot; + clickedSong.toString(), Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L237">        });</span>
+
+        /*
+        playlistResultsList.setOnItemClickListener((parent, view, position, id) -&gt; {
+            Playlist clickedPlaylist = playlistList.get(position);
+            incrementPlaylistSearches(clickedPlaylist.getPlaylistName());
+            Toast.makeText(this, &quot;Clicked on: &quot; + clickedPlaylist.toString(), Toast.LENGTH_SHORT).show();
+        });
+        */
+<span class="nc" id="L246">    }</span>
+
+    private void runSearch(String query) {
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (currentSearchType.equals(&quot;Profiles&quot;)) {</span>
+<span class="nc" id="L250">            searchProfiles(query);</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        } else if (currentSearchType.equals(&quot;Songs&quot;)) {</span>
+<span class="nc" id="L252">            searchSongs(query);</span>
+        }
+        /*
+        else if (currentSearchType.equals(&quot;Playlists&quot;)) {
+            searchPlaylists(query);
+        }
+        */
+<span class="nc" id="L259">    }</span>
+
+    private void clearResults() {
+<span class="nc" id="L262">        profileUsernames.clear();</span>
+<span class="nc" id="L263">        songList.clear();</span>
+        // playlistList.clear();
+<span class="nc" id="L265">        profileAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L266">        songAdapter.notifyDataSetChanged();</span>
+        // playlistAdapter.notifyDataSetChanged();
+<span class="nc" id="L268">    }</span>
+
+    private void searchProfiles(String query) {
+<span class="nc" id="L271">        String url = BASE_URL + &quot;/search/profiles/&quot; + query;</span>
+<span class="nc" id="L272">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L275">                        profileUsernames.clear();</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L277">                            String username = response.getString(i);</span>
+<span class="nc" id="L278">                            profileUsernames.add(username);</span>
+                        }
+<span class="nc" id="L280">                        profileAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L281">                    } catch (JSONException e) {</span>
+<span class="nc" id="L282">                        Log.e(&quot;SearchActivity&quot;, &quot;JSON profile parsing error&quot;, e);</span>
+<span class="nc" id="L283">                    }</span>
+<span class="nc" id="L284">                },</span>
+                error -&gt; {
+<span class="nc bnc" id="L286" title="All 2 branches missed.">                    String errorMessage = (error.networkResponse != null) ?</span>
+<span class="nc" id="L287">                            &quot;Status Code: &quot; + error.networkResponse.statusCode :</span>
+<span class="nc" id="L288">                            &quot;No response/UnknownHost.&quot;;</span>
+<span class="nc" id="L289">                    Log.e(&quot;SearchActivity&quot;, &quot;Volley profile search error: &quot; + error.toString());</span>
+<span class="nc" id="L290">                    Log.e(&quot;SearchActivity&quot;, &quot;Volley Error Details: &quot; + errorMessage);</span>
+<span class="nc" id="L291">                }</span>
+        );
+<span class="nc" id="L293">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L294">    }</span>
+
+    private void searchSongs(String query) {
+<span class="nc" id="L297">        String url = BASE_URL + &quot;/search/songs/&quot; + query;</span>
+<span class="nc" id="L298">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L301">                        songList.clear();</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L303">                            JSONObject songJson = response.getJSONObject(i);</span>
+<span class="nc" id="L304">                            int songId = songJson.getInt(&quot;songId&quot;);</span>
+<span class="nc" id="L305">                            String songName = songJson.getString(&quot;songName&quot;);</span>
+<span class="nc" id="L306">                            String artistName = songJson.getString(&quot;artist&quot;);</span>
+<span class="nc" id="L307">                            songList.add(new Song(songId, songName, artistName));</span>
+                        }
+<span class="nc" id="L309">                        songAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L310">                    } catch (JSONException e) {</span>
+<span class="nc" id="L311">                        Log.e(&quot;SearchActivity&quot;, &quot;JSON song parsing error&quot;, e);</span>
+<span class="nc" id="L312">                    }</span>
+<span class="nc" id="L313">                },</span>
+                error -&gt; {
+<span class="nc bnc" id="L315" title="All 2 branches missed.">                    String errorMessage = (error.networkResponse != null) ?</span>
+<span class="nc" id="L316">                            &quot;Status Code: &quot; + error.networkResponse.statusCode :</span>
+<span class="nc" id="L317">                            &quot;No response/UnknownHost.&quot;;</span>
+<span class="nc" id="L318">                    Log.e(&quot;SearchActivity&quot;, &quot;Volley song search error: &quot; + error.toString());</span>
+<span class="nc" id="L319">                    Log.e(&quot;SearchActivity&quot;, &quot;Volley Error Details: &quot; + errorMessage);</span>
+<span class="nc" id="L320">                }</span>
+        );
+<span class="nc" id="L322">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L323">    }</span>
+
+    /*
+    private void searchPlaylists(String query) {
+        String url = BASE_URL + &quot;/search/playlist/&quot; + query;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -&gt; {
+                    try {
+                        playlistList.clear();
+                        for (int i = 0; i &lt; response.length(); i++) {
+                            JSONObject playlistJson = response.getJSONObject(i);
+                            String playlistName = playlistJson.getString(&quot;playlistName&quot;);
+                            String username = playlistJson.getString(&quot;username&quot;);
+                            playlistList.add(new Playlist(playlistName, username));
+                        }
+                        playlistAdapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        Log.e(&quot;SearchActivity&quot;, &quot;JSON playlist parsing error&quot;, e);
+                    }
+                },
+                error -&gt; {
+                    String errorMessage = (error.networkResponse != null) ?
+                            &quot;Status Code: &quot; + error.networkResponse.statusCode :
+                            &quot;No response/UnknownHost.&quot;;
+                    Log.e(&quot;SearchActivity&quot;, &quot;Volley playlist search error: &quot; + error.toString());
+                    Log.e(&quot;SearchActivity&quot;, &quot;Volley Error Details: &quot; + errorMessage);
+                }
+        );
+        requestQueue.add(jsonArrayRequest);
+    }
+    */
+
+    private void incrementProfileViews(String username) {
+<span class="nc" id="L356">        String url = BASE_URL + &quot;/search/profiles/&quot; + username;</span>
+<span class="nc" id="L357">        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,</span>
+<span class="nc" id="L358">                response -&gt; Log.d(&quot;SearchActivity&quot;, &quot;Profile view incremented: &quot; + username),</span>
+                error -&gt; {
+<span class="nc" id="L360">                    Log.e(&quot;SearchActivity&quot;, &quot;Failed to increment views: &quot; + error.toString());</span>
+<span class="nc" id="L361">                }</span>
+        );
+<span class="nc" id="L363">        requestQueue.add(putRequest);</span>
+<span class="nc" id="L364">    }</span>
+
+    private void incrementSongSearches(int songId) {
+<span class="nc" id="L367">        String url = BASE_URL + &quot;/search/songs/&quot; + songId;</span>
+<span class="nc" id="L368">        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,</span>
+<span class="nc" id="L369">                response -&gt; Log.d(&quot;SearchActivity&quot;, &quot;Song search incremented: &quot; + songId),</span>
+                error -&gt; {
+<span class="nc" id="L371">                    Log.e(&quot;SearchActivity&quot;, &quot;Failed to increment searches: &quot; + error.toString());</span>
+<span class="nc" id="L372">                }</span>
+        );
+<span class="nc" id="L374">        requestQueue.add(putRequest);</span>
+<span class="nc" id="L375">    }</span>
+
+    /*
+    private void incrementPlaylistSearches(String playlistName) {
+        String url = BASE_URL + &quot;/search/playlist/&quot; + playlistName;
+        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
+                response -&gt; Log.d(&quot;SearchActivity&quot;, &quot;Playlist search incremented: &quot; + playlistName),
+                error -&gt; {
+                    Log.e(&quot;SearchActivity&quot;, &quot;Failed to increment playlist searches: &quot; + error.toString());
+                }
+        );
+        requestQueue.add(putRequest);
+    }
+    */
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+<span class="nc bnc" id="L392" title="All 2 branches missed.">        if (item.getItemId() == android.R.id.home) {</span>
+<span class="nc" id="L393">            finish();</span>
+<span class="nc" id="L394">            return true;</span>
+        }
+<span class="nc" id="L396">        return super.onOptionsItemSelected(item);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

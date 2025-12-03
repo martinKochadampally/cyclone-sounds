@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IndividualJamActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">IndividualJamActivity.java</span></div><h1>IndividualJamActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
+
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="nc" id="L44">public class IndividualJamActivity extends AppCompatActivity {</span>
+
+    private static final String HTTP_BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080&quot;;
+    private static final String URL_STRING_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/&quot;;
+    private static final String SONGS_SEARCH_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/search/songs&quot;;
+    private String WEB_SOCKET_URL;
+    private RequestQueue requestQueue;
+    private String currentUsername;
+    private String jamName;
+    private String jamAdmin;
+    private RecyclerView chatRecyclerView;
+    private EditText messageInput;
+    private Button sendButton, suggestSongButton, jamSettingsButton;
+
+<span class="nc" id="L58">    private boolean jamHasPlaylist = false;</span>
+
+    private ChatAdapter chatAdapter;
+    private List&lt;ChatMessage&gt; messageList;
+
+    private WebSocketClient webSocketClient;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L67">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L68">        setContentView(R.layout.activity_individualjam);</span>
+
+<span class="nc" id="L70">        Toolbar toolbar = findViewById(R.id.dm_toolbar);</span>
+<span class="nc" id="L71">        setSupportActionBar(toolbar);</span>
+
+<span class="nc" id="L73">        currentUsername = getIntent().getStringExtra(&quot;LOGGED_IN_USERNAME&quot;);</span>
+<span class="nc" id="L74">        jamName = getIntent().getStringExtra(&quot;JAM_NAME&quot;);</span>
+<span class="nc" id="L75">        jamAdmin = getIntent().getStringExtra(&quot;JAM_ADMIN&quot;);</span>
+
+<span class="nc" id="L77">        Log.d(&quot;IndividualJamActivity&quot;, &quot;Jam Admin: &quot; + jamAdmin);</span>
+
+
+<span class="nc" id="L80">        WEB_SOCKET_URL = &quot;ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jams/&quot; + jamName + &quot;/&quot;+ currentUsername;</span>
+
+<span class="nc" id="L82">        requestQueue = Volley.newRequestQueue(this);</span>
+
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="nc" id="L85">            getSupportActionBar().setTitle(jamName);</span>
+<span class="nc" id="L86">            getSupportActionBar().setDisplayHomeAsUpEnabled(true);</span>
+        }
+
+<span class="nc" id="L89">        chatRecyclerView = findViewById(R.id.chat_recycler_view);</span>
+<span class="nc" id="L90">        messageInput = findViewById(R.id.message_input);</span>
+<span class="nc" id="L91">        sendButton = findViewById(R.id.send_btn);</span>
+<span class="nc" id="L92">        suggestSongButton = findViewById(R.id.suggest_song_btn);</span>
+<span class="nc" id="L93">        jamSettingsButton = findViewById(R.id.jam_settings_btn);</span>
+
+<span class="nc" id="L95">        suggestSongButton.setEnabled(false);</span>
+
+<span class="nc bnc" id="L97" title="All 4 branches missed.">        if (currentUsername != null &amp;&amp; currentUsername.equals(jamAdmin)) {</span>
+<span class="nc" id="L98">            jamSettingsButton.setVisibility(View.VISIBLE);</span>
+        }
+
+<span class="nc" id="L101">        messageList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L102">        chatAdapter = new ChatAdapter(messageList, currentUsername);</span>
+
+<span class="nc" id="L104">        LinearLayoutManager layoutManager = new LinearLayoutManager(this);</span>
+<span class="nc" id="L105">        layoutManager.setStackFromEnd(true);</span>
+<span class="nc" id="L106">        chatRecyclerView.setLayoutManager(layoutManager);</span>
+<span class="nc" id="L107">        chatRecyclerView.setAdapter(chatAdapter);</span>
+
+<span class="nc" id="L109">        sendButton.setOnClickListener(view -&gt; sendMessage());</span>
+<span class="nc" id="L110">        suggestSongButton.setOnClickListener(view -&gt; showSuggestSongDialog());</span>
+<span class="nc" id="L111">        jamSettingsButton.setOnClickListener(view -&gt; showAdminMenu());</span>
+
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (jamName != null) {</span>
+<span class="nc" id="L114">            fetchChatHistory(jamName);</span>
+        }
+
+<span class="nc" id="L117">        createWebSocketClient();</span>
+<span class="nc" id="L118">        fetchPlaylistsAndSetupSuggestionsButton();</span>
+<span class="nc" id="L119">    }</span>
+
+    @Override
+    public boolean onSupportNavigateUp() {
+<span class="nc" id="L123">        finish();</span>
+<span class="nc" id="L124">        return true;</span>
+    }
+
+
+    private void fetchChatHistory(String jamName) {
+<span class="nc" id="L129">        String url = HTTP_BASE_URL + &quot;/api/jam/chatHistory/&quot; + jamName;</span>
+
+<span class="nc" id="L131">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L134">                        messageList.clear();</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L136">                            JSONObject messageJson = response.getJSONObject(i);</span>
+<span class="nc" id="L137">                            String content = messageJson.getString(&quot;content&quot;);</span>
+<span class="nc" id="L138">                            String[] messages = content.split(&quot;\\r?\\n&quot;);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                            for (String msg : messages) {</span>
+                                // Parse each line for sender and content, similar to WebSocket onMessage
+<span class="nc" id="L141">                                String[] parts = msg.split(&quot;: &quot;, 2);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                                if (parts.length == 2) {</span>
+<span class="nc" id="L143">                                    messageList.add(new ChatMessage(parts[0], parts[1]));</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                                } else if (!msg.trim().isEmpty()){</span>
+                                    // Fallback for messages without a specific sender
+<span class="nc" id="L146">                                    messageList.add(new ChatMessage(&quot;System&quot;, msg));</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L150">                        chatAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L151">                        chatRecyclerView.scrollToPosition(messageList.size() - 1);</span>
+
+<span class="nc" id="L153">                    } catch (JSONException e) {</span>
+<span class="nc" id="L154">                        Log.e(&quot;IndividualJamActivity&quot;, &quot;JSON parsing error&quot;, e);</span>
+<span class="nc" id="L155">                    }</span>
+<span class="nc" id="L156">                },</span>
+                error -&gt; {
+<span class="nc" id="L158">                    String errorMessage = &quot;Error loading chat history&quot;;</span>
+<span class="nc bnc" id="L159" title="All 4 branches missed.">                    if (error.networkResponse != null &amp;&amp; error.networkResponse.data != null) {</span>
+                        try {
+<span class="nc" id="L161">                            String responseBody = new String(error.networkResponse.data, &quot;utf-8&quot;);</span>
+<span class="nc" id="L162">                            errorMessage = &quot;Error: &quot; + error.networkResponse.statusCode + &quot; &quot; + responseBody;</span>
+<span class="nc" id="L163">                        } catch (Exception e) {</span>
+<span class="nc" id="L164">                            Log.e(&quot;IndividualJamActivity&quot;, &quot;Error parsing error response&quot;, e);</span>
+<span class="nc" id="L165">                        }</span>
+                    }
+<span class="nc" id="L167">                    Log.e(&quot;IndividualJamActivity&quot;, &quot;Volley error: &quot; + errorMessage, error);</span>
+<span class="nc" id="L168">                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L169">                }</span>
+        );
+
+<span class="nc" id="L172">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L173">    }</span>
+    private void fetchPlaylistsAndSetupSuggestionsButton() {
+<span class="nc" id="L175">        String url = URL_STRING_REQ + &quot;owner/&quot; + jamAdmin;</span>
+<span class="nc" id="L176">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                    if (response.toString().contains(jamName)) {</span>
+<span class="nc" id="L179">                        jamHasPlaylist = true;</span>
+<span class="nc" id="L180">                        suggestSongButton.setEnabled(true);</span>
+                    } else {
+<span class="nc" id="L182">                        jamHasPlaylist = false;</span>
+<span class="nc" id="L183">                        suggestSongButton.setEnabled(false);</span>
+                    }
+<span class="nc" id="L185">                },</span>
+                error -&gt; {
+<span class="nc" id="L187">                    jamHasPlaylist = false;</span>
+<span class="nc" id="L188">                    suggestSongButton.setEnabled(false);</span>
+<span class="nc" id="L189">                    Log.e(&quot;IndividualJamActivity&quot;, &quot;Could not fetch jam playlists&quot;, error);</span>
+<span class="nc" id="L190">                }</span>
+        );
+<span class="nc" id="L192">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L193">    }</span>
+
+    private void createWebSocketClient() {
+        URI uri;
+        try {
+<span class="nc" id="L198">            uri = new URI(WEB_SOCKET_URL);</span>
+<span class="nc" id="L199">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L200">            Log.e(&quot;IndividualJamActivity&quot;, &quot;Invalid WebSocket URL&quot;, e);</span>
+<span class="nc" id="L201">            return;</span>
+<span class="nc" id="L202">        }</span>
+
+<span class="nc" id="L204">        webSocketClient = new WebSocketClient(uri) {</span>
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+<span class="nc" id="L207">                Log.d(&quot;IndividualJamActivity&quot;, &quot;WebSocket Connected&quot;);</span>
+<span class="nc" id="L208">            }</span>
+
+            @Override
+            public void onMessage(String message) {
+<span class="nc" id="L212">                Log.d(&quot;IndividualJamActivity&quot;, &quot;Received message: &quot; + message);</span>
+
+                // Check if message is JSON
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                if (message.trim().startsWith(&quot;{&quot;)) {</span>
+                    try {
+<span class="nc" id="L217">                        JSONObject messageJson = new JSONObject(message);</span>
+<span class="nc" id="L218">                        String type = messageJson.optString(&quot;type&quot;, &quot;chat&quot;);</span>
+
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                        if (&quot;song_suggestion&quot;.equals(type)) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                            if (currentUsername.equals(jamAdmin)) {</span>
+<span class="nc" id="L222">                                String song = messageJson.getString(&quot;song&quot;);</span>
+<span class="nc" id="L223">                                String artist = messageJson.getString(&quot;artist&quot;);</span>
+<span class="nc" id="L224">                                String suggester = messageJson.getString(&quot;suggester&quot;);</span>
+<span class="nc" id="L225">                                runOnUiThread(() -&gt; showApprovalDialog(song, artist, suggester));</span>
+                            }
+<span class="nc" id="L227">                            return;</span>
+                        }
+<span class="nc" id="L229">                    } catch (JSONException e) {</span>
+<span class="nc" id="L230">                        Log.e(&quot;IndividualJamActivity&quot;, &quot;Error parsing JSON message&quot;, e);</span>
+<span class="nc" id="L231">                    }</span>
+                }
+
+                // Handle plain text message (format: &quot;username: content&quot;)
+<span class="nc" id="L235">                runOnUiThread(() -&gt; {</span>
+<span class="nc" id="L236">                    String[] parts = message.split(&quot;: &quot;, 2);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                    if (parts.length == 2) {</span>
+<span class="nc" id="L238">                        messageList.add(new ChatMessage(parts[0], parts[1]));</span>
+                    } else {
+<span class="nc" id="L240">                        messageList.add(new ChatMessage(&quot;System&quot;, message));</span>
+                    }
+<span class="nc" id="L242">                    chatAdapter.notifyItemInserted(messageList.size() - 1);</span>
+<span class="nc" id="L243">                    chatRecyclerView.scrollToPosition(messageList.size() - 1);</span>
+<span class="nc" id="L244">                });</span>
+<span class="nc" id="L245">            }</span>
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+<span class="nc" id="L249">                Log.d(&quot;WebSocket&quot;, &quot;Closed&quot;);</span>
+<span class="nc" id="L250">            }</span>
+
+            @Override
+            public void onError(Exception ex) {
+<span class="nc" id="L254">                Log.e(&quot;WebSocket&quot;, &quot;Error&quot;, ex);</span>
+<span class="nc" id="L255">            }</span>
+        };
+<span class="nc" id="L257">        webSocketClient.connect();</span>
+<span class="nc" id="L258">    }</span>
+
+    private void sendMessage() {
+<span class="nc" id="L261">        String content = messageInput.getText().toString().trim();</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (content.isEmpty()) {</span>
+<span class="nc" id="L263">            return;</span>
+        }
+<span class="nc" id="L265">        messageInput.setText(&quot;&quot;);</span>
+<span class="nc" id="L266">        sendMessageToBackend(new ChatMessage(currentUsername, content), jamName);</span>
+<span class="nc" id="L267">    }</span>
+
+    private void sendMessageToBackend(ChatMessage message, String jamName) {
+<span class="nc bnc" id="L270" title="All 4 branches missed.">        if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+            // Send plain text for chat messages
+<span class="nc" id="L272">            webSocketClient.send(message.getContent());</span>
+<span class="nc" id="L273">            Log.d(message.getSender(), message.getContent());</span>
+        } else {
+<span class="nc" id="L275">            Toast.makeText(this, &quot;Not connected to WebSocket&quot;, Toast.LENGTH_SHORT).show();</span>
+        }
+<span class="nc" id="L277">    }</span>
+
+
+    private void showSuggestSongDialog() {
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (!jamHasPlaylist) {</span>
+<span class="nc" id="L282">            Toast.makeText(this, &quot;Admin has not created a playlist for this jam yet.&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L283">            return;</span>
+        }
+<span class="nc" id="L285">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L286">        builder.setTitle(&quot;Suggest a Song&quot;);</span>
+
+        // Create a layout for the dialog
+<span class="nc" id="L289">        LinearLayout layout = new LinearLayout(this);</span>
+<span class="nc" id="L290">        layout.setOrientation(LinearLayout.VERTICAL);</span>
+<span class="nc" id="L291">        layout.setPadding(50, 50, 50, 50);</span>
+
+        // Search input and button in a horizontal layout
+<span class="nc" id="L294">        LinearLayout searchLayout = new LinearLayout(this);</span>
+<span class="nc" id="L295">        searchLayout.setOrientation(LinearLayout.HORIZONTAL);</span>
+
+<span class="nc" id="L297">        final EditText searchInput = new EditText(this);</span>
+<span class="nc" id="L298">        searchInput.setHint(&quot;Enter song name&quot;);</span>
+<span class="nc" id="L299">        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(</span>
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1.0f
+        );
+<span class="nc" id="L304">        searchInput.setLayoutParams(editTextParams);</span>
+<span class="nc" id="L305">        searchLayout.addView(searchInput);</span>
+
+<span class="nc" id="L307">        Button searchButton = new Button(this);</span>
+<span class="nc" id="L308">        searchButton.setText(&quot;Search&quot;);</span>
+<span class="nc" id="L309">        searchLayout.addView(searchButton);</span>
+
+<span class="nc" id="L311">        layout.addView(searchLayout);</span>
+
+        // Results table in a ScrollView
+<span class="nc" id="L314">        ScrollView scrollView = new ScrollView(this);</span>
+<span class="nc" id="L315">        TableLayout resultsTable = new TableLayout(this);</span>
+<span class="nc" id="L316">        resultsTable.setStretchAllColumns(true);</span>
+
+        // Add a header row to the table
+<span class="nc" id="L319">        TableRow headerRow = new TableRow(this);</span>
+<span class="nc" id="L320">        headerRow.addView(createTextViewForDialog(&quot;Song&quot;));</span>
+<span class="nc" id="L321">        headerRow.addView(createTextViewForDialog(&quot;Artist&quot;));</span>
+<span class="nc" id="L322">        headerRow.addView(createTextViewForDialog(&quot;&quot;)); // for button</span>
+<span class="nc" id="L323">        resultsTable.addView(headerRow);</span>
+
+<span class="nc" id="L325">        scrollView.addView(resultsTable);</span>
+<span class="nc" id="L326">        layout.addView(scrollView);</span>
+
+<span class="nc" id="L328">        AlertDialog dialog = builder.setView(layout)</span>
+<span class="nc" id="L329">                .setNegativeButton(&quot;Close&quot;, (d, which) -&gt; d.cancel())</span>
+<span class="nc" id="L330">                .create();</span>
+
+<span class="nc" id="L332">        searchButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L333">            String query = searchInput.getText().toString().trim();</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            if (!query.isEmpty()) {</span>
+<span class="nc" id="L335">                searchSongsForSuggestion(query, resultsTable);</span>
+            } else {
+<span class="nc" id="L337">                Toast.makeText(this, &quot;Please enter a song to search&quot;, Toast.LENGTH_SHORT).show();</span>
+            }
+<span class="nc" id="L339">        });</span>
+
+<span class="nc" id="L341">        dialog.show();</span>
+<span class="nc" id="L342">    }</span>
+
+    private void searchSongsForSuggestion(String query, TableLayout resultsTable) {
+<span class="nc" id="L345">        String url = SONGS_SEARCH_URL + &quot;/&quot; + query;</span>
+
+<span class="nc" id="L347">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L350">                        populateSuggestionSearchTable(response, resultsTable);</span>
+<span class="nc" id="L351">                    } catch (JSONException e) {</span>
+<span class="nc" id="L352">                        Log.e(&quot;IndividualJamActivity&quot;, &quot;JSON parsing error in search&quot;, e);</span>
+<span class="nc" id="L353">                        Toast.makeText(this, &quot;Error parsing search results&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L354">                    }</span>
+<span class="nc" id="L355">                },</span>
+                error -&gt; {
+<span class="nc" id="L357">                    Log.e(&quot;Volley Error&quot;, &quot;Error searching songs: &quot; + error.toString());</span>
+<span class="nc" id="L358">                    Toast.makeText(getApplicationContext(), &quot;Song not found&quot;, Toast.LENGTH_SHORT).show();</span>
+                    // Clear previous results
+<span class="nc" id="L360">                    int childCount = resultsTable.getChildCount();</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">                    if (childCount &gt; 1) { // Keep header</span>
+<span class="nc" id="L362">                        resultsTable.removeViews(1, childCount - 1);</span>
+                    }
+<span class="nc" id="L364">                });</span>
+
+<span class="nc" id="L366">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L367">    }</span>
+
+
+    private void populateSuggestionSearchTable(JSONArray songs, TableLayout table) throws JSONException {
+        // Clear previous results, keeping the header
+<span class="nc" id="L372">        int childCount = table.getChildCount();</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (childCount &gt; 1) {</span>
+<span class="nc" id="L374">            table.removeViews(1, childCount - 1);</span>
+        }
+
+<span class="nc bnc" id="L377" title="All 2 branches missed.">        for (int i = 0; i &lt; songs.length(); i++) {</span>
+<span class="nc" id="L378">            JSONObject song = songs.getJSONObject(i);</span>
+<span class="nc" id="L379">            String songName = song.optString(&quot;songName&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L380">            String artist = song.optString(&quot;artist&quot;, &quot;N/A&quot;);</span>
+
+<span class="nc" id="L382">            TableRow tableRow = new TableRow(this);</span>
+<span class="nc" id="L383">            tableRow.addView(createTextViewForDialog(songName));</span>
+<span class="nc" id="L384">            tableRow.addView(createTextViewForDialog(artist));</span>
+<span class="nc" id="L385">            tableRow.addView(createSuggestButton(songName, artist));</span>
+
+<span class="nc" id="L387">            table.addView(tableRow);</span>
+        }
+<span class="nc" id="L389">    }</span>
+
+    private TextView createTextViewForDialog(String text) {
+<span class="nc" id="L392">        TextView textView = new TextView(this);</span>
+<span class="nc" id="L393">        textView.setText(text);</span>
+<span class="nc" id="L394">        textView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L395">        textView.setWidth(10);</span>
+<span class="nc" id="L396">        return textView;</span>
+    }
+
+    private Button createSuggestButton(final String songName, final String artist) {
+<span class="nc" id="L400">        Button button = new Button(this);</span>
+<span class="nc" id="L401">        button.setText(&quot;Suggest&quot;);</span>
+<span class="nc" id="L402">        button.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L403">            sendSongSuggestion(songName, artist);</span>
+<span class="nc" id="L404">        });</span>
+<span class="nc" id="L405">        return button;</span>
+    }
+
+    private void sendSongSuggestion(String songName, String artist) {
+<span class="nc bnc" id="L409" title="All 4 branches missed.">        if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L410">            JSONObject suggestionJson = new JSONObject();</span>
+            try {
+<span class="nc" id="L412">                suggestionJson.put(&quot;type&quot;, &quot;song_suggestion&quot;);</span>
+<span class="nc" id="L413">                suggestionJson.put(&quot;song&quot;, songName);</span>
+<span class="nc" id="L414">                suggestionJson.put(&quot;artist&quot;, artist);</span>
+<span class="nc" id="L415">                suggestionJson.put(&quot;suggester&quot;, currentUsername);</span>
+<span class="nc" id="L416">                suggestionJson.put(&quot;receiver&quot;, jamAdmin);</span>
+<span class="nc" id="L417">                webSocketClient.send(suggestionJson.toString());</span>
+<span class="nc" id="L418">                Log.d(&quot;Song Suggestion&quot;, suggestionJson.toString());</span>
+<span class="nc" id="L419">                Toast.makeText(this, &quot;Song suggested!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc bnc" id="L420" title="All 4 branches missed.">                if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L421">                    webSocketClient.send(currentUsername + &quot; suggested adding '&quot; + songName + &quot;'&quot;);</span>
+                }
+<span class="nc" id="L423">            } catch (JSONException e) {</span>
+<span class="nc" id="L424">                e.printStackTrace();</span>
+<span class="nc" id="L425">            }</span>
+<span class="nc" id="L426">        } else {</span>
+<span class="nc" id="L427">            Toast.makeText(this, &quot;Not connected to WebSocket&quot;, Toast.LENGTH_SHORT).show();</span>
+        }
+<span class="nc" id="L429">    }</span>
+
+    private void showAdminMenu() {
+<span class="nc" id="L432">        final CharSequence[] options = {&quot;Create Jam Playlist&quot;, &quot;Cancel&quot;};</span>
+
+<span class="nc" id="L434">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L435">        builder.setTitle(&quot;Jam Settings&quot;);</span>
+<span class="nc" id="L436">        builder.setItems(options, (dialog, item) -&gt; {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">            if (options[item].equals(&quot;Create Jam Playlist&quot;)) {</span>
+<span class="nc" id="L438">                createPlaylistRequest(currentUsername, jamName);</span>
+<span class="nc bnc" id="L439" title="All 2 branches missed.">            } else if (options[item].equals(&quot;Cancel&quot;)) {</span>
+<span class="nc" id="L440">                dialog.dismiss();</span>
+            }
+<span class="nc" id="L442">        });</span>
+<span class="nc" id="L443">        builder.show();</span>
+<span class="nc" id="L444">    }</span>
+
+    private void createPlaylistRequest(final String user, final String playlistName) {
+<span class="nc" id="L447">        StringRequest stringRequest = new StringRequest(</span>
+                Request.Method.POST,
+                URL_STRING_REQ + &quot;create&quot;,
+                response -&gt; {
+<span class="nc" id="L451">                    Log.d(&quot;Volley Response&quot;, response.toString());</span>
+<span class="nc" id="L452">                    Toast.makeText(this, &quot;Playlist Created&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc bnc" id="L453" title="All 4 branches missed.">                    if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L454">                        webSocketClient.send(&quot;Admin &quot; + jamAdmin + &quot; created a playlist for this jam&quot;);</span>
+                    }
+<span class="nc" id="L456">                    fetchPlaylistsAndSetupSuggestionsButton();</span>
+<span class="nc" id="L457">                },</span>
+                error -&gt; {
+<span class="nc" id="L459">                    Log.e(&quot;Volley Error&quot;, error.toString());</span>
+<span class="nc" id="L460">                    Toast.makeText(getApplicationContext(), &quot;Submission Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L461">                }</span>
+<span class="nc" id="L462">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L465">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L466">                params.put(&quot;playlistName&quot;, playlistName);</span>
+<span class="nc" id="L467">                params.put(&quot;username&quot;, user);</span>
+<span class="nc" id="L468">                return params;</span>
+            }
+        };
+<span class="nc" id="L471">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L472">    }</span>
+
+    private void showApprovalDialog(String song, String artist, String suggester) {
+<span class="nc" id="L475">        new AlertDialog.Builder(this)</span>
+<span class="nc" id="L476">                .setTitle(&quot;Song Suggestion&quot;)</span>
+<span class="nc" id="L477">                .setMessage(suggester + &quot; suggested adding \&quot;&quot; + song + &quot;\&quot; to the playlist. Approve?&quot;)</span>
+<span class="nc" id="L478">                .setPositiveButton(&quot;Approve&quot;, (dialog, which) -&gt; {</span>
+<span class="nc" id="L479">                    addSongToPlaylist(song, artist);</span>
+<span class="nc" id="L480">                    Toast.makeText(this, song + &quot; approved!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L481">                })</span>
+<span class="nc" id="L482">                .setNegativeButton(&quot;Reject&quot;, (dialog, which) -&gt; {</span>
+<span class="nc bnc" id="L483" title="All 4 branches missed.">                    if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L484">                        webSocketClient.send(&quot;Suggestion for '&quot; + song + &quot;' was denied by the admin&quot;);</span>
+                    }
+<span class="nc" id="L486">                })</span>
+<span class="nc" id="L487">                .show();</span>
+<span class="nc" id="L488">    }</span>
+
+    private void addSongToPlaylist(final String songName, final String artist) {
+<span class="nc" id="L491">        String url = URL_STRING_REQ + currentUsername + &quot;/&quot; + jamName + &quot;/add&quot;;</span>
+
+<span class="nc" id="L493">        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,</span>
+                response -&gt; {
+<span class="nc" id="L495">                    Log.d(&quot;Volley Response&quot;, &quot;Add song: &quot; + response);</span>
+<span class="nc" id="L496">                    Toast.makeText(getApplicationContext(), &quot;Song added&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc bnc" id="L497" title="All 4 branches missed.">                    if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L498">                        webSocketClient.send(&quot;Suggestion for '&quot; + songName + &quot;' was approved by the admin&quot;);</span>
+                    }
+                    // Refresh the playlist to show the newly added song
+<span class="nc" id="L501">                },</span>
+                error -&gt; {
+<span class="nc" id="L503">                    Log.e(&quot;Volley Error&quot;, &quot;Error adding song: &quot; + error.toString());</span>
+<span class="nc" id="L504">                    Toast.makeText(getApplicationContext(), &quot;Failed to add song&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L505">                }</span>
+<span class="nc" id="L506">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L509">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L510">                params.put(&quot;songName&quot;, songName);</span>
+<span class="nc" id="L511">                params.put(&quot;artist&quot;, artist);</span>
+
+<span class="nc" id="L513">                return params;</span>
+            }
+        };
+<span class="nc" id="L516">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L517">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L521">        super.onDestroy();</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">        if (webSocketClient != null) {</span>
+<span class="nc" id="L523">            webSocketClient.close();</span>
+        }
+<span class="nc" id="L525">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>
