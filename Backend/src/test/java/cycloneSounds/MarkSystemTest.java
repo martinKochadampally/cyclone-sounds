@@ -1,20 +1,34 @@
 package cycloneSounds;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.Test;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+
+@RunWith(SpringRunner.class)
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Main.class)
 public class MarkSystemTest {
 
+    @LocalServerPort
+    int port;
+
+    @Before
+    public void setUp() {
+        RestAssured.port = port;
+        RestAssured.baseURI = "http://localhost";
+    }
 
     @Test
     public void postReviewCheck() {
-        RestAssured.baseURI = "http://localhost:8080";
-
         createHelperUser("MusicCritic", "Mark");
 
         Response response = RestAssured.given()
@@ -34,8 +48,6 @@ public class MarkSystemTest {
 
     @Test
     public void addSongToPlaylistCheck() {
-        RestAssured.baseURI = "http://localhost:8080";
-
         createHelperUser("mgseward", "Mark");
         RestAssured.given()
                 .param("playlistName", "Study")
@@ -54,22 +66,17 @@ public class MarkSystemTest {
 
     /**
      * Helper method that makes user creation easy
-     * @param username
-     * @param name
      */
     public void createHelperUser(String username, String name) {
         String jsonBody = "{\"username\":\"" + username + "\", \"name\":\"" + name + "\", \"favArtist\":\"A\", \"favGenre\":\"G\", \"favSong\":\"S\", \"biography\":\"B\"}";
         RestAssured.given()
                 .header("Content-Type", "application/json")
                 .body(jsonBody)
-                .post("http://localhost:8080/profiles");
+                .post("/profiles");
     }
-
 
     @Test
     public void createProfileCheck() {
-        RestAssured.baseURI = "http://localhost:8080";
-
         String jsonBody = "{" + "\"username\": \"TestUser1\"," + "\"name\": \"Mark Tester\"," +
                 "\"favArtist\": \"Coldplay\"," + "\"favGenre\": \"Pop\"," + "\"favSong\": \"Yellow\"," +
                 "\"biography\": \"Just a test bio\"" + "}";
@@ -80,23 +87,17 @@ public class MarkSystemTest {
                 .when()
                 .post("/profiles");
 
-
         assertEquals(200, response.getStatusCode());
-
         String responseBody = response.getBody().asString();
         assertTrue(responseBody.contains("success"));
     }
 
     @Test
     public void spotifySearchCheck() {
-        RestAssured.baseURI = "http://localhost:8080";
-
         Response response = RestAssured.given()
                 .param("query", "Taylor Swift")
                 .when()
                 .post("/api/songs/search");
-
-
         assertEquals(200, response.getStatusCode());
 
         String responseBody = response.getBody().asString();
