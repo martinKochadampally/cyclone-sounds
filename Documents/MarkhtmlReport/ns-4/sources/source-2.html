@@ -1,0 +1,230 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JamController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Jams</a>
+</div>
+
+<h1>Coverage Summary for Class: JamController (cycloneSounds.Jams)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JamController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (1/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Jams;
+&nbsp;
+&nbsp;import cycloneSounds.Credentials.CredentialRepository;
+&nbsp;import cycloneSounds.Credentials.Credentials;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponses;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;/**
+&nbsp; * Rest Controller Allowing Creating Reading and Deleteing Jams from the
+&nbsp; * database.
+&nbsp; *
+&nbsp; * @author martin
+&nbsp; */
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/jams&quot;)
+<b class="fc">&nbsp;public class JamController {</b>
+&nbsp;    @Autowired
+&nbsp;    private JamRepository jamRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private CredentialRepository credentialRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a new Jam with the specified name and assigns the user as manager.
+&nbsp;     * Only users with &#39;jamManager&#39; or &#39;admin&#39; account types are authorized.
+&nbsp;     *
+&nbsp;     * @param username Username of the jam manager creating the Jam
+&nbsp;     * @param jamName Name of the Jam to create
+&nbsp;     * @return ResponseEntity containing the created Jam or error status
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Create a new Jam&quot;,
+&nbsp;            description = &quot;Creates a new Jam if the user is authorized and the Jam name is not already taken.&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Jam successfully created&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Jam name already exists&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;403&quot;, description = &quot;User not authorized to create Jam&quot;)
+&nbsp;    })
+&nbsp;    @PostMapping(&quot;/{username}/{jamName}&quot;)
+&nbsp;    public ResponseEntity&lt;Jam&gt; createJam(@PathVariable String username, @PathVariable String jamName) {
+<b class="nc">&nbsp;        Credentials creds = credentialRepository.findById(username).orElse(null);</b>
+<b class="nc">&nbsp;        if (creds == null || (!creds.getAccountType().equals(&quot;jamManager&quot;) &amp;&amp; !creds.getAccountType().equals(&quot;admin&quot;))) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (jamRepository.existsById(jamName)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.badRequest().body(null);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        Jam jam = new Jam();</b>
+<b class="nc">&nbsp;        jam.setName(jamName);</b>
+<b class="nc">&nbsp;        jam.setManager(username);</b>
+<b class="nc">&nbsp;        jam.setMembers(List.of(username));</b>
+<b class="nc">&nbsp;        Jam savedJam = jamRepository.save(jam);</b>
+<b class="nc">&nbsp;        return ResponseEntity.ok(savedJam);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves all Jams from the repository.
+&nbsp;     *
+&nbsp;     * @return List of all Jam entities.
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get all Jams&quot;,
+&nbsp;            description = &quot;Retrieves a list of all Jams.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;List of Jams successfully retrieved&quot;)
+&nbsp;    @GetMapping
+&nbsp;    public List&lt;Jam&gt; getAllJams() {
+<b class="nc">&nbsp;        return jamRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves a Jam by its name.
+&nbsp;     *
+&nbsp;     * @param name Name of the Jam to retrieve
+&nbsp;     * @return ResponseEntity containing the Jam if found, or 404 if not found
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get Jam by name&quot;,
+&nbsp;            description = &quot;Retrieves details about a specific Jam by its name.&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Jam found&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Jam not found&quot;)
+&nbsp;    })
+&nbsp;    @GetMapping(&quot;/{name}&quot;)
+&nbsp;    public ResponseEntity&lt;Jam&gt; getJam(@PathVariable String name) {
+<b class="nc">&nbsp;        Optional&lt;Jam&gt; jamOpt = jamRepository.findById(name);</b>
+<b class="nc">&nbsp;        return jamOpt.map(ResponseEntity::ok).orElseGet(() -&gt; ResponseEntity.notFound().build());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Deletes a Jam by its name.
+&nbsp;     *
+&nbsp;     * @param name Name of the Jam to delete
+&nbsp;     * @return ResponseEntity with no content on successful deletion, or 404 if not found
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Delete Jam by name&quot;,
+&nbsp;            description = &quot;Deletes the Jam identified by the specified name.&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;204&quot;, description = &quot;Jam successfully deleted&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Jam not found&quot;)
+&nbsp;    })
+&nbsp;    @DeleteMapping(&quot;/{name}&quot;)
+&nbsp;    public ResponseEntity&lt;Void&gt; deleteJam(@PathVariable String name) {
+<b class="nc">&nbsp;        if (!jamRepository.existsById(name)) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+<b class="nc">&nbsp;        jamRepository.deleteById(name);</b>
+<b class="nc">&nbsp;        return ResponseEntity.noContent().build();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-02 21:29</div>
+</div>
+</body>
+</html>
