@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MusicActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">MusicActivity.java</span></div><h1>MusicActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+<span class="fc" id="L25">public class MusicActivity extends AppCompatActivity {</span>
+
+    private Button profileButton;
+    private Button homeButton;
+    private Button jamsButton;
+    private Button createButton;
+    private TableLayout tableLayout;
+
+    private static final String URL_STRING_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/reviews&quot;;
+    private static final String UP_VOTE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/review/upvote/&quot;;
+    private static final String DOWN_VOTE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/review/downvote/&quot;;
+    private static final String DELETE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/review/&quot;;
+<span class="fc" id="L37">    private final String URL_GET_ACCOUNT_TYPE = &quot;http://coms-3090-008.class.las.iastate.edu:8080/credentials/&quot;;</span>
+<span class="fc" id="L38">    private boolean isAdmin = false;</span>
+
+    interface AccountTypeCallback {
+        void onComplete();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="fc" id="L46">        super.onCreate(savedInstanceState);</span>
+<span class="fc" id="L47">        setContentView(R.layout.activity_music);</span>
+
+<span class="fc" id="L49">        homeButton = findViewById(R.id.home_button_btn);</span>
+<span class="fc" id="L50">        profileButton = findViewById(R.id.profile_button_btn);</span>
+<span class="fc" id="L51">        jamsButton = findViewById(R.id.jams_button_btn);</span>
+<span class="fc" id="L52">        createButton = findViewById(R.id.create_button_btn);</span>
+<span class="fc" id="L53">        tableLayout = findViewById(R.id.song_table);</span>
+
+<span class="fc" id="L55">        Bundle extras = getIntent().getExtras();</span>
+<span class="fc" id="L56">        String username = &quot;&quot;;</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (extras != null) {</span>
+<span class="fc" id="L58">            username = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+        }
+
+<span class="fc" id="L61">        String finalUsername = username;</span>
+<span class="fc" id="L62">        getAccountType(finalUsername, () -&gt; {</span>
+            // This code will run after the network request is complete
+<span class="nc" id="L64">            fetchMusicData(finalUsername);</span>
+<span class="nc" id="L65">        });</span>
+
+
+<span class="pc" id="L68">        homeButton.setOnClickListener(view -&gt; navigateTo(HomeActivity.class, finalUsername));</span>
+<span class="pc" id="L69">        profileButton.setOnClickListener(view -&gt; navigateTo(ProfileActivity.class, finalUsername));</span>
+<span class="pc" id="L70">        jamsButton.setOnClickListener(view -&gt; navigateTo(JamsActivity.class, finalUsername));</span>
+<span class="pc" id="L71">        createButton.setOnClickListener(view -&gt; navigateTo(CreateActivity.class, finalUsername));</span>
+<span class="fc" id="L72">    }</span>
+
+    private void fetchMusicData(final String username) {
+<span class="nc" id="L75">        clearTable();</span>
+
+<span class="nc" id="L77">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(</span>
+                Request.Method.GET,
+                URL_STRING_REQ,
+                null,
+                response -&gt; {
+<span class="nc" id="L82">                    Log.d(&quot;Volley Response&quot;, &quot;Received &quot; + response.length() + &quot; reviews.&quot;);</span>
+                    try {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L85">                            JSONObject reviewObject = response.getJSONObject(i);</span>
+
+<span class="nc" id="L87">                            String user = reviewObject.optString(&quot;reviewer&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L88">                            int rating = reviewObject.optInt(&quot;rating&quot;, 0);</span>
+<span class="nc" id="L89">                            int upvotes = reviewObject.optInt(&quot;upVotes&quot;, 0);</span>
+<span class="nc" id="L90">                            int downvotes = reviewObject.optInt(&quot;downVotes&quot;, 0);</span>
+<span class="nc" id="L91">                            int reviewId = reviewObject.optInt(&quot;id&quot;, -1);</span>
+
+<span class="nc" id="L93">                            JSONObject songObject = reviewObject.getJSONObject(&quot;song&quot;);</span>
+<span class="nc" id="L94">                            String title = songObject.optString(&quot;songName&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L95">                            String artist = songObject.optString(&quot;artist&quot;, &quot;N/A&quot;);</span>
+
+<span class="nc" id="L97">                            TableRow tableRow = new TableRow(MusicActivity.this);</span>
+<span class="nc" id="L98">                            tableRow.addView(createTextView(user, true));</span>
+<span class="nc" id="L99">                            tableRow.addView(createTextView(title, true));</span>
+<span class="nc" id="L100">                            tableRow.addView(createTextView(artist, true));</span>
+<span class="nc" id="L101">                            tableRow.addView(createTextView(String.valueOf(rating), true));</span>
+<span class="nc" id="L102">                            tableRow.addView(createTextView(String.valueOf(upvotes), true));</span>
+<span class="nc" id="L103">                            tableRow.addView(createTextView(String.valueOf(downvotes), true));</span>
+
+<span class="nc" id="L105">                            Button upvoteButton = createButton(&quot;Up&quot;, String.valueOf(reviewId), &quot;upvote&quot;, username);</span>
+<span class="nc" id="L106">                            Button downvoteButton = createButton(&quot;Down&quot;, String.valueOf(reviewId), &quot;downvote&quot;, username);</span>
+<span class="nc" id="L107">                            tableRow.addView(upvoteButton);</span>
+<span class="nc" id="L108">                            tableRow.addView(downvoteButton);</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">                            if (user.equals(username) || isAdmin) {</span>
+<span class="nc" id="L110">                                Button deleteButton = createDeleteButton(&quot;Del&quot;, String.valueOf(reviewId), username);</span>
+<span class="nc" id="L111">                                tableRow.addView(deleteButton);</span>
+<span class="nc" id="L112">                            } else {</span>
+<span class="nc" id="L113">                                tableRow.addView(new View(MusicActivity.this));</span>
+                            }
+<span class="nc" id="L115">                            tableLayout.addView(tableRow);</span>
+                        }
+<span class="nc" id="L117">                    } catch (JSONException e) {</span>
+<span class="nc" id="L118">                        Log.e(&quot;Volley JSON Error&quot;, &quot;Error parsing JSON array: &quot; + e.getMessage());</span>
+<span class="nc" id="L119">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L120">                    }</span>
+<span class="nc" id="L121">                },</span>
+                error -&gt; {
+<span class="nc" id="L123">                    Log.e(&quot;Volley Error&quot;, &quot;Error fetching reviews: &quot; + error.toString());</span>
+<span class="nc" id="L124">                    Toast.makeText(getApplicationContext(), &quot;Could not load reviews&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L125">                }</span>
+        );
+<span class="nc" id="L127">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);</span>
+<span class="nc" id="L128">    }</span>
+
+    private TextView createTextView(String text, boolean useWeight) {
+<span class="nc" id="L131">        TextView textView = new TextView(this);</span>
+<span class="nc" id="L132">        textView.setText(text);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (useWeight) {</span>
+<span class="nc" id="L134">            TableRow.LayoutParams params = new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f);</span>
+<span class="nc" id="L135">            textView.setLayoutParams(params);</span>
+        }
+<span class="nc" id="L137">        return textView;</span>
+    }
+
+    private void getAccountType(final String username, AccountTypeCallback callback) {
+<span class="fc" id="L141">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(</span>
+                Request.Method.GET,
+                URL_GET_ACCOUNT_TYPE + username,
+                null,
+                response -&gt; {
+                    try {
+<span class="nc" id="L147">                        String accountType = response.getString(&quot;accountType&quot;);</span>
+<span class="nc" id="L148">                        Log.d(&quot;MusicActivity&quot;, &quot;Account Type: &quot; + accountType);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                        if (accountType.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L150">                            isAdmin = true;</span>
+<span class="nc" id="L151">                            callback.onComplete();</span>
+                        } else {
+<span class="nc" id="L153">                            callback.onComplete();</span>
+                        }
+<span class="nc" id="L155">                    } catch (JSONException e) {</span>
+<span class="nc" id="L156">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L157">                    }</span>
+<span class="nc" id="L158">                },</span>
+                error -&gt; {
+<span class="fc" id="L160">                    Log.e(&quot;JamsActivity&quot;, &quot;Error: &quot; + error.getMessage());</span>
+<span class="fc" id="L161">                    Toast.makeText(getApplicationContext(), &quot;Could not load account type&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="fc" id="L162">                }</span>
+        );
+<span class="fc" id="L164">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);</span>
+<span class="fc" id="L165">    }</span>
+    private Button createButton(String text, final String reviewId, final String voteType, final String username) {
+<span class="nc" id="L167">        Button button = new Button(this);</span>
+<span class="nc" id="L168">        button.setText(text);</span>
+<span class="nc" id="L169">        button.setTextSize(11);</span>
+<span class="nc" id="L170">        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);</span>
+<span class="nc" id="L171">        params.width = 100;</span>
+<span class="nc" id="L172">        button.setLayoutParams(params);</span>
+<span class="nc" id="L173">        button.setOnClickListener(view -&gt; {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">            if (voteType.equals(&quot;upvote&quot;)) {</span>
+<span class="nc" id="L175">                voteForSong(reviewId, username, UP_VOTE_URL);</span>
+            } else {
+<span class="nc" id="L177">                voteForSong(reviewId, username, DOWN_VOTE_URL);</span>
+            }
+<span class="nc" id="L179">        });</span>
+<span class="nc" id="L180">        return button;</span>
+    }
+
+    private Button createDeleteButton(String text, final String reviewId, final String username) {
+<span class="nc" id="L184">        Button button = new Button(this);</span>
+<span class="nc" id="L185">        button.setText(text);</span>
+<span class="nc" id="L186">        button.setTextSize(10);</span>
+<span class="nc" id="L187">        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);</span>
+<span class="nc" id="L188">        params.width = 110;</span>
+<span class="nc" id="L189">        button.setLayoutParams(params);</span>
+<span class="nc" id="L190">        button.setOnClickListener(view -&gt; deleteRating(reviewId, username));</span>
+<span class="nc" id="L191">        return button;</span>
+    }
+
+    private void deleteRating(final String reviewId, final String username) {
+<span class="nc" id="L195">        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, DELETE_URL + reviewId,</span>
+                response -&gt; {
+<span class="nc" id="L197">                    Log.d(&quot;Delete Response&quot;, response);</span>
+<span class="nc" id="L198">                    Toast.makeText(MusicActivity.this, &quot;Deleted&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L199">                    fetchMusicData(username);</span>
+<span class="nc" id="L200">                },</span>
+                error -&gt; {
+<span class="nc" id="L202">                    Log.e(&quot;Delete Error&quot;, error.toString());</span>
+<span class="nc" id="L203">                    Toast.makeText(MusicActivity.this, &quot;Delete Error&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L204">                });</span>
+<span class="nc" id="L205">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L206">    }</span>
+
+    private void voteForSong(final String reviewId, final String username, String url) {
+<span class="nc" id="L209">        StringRequest stringRequest = new StringRequest(Request.Method.PUT, url + reviewId,</span>
+                response -&gt; {
+<span class="nc" id="L211">                    Log.d(&quot;Vote Response&quot;, response);</span>
+<span class="nc" id="L212">                    Toast.makeText(MusicActivity.this, &quot;Voted&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L213">                    fetchMusicData(username);</span>
+<span class="nc" id="L214">                },</span>
+                error -&gt; {
+<span class="nc" id="L216">                    Log.e(&quot;Vote Error&quot;, error.toString());</span>
+<span class="nc" id="L217">                    Toast.makeText(MusicActivity.this, &quot;Vote Error&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L218">                });</span>
+<span class="nc" id="L219">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L220">    }</span>
+
+    private void clearTable() {
+<span class="nc" id="L223">        int childCount = tableLayout.getChildCount();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (childCount &gt; 1) {</span>
+<span class="nc" id="L225">            tableLayout.removeViews(1, childCount - 1);</span>
+        }
+<span class="nc" id="L227">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass, String username) {
+<span class="nc" id="L230">        Intent intent = new Intent(MusicActivity.this, activityClass);</span>
+<span class="nc" id="L231">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L232">        intent.putExtra(&quot;PROFILE_TO_VIEW&quot;, username);</span>
+<span class="nc" id="L233">        startActivity(intent);</span>
+<span class="nc" id="L234">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>
