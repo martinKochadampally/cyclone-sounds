@@ -150,7 +150,8 @@ public class JamsActivity extends AppCompatActivity {
                             String jamName = jamObject.optString("name", "N/A");
                             String numParticipants = jamObject.optString("membersSize");
                             String admin = jamObject.optString("manager", "N/A");
-                            addJam(jamName, numParticipants, admin, username);
+                            String approvalType = jamObject.optString("approvalType", "Manager"); // Default to manager
+                            addJam(jamName, numParticipants, admin, username, approvalType);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
@@ -163,7 +164,7 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
-    private void addJam(String name, String numParticipants, String admin, String username) {
+    private void addJam(String name, String numParticipants, String admin, String username, String approvalType) {
         TableRow newRow = new TableRow(this);
 
         TextView nameView = new TextView(this);
@@ -176,6 +177,7 @@ public class JamsActivity extends AppCompatActivity {
             intent.putExtra("LOGGED_IN_USERNAME", username);
             intent.putExtra("JAM_NAME", name);
             intent.putExtra("JAM_ADMIN", admin);
+            intent.putExtra("APPROVAL_TYPE", approvalType);
             startActivity(intent);
         });
 
@@ -189,9 +191,15 @@ public class JamsActivity extends AppCompatActivity {
         adminView.setPadding(8, 8, 8, 8);
         adminView.setGravity(Gravity.START);
 
+        TextView approvalView = new TextView(this);
+        approvalView.setText(approvalType);
+        approvalView.setPadding(8, 8, 8, 8);
+        approvalView.setGravity(Gravity.START);
+
         newRow.addView(nameView);
         newRow.addView(participantsView);
         newRow.addView(adminView);
+        newRow.addView(approvalView);
 
         if (admin.equals(username) || accountType.equals("admin")) {
             Button deleteButton = new Button(this);
