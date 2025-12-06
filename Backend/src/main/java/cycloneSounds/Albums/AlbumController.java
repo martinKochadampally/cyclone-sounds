@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequestMapping("albums")
 @RestController
 public class AlbumController {
 
@@ -15,18 +16,23 @@ public class AlbumController {
     @Autowired
     private SpotifyService spotifyService;
 
-    @GetMapping(path = "/albums/search/{name}")
-    public Album searchAlbum(@PathVariable String name) {
-        return spotifyService.searchAndSaveAlbum(name).block();
+    @GetMapping(path = "/search/{name}")
+    public List<Album> searchAlbum(@PathVariable String name) {
+        return albumRepository.findByTitleContaining(name);
     }
 
-    @GetMapping(path = "/albums")
+    @GetMapping(path = "/")
     public List<Album> getAllAlbums() {
         return albumRepository.findAll();
     }
 
-    @GetMapping(path = "/albums/{id}")
+    @GetMapping(path = "/{id}")
     public Album getAlbumById(@PathVariable int id) {
         return albumRepository.findById(id).orElse(null);
+    }
+
+    @GetMapping("/spotify/{spotifyId}")
+    public Album getAlbumBySpotifyId(@PathVariable String spotifyId) {
+        return albumRepository.findBySpotifyId(spotifyId);
     }
 }

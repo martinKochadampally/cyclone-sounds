@@ -27,6 +27,8 @@ public class Song {
     @JoinColumn(name = "album_id")
     @JsonIgnore
     private Album album;
+
+
     public Song() {}
 
     public Song(String songName, String artist) {
