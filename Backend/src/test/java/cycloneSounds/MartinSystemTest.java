@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;	// SBv3
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 public class MartinSystemTest {
     @LocalServerPort
@@ -53,12 +54,9 @@ public class MartinSystemTest {
      */
     @Test
     public void jamPostTest1() {
-        String username = "jamManagerTest_" + System.currentTimeMillis();
-        String jamName  = "jamTest_" + System.currentTimeMillis();
-
         // Create jam manager
         RestAssured.given()
-                .param("username", username)
+                .param("username", "user1")
                 .param("password", "password1")
                 .param("accountType", "jamManager")
                 .when()
@@ -67,14 +65,14 @@ public class MartinSystemTest {
         // Optionally confirm credentials exist
         RestAssured.given()
                 .when()
-                .get("/credentials/" + username)
+                .get("/credentials/" + "user1")
                 .then()
                 .statusCode(200);
 
         // Create jam
         Response response = RestAssured.given()
-                .pathParam("username", username)
-                .pathParam("jamName", jamName)
+                .pathParam("username", "user1")
+                .pathParam("jamName", "jam-test1")
                 .when()
                 .post("/api/jams/{username}/{jamName}");
 
@@ -82,8 +80,8 @@ public class MartinSystemTest {
 
         String body = response.getBody().asString();
         JSONObject json = new JSONObject(body);
-        assertEquals(jamName, json.getString("name"));
-        assertEquals(username, json.getString("manager"));
+        assertEquals("jam-test1", json.getString("name"));
+        assertEquals("user1", json.getString("manager"));
     }
 
 
@@ -128,13 +126,13 @@ public class MartinSystemTest {
 
         RestAssured.given().
                 pathParam("username", "user4").
-                pathParam("jamName", "jam4").
+                pathParam("jamName", "jam").
                 when().
                 post("/api/jams/{username}/{jamName}");
 
         RestAssured.given().
                 pathParam("username", "user5").
-                pathParam("jamName", "jam5").
+                pathParam("jamName", "jam").
                 when().
                 post("/api/jams/{username}/{jamName}").
                 then().
