@@ -2,6 +2,7 @@ package cycloneSounds.Jams;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -19,6 +20,7 @@ public class JamMessage {
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "jam_name", nullable = false)
+    @JsonIgnore
     private Jam jam;
 
     @Lob
