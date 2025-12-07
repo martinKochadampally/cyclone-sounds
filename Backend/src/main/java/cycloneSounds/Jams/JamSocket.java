@@ -29,6 +29,8 @@ public class JamSocket {
     private static final Map<Session, String> sessionJamMap = new Hashtable<>();
     private static final Map<Session, String> sessionUsernameMap = new Hashtable<>();
     private static final Map<String, Map<Session, String>> jamSessions = new ConcurrentHashMap<>();
+    // <Jam Name, <Song Id, <Username, Vote>>>
+    private static final Map<String, Map<String, Map<String, String>>> jamVotes = new ConcurrentHashMap<>();
 
     private final Logger logger = LoggerFactory.getLogger(JamSocket.class);
 
@@ -84,24 +86,38 @@ public class JamSocket {
         }
 
         try {
-            // Check if message is JSON (for special message types like song suggestions)
             if (message.trim().startsWith("{")) {
                 JSONObject messageJson = new JSONObject(message);
                 String type = messageJson.optString("type", "chat");
 
                 if ("song_suggestion".equals(type)) {
-                    // Handle song suggestion - broadcast JSON to admin
                     String adminUsername = messageJson.getString("receiver");
                     broadcastToSpecificUser(jamName, adminUsername, message);
                     return;
                 }
-                // If it's a chat type JSON, extract content
                 else if ("chat".equals(type)) {
                     message = messageJson.getString("content");
                 }
+                else if ("song_vote".equals(type)) {
+                    String song = messageJson.getString("song");
+                    String artist = messageJson.getString("artist");
+                    String voter = messageJson.getString("voter");
+                    String vote = messageJson.getString("vote"); // "yes" or "no"
+                    String songId = song + ":" + artist;
+
+                    jamVotes.putIfAbsent(jamName, new ConcurrentHashMap<>());
+                    Map<String, Map<String, String>> songsInJam = jamVotes.get(jamName);
+
+                    songsInJam.putIfAbsent(songId, new ConcurrentHashMap<>());
+                    Map<String, String> currentVotes = songsInJam.get(songId);
+
+
+                    currentVotes.put(voter, vote);
+
+                    checkVoteResult(jamName, song, artist, currentVotes);
+                }
             }
 
-            // Handle regular chat message (plain text)
             JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             Optional<Jam> jamOpt = jamRepository.findById(jamName);
@@ -111,11 +127,9 @@ public class JamSocket {
             }
             Jam jam = jamOpt.get();
 
-            // Create and save message entity
             JamMessage jamMessage = new JamMessage(username, jam, message);
             jamMessageRepository.save(jamMessage);
 
-            // Broadcast message to all sessions in this jam
             broadcastToJam(jamName, username + ": " + message);
         } catch (Exception e) {
             logger.error("Failed to process message", e);
@@ -138,7 +152,6 @@ public class JamSocket {
                 broadcastToJam(jamName, username + " has left the jam.");
             } catch (Exception e) {
                 logger.error("Error during WebSocket close handling for user " + username, e);
-                // Allow disconnect to proceed despite error
             }
         }
 
@@ -164,6 +177,30 @@ public class JamSocket {
                     jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, throwable.getMessage()));
         } catch (IOException e) {
             logger.error("Failed to close session on error", e);
+        }
+    }
+
+    private void checkVoteResult(String jamName, String song, String artist, Map<String, String> votes) {
+        int totalUsers = jamSessions.get(jamName).size();
+        long yesVotes = votes.values().stream().filter(v -> "yes".equals(v)).count();
+        long noVotes = votes.values().stream().filter(v -> "no".equals(v)).count();
+
+        JSONObject resultJson = new JSONObject();
+        try {
+            resultJson.put("type", "vote_result");
+            resultJson.put("song", song);
+
+            if (yesVotes > totalUsers / 2.0) {
+                resultJson.put("result", "approved");
+                broadcastToJam(jamName, resultJson.toString());
+                votes.clear();
+            } else if (noVotes >= totalUsers / 2.0) {
+                resultJson.put("result", "rejected");
+                broadcastToJam(jamName, resultJson.toString());
+                votes.clear();
+            }
+        } catch (JSONException e) {
+            logger.error("Error creating vote result JSON", e);
         }
     }
 
