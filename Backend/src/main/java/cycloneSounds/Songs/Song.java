@@ -19,7 +19,7 @@ public class Song {
 
     @Column(name = "spotifyId")
     private String spotifyId;
-
+    
     public Song() {}
 
     public Song(String songName, String artist) {
@@ -68,5 +68,10 @@ public class Song {
 
     public void setSpotifyId(String spotifyId) {
         this.spotifyId = spotifyId;
+    }
+
+    //This is a getter to send the exact url for frontend to play the song in webPlayer.
+    public String getEmbedUrl() {
+        return "https://open.spotify.com/embed/track/" + this.spotifyId;
     }
 }
