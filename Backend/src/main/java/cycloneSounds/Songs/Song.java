@@ -1,6 +1,5 @@
 package cycloneSounds.Songs;
 
-import cycloneSounds.Albums.Album;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import cycloneSounds.Albums.Album;
@@ -79,6 +78,15 @@ public class Song {
         this.spotifyId = spotifyId;
     }
 
-    public Album getAlbum() { return album; }
-    public void setAlbum(Album album) { this.album = album; }
+    public Album getAlbum() {
+        return album;
+    }
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
+    //URL for frontend to use when building embedded spotify player
+    public String getEmbedUrl() {
+        return "https://open.spotify.com/embed/track/" + this.spotifyId;
+    }
 }
