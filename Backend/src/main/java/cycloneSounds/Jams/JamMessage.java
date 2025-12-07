@@ -31,9 +31,9 @@ public class JamMessage {
     @Column(name = "sent", nullable = false)
     private Date sent;
 
-    // Optional: message type for possible message/command distinction
+
     @Column(nullable = false)
-    private String messageType = "CHAT";  // default "CHAT", can be "PLAYLIST_CMD", "SYSTEM", etc.
+    private String messageType = "CHAT";
 
     public JamMessage() {
         this.sent = new Date();
