@@ -18,6 +18,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button createButton;
     private Button myPlaylistsButton;
     private Button friendsButton;
+    private Button albumsButton;
     private ImageButton searchButton;
 
     private String currentUsername;
@@ -35,6 +36,7 @@ public class HomeActivity extends AppCompatActivity {
         createButton = findViewById(R.id.create_button_btn);
         myPlaylistsButton = findViewById(R.id.my_playlists_btn);
         friendsButton = findViewById(R.id.friends_button_btn);
+        albumsButton = findViewById(R.id.albums_button_btn);
         searchButton = findViewById(R.id.search_button);
 
         Intent intent = getIntent();
@@ -51,6 +53,12 @@ public class HomeActivity extends AppCompatActivity {
             Intent myPlaylistsIntent = new Intent(HomeActivity.this, MyPlaylistsActivity.class);
             myPlaylistsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
             startActivity(myPlaylistsIntent);
+        });
+
+        albumsButton.setOnClickListener(view -> {
+            Intent albumsIntent = new Intent(HomeActivity.this, AlbumsActivity.class);
+            albumsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            startActivity(albumsIntent);
         });
 
         searchButton.setOnClickListener(view -> {
