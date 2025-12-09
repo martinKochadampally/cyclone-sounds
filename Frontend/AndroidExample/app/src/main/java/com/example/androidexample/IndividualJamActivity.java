@@ -41,27 +41,47 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This activity represents a single "Jam" session. It includes a real-time chat, a feature
+ * for suggesting songs, and admin controls for managing the jam's associated playlist.
+ */
 public class IndividualJamActivity extends AppCompatActivity {
 
+    // API and WebSocket URLs
     private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
     private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
     private static final String SONGS_SEARCH_URL = "http://coms-3090-008.class.las.iastate.edu:8080/search/songs";
     private String WEB_SOCKET_URL;
+
+    // Volley and user/jam data
     private RequestQueue requestQueue;
     private String currentUsername;
     private String jamName;
     private String jamAdmin;
+
+    // UI elements
     private RecyclerView chatRecyclerView;
     private EditText messageInput;
     private Button sendButton, suggestSongButton, jamSettingsButton;
 
+    // State flag
     private boolean jamHasPlaylist = false;
 
+    // Chat components
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messageList;
 
+    // WebSocket client
     private WebSocketClient webSocketClient;
 
+    /**
+     * Called when the activity is first created. Initializes the UI, sets up the WebSocket connection,
+     * fetches chat history, and configures user/admin specific UI elements.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +96,7 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         Log.d("IndividualJamActivity", "Jam Admin: " + jamAdmin);
 
-
+        // Construct WebSocket URL for this specific jam and user.
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jams/" + jamName + "/"+ currentUsername;
 
         requestQueue = Volley.newRequestQueue(this);
@@ -94,6 +114,7 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         suggestSongButton.setEnabled(false);
 
+        // Show admin-specific buttons if the user is the jam admin.
         if (currentUsername != null && currentUsername.equals(jamAdmin)) {
             jamSettingsButton.setVisibility(View.VISIBLE);
         }
@@ -118,13 +139,19 @@ public class IndividualJamActivity extends AppCompatActivity {
         fetchPlaylistsAndSetupSuggestionsButton();
     }
 
+    /**
+     * Handles the up navigation button press, finishing the activity.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
 
-
+    /**
+     * Fetches the chat history for this jam from the server.
+     * @param jamName The name of the jam.
+     */
     private void fetchChatHistory(String jamName) {
         String url = HTTP_BASE_URL + "/api/jam/chatHistory/" + jamName;
 
@@ -135,14 +162,14 @@ public class IndividualJamActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject messageJson = response.getJSONObject(i);
                             String content = messageJson.getString("content");
-                            String[] messages = content.split("\\r?\\n");
+                            String[] messages = content.split("\\r?\\n"); // Split history which might be a single block.
                             for (String msg : messages) {
                                 // Parse each line for sender and content, similar to WebSocket onMessage
                                 String[] parts = msg.split(": ", 2);
                                 if (parts.length == 2) {
                                     messageList.add(new ChatMessage(parts[0], parts[1]));
                                 } else if (!msg.trim().isEmpty()){
-                                    // Fallback for messages without a specific sender
+                                    // Fallback for messages without a specific sender (e.g., system messages).
                                     messageList.add(new ChatMessage("System", msg));
                                 }
                             }
@@ -155,6 +182,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
+                    // Log and display error if chat history fails to load.
                     String errorMessage = "Error loading chat history";
                     if (error.networkResponse != null && error.networkResponse.data != null) {
                         try {
@@ -171,10 +199,15 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         requestQueue.add(jsonArrayRequest);
     }
+
+    /**
+     * Checks if a playlist for this jam exists and enables the "Suggest Song" button accordingly.
+     */
     private void fetchPlaylistsAndSetupSuggestionsButton() {
         String url = URL_STRING_REQ + "owner/" + jamAdmin;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
+                    // Check if the response contains a playlist with the same name as the jam.
                     if (response.toString().contains(jamName)) {
                         jamHasPlaylist = true;
                         suggestSongButton.setEnabled(true);
@@ -192,6 +225,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
+    /**
+     * Creates and connects the WebSocket client for real-time communication.
+     */
     private void createWebSocketClient() {
         URI uri;
         try {
@@ -211,12 +247,13 @@ public class IndividualJamActivity extends AppCompatActivity {
             public void onMessage(String message) {
                 Log.d("IndividualJamActivity", "Received message: " + message);
 
-                // Check if message is JSON
+                // Check if the message is a JSON object (for special messages like song suggestions).
                 if (message.trim().startsWith("{")) {
                     try {
                         JSONObject messageJson = new JSONObject(message);
                         String type = messageJson.optString("type", "chat");
 
+                        // Handle song suggestion messages.
                         if ("song_suggestion".equals(type)) {
                             if (currentUsername.equals(jamAdmin)) {
                                 String song = messageJson.getString("song");
@@ -231,7 +268,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                     }
                 }
 
-                // Handle plain text message (format: "username: content")
+                // Handle plain text chat messages.
                 runOnUiThread(() -> {
                     String[] parts = message.split(": ", 2);
                     if (parts.length == 2) {
@@ -257,6 +294,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         webSocketClient.connect();
     }
 
+    /**
+     * Gets text from the input field and sends it as a chat message.
+     */
     private void sendMessage() {
         String content = messageInput.getText().toString().trim();
         if (content.isEmpty()) {
@@ -266,9 +306,14 @@ public class IndividualJamActivity extends AppCompatActivity {
         sendMessageToBackend(new ChatMessage(currentUsername, content), jamName);
     }
 
+    /**
+     * Sends a chat message object to the backend via WebSocket.
+     * @param message The ChatMessage to send.
+     * @param jamName The name of the jam (context).
+     */
     private void sendMessageToBackend(ChatMessage message, String jamName) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
-            // Send plain text for chat messages
+            // Send plain text content for chat messages.
             webSocketClient.send(message.getContent());
             Log.d(message.getSender(), message.getContent());
         } else {
@@ -276,7 +321,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Shows a dialog for users to search for and suggest a song.
+     */
     private void showSuggestSongDialog() {
         if (!jamHasPlaylist) {
             Toast.makeText(this, "Admin has not created a playlist for this jam yet.", Toast.LENGTH_LONG).show();
@@ -285,22 +332,17 @@ public class IndividualJamActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Suggest a Song");
 
-        // Create a layout for the dialog
+        // Create a custom layout for the dialog.
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(50, 50, 50, 50);
 
-        // Search input and button in a horizontal layout
         LinearLayout searchLayout = new LinearLayout(this);
         searchLayout.setOrientation(LinearLayout.HORIZONTAL);
 
         final EditText searchInput = new EditText(this);
         searchInput.setHint("Enter song name");
-        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1.0f
-        );
+        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
         searchInput.setLayoutParams(editTextParams);
         searchLayout.addView(searchInput);
 
@@ -310,16 +352,14 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         layout.addView(searchLayout);
 
-        // Results table in a ScrollView
         ScrollView scrollView = new ScrollView(this);
         TableLayout resultsTable = new TableLayout(this);
         resultsTable.setStretchAllColumns(true);
 
-        // Add a header row to the table
         TableRow headerRow = new TableRow(this);
         headerRow.addView(createTextViewForDialog("Song"));
         headerRow.addView(createTextViewForDialog("Artist"));
-        headerRow.addView(createTextViewForDialog("")); // for button
+        headerRow.addView(createTextViewForDialog("")); // Placeholder for button column
         resultsTable.addView(headerRow);
 
         scrollView.addView(resultsTable);
@@ -341,6 +381,11 @@ public class IndividualJamActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Searches for songs to be suggested and populates the results in the dialog's table.
+     * @param query The search query.
+     * @param resultsTable The table to populate with search results.
+     */
     private void searchSongsForSuggestion(String query, TableLayout resultsTable) {
         String url = SONGS_SEARCH_URL + "/" + query;
 
@@ -356,7 +401,6 @@ public class IndividualJamActivity extends AppCompatActivity {
                 error -> {
                     Log.e("Volley Error", "Error searching songs: " + error.toString());
                     Toast.makeText(getApplicationContext(), "Song not found", Toast.LENGTH_SHORT).show();
-                    // Clear previous results
                     int childCount = resultsTable.getChildCount();
                     if (childCount > 1) { // Keep header
                         resultsTable.removeViews(1, childCount - 1);
@@ -366,11 +410,15 @@ public class IndividualJamActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
-
+    /**
+     * Populates the search table within the suggestion dialog.
+     * @param songs The JSONArray of songs found.
+     * @param table The table to populate.
+     * @throws JSONException If JSON parsing fails.
+     */
     private void populateSuggestionSearchTable(JSONArray songs, TableLayout table) throws JSONException {
-        // Clear previous results, keeping the header
         int childCount = table.getChildCount();
-        if (childCount > 1) {
+        if (childCount > 1) { // Clear previous results, keep header
             table.removeViews(1, childCount - 1);
         }
 
@@ -388,6 +436,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Helper to create a TextView for the dialog table.
+     */
     private TextView createTextViewForDialog(String text) {
         TextView textView = new TextView(this);
         textView.setText(text);
@@ -396,15 +447,24 @@ public class IndividualJamActivity extends AppCompatActivity {
         return textView;
     }
 
+    /**
+     * Creates a "Suggest" button for a song in the search results.
+     * @param songName The name of the song.
+     * @param artist The artist of the song.
+     * @return The created Button.
+     */
     private Button createSuggestButton(final String songName, final String artist) {
         Button button = new Button(this);
         button.setText("Suggest");
-        button.setOnClickListener(v -> {
-            sendSongSuggestion(songName, artist);
-        });
+        button.setOnClickListener(v -> sendSongSuggestion(songName, artist));
         return button;
     }
 
+    /**
+     * Sends a song suggestion to the jam admin via WebSocket.
+     * @param songName The name of the suggested song.
+     * @param artist The artist of the suggested song.
+     */
     private void sendSongSuggestion(String songName, String artist) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject suggestionJson = new JSONObject();
@@ -417,6 +477,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                 webSocketClient.send(suggestionJson.toString());
                 Log.d("Song Suggestion", suggestionJson.toString());
                 Toast.makeText(this, "Song suggested!", Toast.LENGTH_SHORT).show();
+                // Also send a plain text message to the chat about the suggestion.
                 if (webSocketClient != null && webSocketClient.isOpen()) {
                     webSocketClient.send(currentUsername + " suggested adding '" + songName + "'");
                 }
@@ -428,6 +489,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Displays the admin menu with options for the jam.
+     */
     private void showAdminMenu() {
         final CharSequence[] options = {"Create Jam Playlist", "Cancel"};
 
@@ -443,6 +507,11 @@ public class IndividualJamActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Sends a request to the server to create a new playlist for the jam.
+     * @param user The username of the admin creating the playlist.
+     * @param playlistName The name of the playlist, which is the same as the jam name.
+     */
     private void createPlaylistRequest(final String user, final String playlistName) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
@@ -453,7 +522,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                     if (webSocketClient != null && webSocketClient.isOpen()) {
                         webSocketClient.send("Admin " + jamAdmin + " created a playlist for this jam");
                     }
-                    fetchPlaylistsAndSetupSuggestionsButton();
+                    fetchPlaylistsAndSetupSuggestionsButton(); // Re-check to enable suggestion button.
                 },
                 error -> {
                     Log.e("Volley Error", error.toString());
@@ -471,6 +540,12 @@ public class IndividualJamActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
+    /**
+     * Shows a dialog to the jam admin to approve or reject a song suggestion.
+     * @param song The name of the song.
+     * @param artist The artist of the song.
+     * @param suggester The user who suggested the song.
+     */
     private void showApprovalDialog(String song, String artist, String suggester) {
         new AlertDialog.Builder(this)
                 .setTitle("Song Suggestion")
@@ -487,6 +562,11 @@ public class IndividualJamActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Adds an approved song to the jam's playlist.
+     * @param songName The name of the song.
+     * @param artist The artist of the song.
+     */
     private void addSongToPlaylist(final String songName, final String artist) {
         String url = URL_STRING_REQ + currentUsername + "/" + jamName + "/add";
 
@@ -497,7 +577,6 @@ public class IndividualJamActivity extends AppCompatActivity {
                     if (webSocketClient != null && webSocketClient.isOpen()) {
                         webSocketClient.send("Suggestion for '" + songName + "' was approved by the admin");
                     }
-                    // Refresh the playlist to show the newly added song
                 },
                 error -> {
                     Log.e("Volley Error", "Error adding song: " + error.toString());
@@ -516,6 +595,9 @@ public class IndividualJamActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
+    /**
+     * Called when the activity is being destroyed. Ensures the WebSocket client is closed.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
