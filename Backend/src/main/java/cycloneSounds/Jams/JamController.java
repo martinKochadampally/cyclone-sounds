@@ -44,7 +44,7 @@ public class JamController {
             @ApiResponse(responseCode = "403", description = "User not authorized to create Jam")
     })
     @PostMapping("/{username}/{jamName}/{approvalType}")
-    public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName) {
+    public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName, @PathVariable String approvalType) {
         Credentials creds = credentialRepository.findById(username).orElse(null);
         if (creds == null || (!creds.getAccountType().equals("jamManager") && !creds.getAccountType().equals("admin"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
