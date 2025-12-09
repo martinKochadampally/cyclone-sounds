@@ -140,7 +140,7 @@ public class IndividualJamActivity extends AppCompatActivity {
 
 
     private void fetchChatHistory(String jamName) {
-        String url = HTTP_BASE_URL + "/api/jam/chatHistory/" + jamName;
+        String url = HTTP_BASE_URL + "/api/jams/chatHistory/" + jamName;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {

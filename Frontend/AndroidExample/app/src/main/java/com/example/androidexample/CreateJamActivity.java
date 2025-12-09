@@ -73,7 +73,7 @@ public class CreateJamActivity extends AppCompatActivity {
     private void createJamRequest(final String user, final String jamName, final String genre, final String approvalType) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
-                URL_STRING_REQ + "/" + currentUsername + "/" + jamName,
+                URL_STRING_REQ + "/" + currentUsername + "/" + jamName + "/" + approvalType,
                 response -> {
                     Log.d("Volley Response", response);
                     Toast.makeText(getApplicationContext(), "Jam Created Successfully!", Toast.LENGTH_LONG).show();
