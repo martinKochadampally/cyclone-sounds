@@ -157,6 +157,8 @@ public class JamSocket {
                     broadcastJson.put("type", "song_vote_request");
                     broadcastJson.put("voteId", voteId);
                     broadcastJson.put("songId", songId);
+                    broadcastJson.put("song", song.getSongName());
+                    broadcastJson.put("artist", song.getSongArtist());
                     broadcastJson.put("suggester", suggester);
 
                     broadcastToJam(jamName, broadcastJson.toString());

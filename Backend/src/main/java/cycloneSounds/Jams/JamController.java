@@ -43,7 +43,7 @@ public class JamController {
             @ApiResponse(responseCode = "400", description = "Jam name already exists"),
             @ApiResponse(responseCode = "403", description = "User not authorized to create Jam")
     })
-    @PostMapping("/{username}/{jamName}")
+    @PostMapping("/{username}/{jamName}/{approvalType}")
     public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName) {
         Credentials creds = credentialRepository.findById(username).orElse(null);
         if (creds == null || (!creds.getAccountType().equals("jamManager") && !creds.getAccountType().equals("admin"))) {
@@ -54,6 +54,7 @@ public class JamController {
         }
         Jam jam = new Jam();
         jam.setName(jamName);
+        jam.setApprovalType(approvalType);
         jam.setManager(username);
         jam.setMembers(List.of(username));
         Jam savedJam = jamRepository.save(jam);
