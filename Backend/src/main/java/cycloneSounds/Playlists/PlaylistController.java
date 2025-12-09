@@ -81,8 +81,12 @@ public class PlaylistController {
     })
     @PostMapping("/{username}/{playlistName}/add")
     public ResponseEntity<Playlist> addSongToPlaylist(@PathVariable String username, @PathVariable String playlistName, @RequestParam String songName, @RequestParam String artist) {
-        Playlist playlist = playlistService.addSongToPlaylist(username, playlistName, songName, artist);
-        return ResponseEntity.ok(playlist);
+        try {
+            Playlist playlist = playlistService.addSongToPlaylist(username, playlistName, songName, artist);
+            return ResponseEntity.ok(playlist);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(null);
+        }
     }
 
     /**
