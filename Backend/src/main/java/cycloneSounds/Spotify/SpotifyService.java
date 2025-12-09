@@ -2,6 +2,7 @@ package cycloneSounds.Spotify;
 
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Spotify.SpotifyDTO.SpotifyAlbum;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifyArtist;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifySearchResponse;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifyTrack;
@@ -15,10 +16,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
+
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class for interacting with the Spotify API.
@@ -36,6 +38,7 @@ public class SpotifyService {
 
     @Autowired
     private AlbumRepository albumRepository;
+
     /**
      * Constructor initializes Spotify service with credentials.
      * @param clientId
@@ -46,7 +49,7 @@ public class SpotifyService {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.webClient = WebClient.builder()
-                .baseUrl("https://api.spotify.com/v1")
+                .baseUrl("https://api.spotify.com/v1") // Fixed base URL to standard Spotify API
                 .build();
     }
 
@@ -56,7 +59,7 @@ public class SpotifyService {
      */
     public Mono<String> getAccessToken() {
         WebClient authClient = WebClient.builder()
-                .baseUrl("https://accounts.spotify.com/api/token")
+                .baseUrl("https://accounts.spotify.com/api/token") // Fixed Auth URL
                 .build();
 
         String credentials = Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes());
@@ -68,6 +71,37 @@ public class SpotifyService {
                 .retrieve()
                 .bodyToMono(SpotifyTokenResponse.class)
                 .map(SpotifyTokenResponse::access_token);
+    }
+
+    /**
+     * MAIN METHOD FOR FRONTEND:
+     * Checks if album exists, creates it if missing, populates songs, and returns the full entity.
+     * @param spotifyAlbumId
+     * @return Album
+     */
+    public Album syncAlbumBySpotifyId(String spotifyAlbumId) {
+        Album album = albumRepository.findBySpotifyId(spotifyAlbumId);
+
+        if (album == null) {
+            album = getAccessToken().flatMap(token -> {
+                return webClient.get()
+                        .uri("/albums/" + spotifyAlbumId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .bodyToMono(SpotifyAlbum.class)
+                        .map(spotifyAlbumDto -> {
+                            Album newAlbum = new Album();
+                            newAlbum.setTitle(spotifyAlbumDto.getName());
+                            newAlbum.setSpotifyId(spotifyAlbumDto.getId());
+                            // Default artist until tracks populate it
+                            newAlbum.setArtist("Unknown Artist");
+                            return albumRepository.save(newAlbum);
+                        });
+            }).block();
+        }
+
+        populateAlbumTracks(album);
+        return albumRepository.findBySpotifyId(spotifyAlbumId);
     }
 
     /**
@@ -99,6 +133,7 @@ public class SpotifyService {
      * Fetches tracks for an existing Album entity and saves them to the DB.
      * This blocks (waits) until the operation is done so the Controller can return the full list immediately.
      */
+    @Transactional
     public void populateAlbumTracks(Album album) {
         String spotifyAlbumId = album.getSpotifyId();
 
@@ -108,12 +143,18 @@ public class SpotifyService {
 
         getAccessToken().flatMap(token -> {
             return webClient.get()
-                    .uri("/albums/" + spotifyAlbumId + "/tracks?limit=50")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).retrieve()
+                    .uri("/albums/" + album.getSpotifyId() + "/tracks?limit=50")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
                     .bodyToMono(SpotifyTracksResponse.class)
                     .doOnNext(response -> {
                         if (response != null && response.getItems() != null) {
                             List<SpotifyTrack> tracks = response.getItems();
+
+                            if ("Unknown Artist".equals(album.getArtist()) && !tracks.isEmpty() && !tracks.get(0).getArtists().isEmpty()) {
+                                album.setArtist(tracks.get(0).getArtists().get(0).getName());
+                                albumRepository.save(album);
+                            }
 
                             for (SpotifyTrack track : tracks) {
                                 try {
@@ -220,7 +261,7 @@ public class SpotifyService {
     /**
      * Fetches the list of tracks for a specific Album ID.
      */
-    private Mono<Album> getAlbumTracks(String spotifyAlbumId, String token, cycloneSounds.Spotify.SpotifyDTO.SpotifyAlbum spotifyAlbumData) {
+    private Mono<Album> getAlbumTracks(String spotifyAlbumId, String token, SpotifyAlbum spotifyAlbumData) {
         return webClient.get()
                 .uri("/albums/" + spotifyAlbumId + "/tracks?limit=50")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -234,7 +275,7 @@ public class SpotifyService {
     /**
      * Saves the Album and links all its tracks.
      */
-    private Album saveFullAlbumToDatabase(cycloneSounds.Spotify.SpotifyDTO.SpotifyAlbum spotifyAlbumDTO, List<SpotifyTrack> tracks) {
+    private Album saveFullAlbumToDatabase(SpotifyAlbum spotifyAlbumDTO, List<SpotifyTrack> tracks) {
         Album album = albumRepository.findBySpotifyId(spotifyAlbumDTO.getId());
 
         if (album == null) {
