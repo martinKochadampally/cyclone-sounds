@@ -8,11 +8,13 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
+import cycloneSounds.Songs.Song;
+import org.springframework.beans.factory.annotation.Autowired;
+import cycloneSounds.Songs.SongRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-//Runner test
 @RunWith(SpringRunner.class)
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Main.class)
@@ -21,11 +23,15 @@ public class MarkSystemTest {
     @LocalServerPort
     int port;
 
+    @Autowired
+    private SongRepository songRepository;
+
     @Before
     public void setUp() {
         RestAssured.port = port;
         RestAssured.baseURI = "http://localhost";
     }
+
 
     @Test
     public void postReviewCheck() {
@@ -48,11 +54,20 @@ public class MarkSystemTest {
 
     @Test
     public void addSongToPlaylistCheck() {
+        // 1. Create User
         createHelperUser("mgseward", "Mark");
+
         RestAssured.given()
                 .param("playlistName", "Study")
                 .param("username", "mgseward")
                 .post("/api/playlists/create");
+
+        String targetSpotifyId = "testSpotifyId123";
+        if (songRepository.findBySpotifyId(targetSpotifyId).isEmpty()) {
+            Song testSong = new Song("Runnin", "21 Savage, Metro Boomin");
+            testSong.setSpotifyId(targetSpotifyId);
+            songRepository.save(testSong);
+        }
 
         Response response = RestAssured.given()
                 .param("songName", "Runnin")
@@ -63,7 +78,6 @@ public class MarkSystemTest {
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().asString().contains("Runnin"));
     }
-
     /**
      * Helper method that makes user creation easy
      */

@@ -30,8 +30,8 @@ public class Main {
      * @param reviewRepository The repository for the Profile entity.
      * @return A CommandLineRunner that creates and saves three sample profiles.
      */
-    @Bean
+    /**@Bean
     CommandLineRunner initProfiles(ReviewRepository reviewRepository, SongRepository songRepository) {
             return null;
-        }
+        }**/
 }

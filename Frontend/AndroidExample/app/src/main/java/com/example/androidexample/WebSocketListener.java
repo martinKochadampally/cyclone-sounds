@@ -3,39 +3,39 @@ package com.example.androidexample;
 import org.java_websocket.handshake.ServerHandshake;
 
 /**
- * Interface defining methods for handling WebSocket events.
- * Implement this interface to listen for WebSocket connection,
- * message, closure, and error events.
+ * This interface defines a set of callback methods for handling WebSocket events.
+ * Classes that need to react to WebSocket lifecycle events (open, message, close, error)
+ * should implement this interface and register themselves with a WebSocketManager.
  */
 public interface WebSocketListener {
 
     /**
-     * Called when the WebSocket connection is successfully opened.
+     * Called when the WebSocket connection has been established and is ready for use.
      *
-     * @param handshakedata Information about the server handshake.
+     * @param handshakedata Information about the server handshake, confirming the connection details.
      */
     void onWebSocketOpen(ServerHandshake handshakedata);
 
     /**
-     * Called when a WebSocket message is received.
+     * Called when a new message is received from the WebSocket server.
      *
-     * @param message The received WebSocket message.
+     * @param message The message received from the server as a String.
      */
     void onWebSocketMessage(String message);
 
     /**
      * Called when the WebSocket connection is closed.
      *
-     * @param code   The status code indicating the reason for closure.
-     * @param reason A human-readable explanation for the closure.
-     * @param remote Indicates whether the closure was initiated by the remote endpoint.
+     * @param code   The status code indicating the reason for closure (e.g., 1000 for normal closure).
+     * @param reason A human-readable explanation for why the connection was closed.
+     * @param remote A boolean indicating whether the closure was initiated by the remote party (server) or locally.
      */
     void onWebSocketClose(int code, String reason, boolean remote);
 
     /**
-     * Called when an error occurs in the WebSocket communication.
+     * Called when a WebSocket error occurs.
      *
-     * @param ex The exception that describes the error.
+     * @param ex The exception that occurred, providing details about the error.
      */
     void onWebSocketError(Exception ex);
 }

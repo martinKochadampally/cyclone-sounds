@@ -26,8 +26,14 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This activity allows users to add songs to a specific playlist.
+ * It provides functionality to search for songs and add them to the currently viewed playlist,
+ * as well as view and remove songs already in it.
+ */
 public class AddSongsActivity extends AppCompatActivity {
 
+    // UI Elements
     private TextView playlistNameTextView;
     private Button backButton;
     private Button saveButton;
@@ -35,18 +41,29 @@ public class AddSongsActivity extends AppCompatActivity {
     private EditText songSearchEditText;
     private TableLayout songSearchTable;
     private TableLayout playlistSongsTable;
+    // Data fields
     private String currentUsername;
     private String currentPlaylistName;
 
+    // API Endpoints
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
     private static final String PLAYLISTS_URL = BASE_URL + "/api/playlists/";
     private static final String SONGS_URL = BASE_URL + "/search/songs/";
 
+    /**
+     * Called when the activity is first created. Initializes the UI, retrieves playlist
+     * and user information from the intent, and fetches the songs already in the playlist.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_songs);
 
+        // Initialize UI components from the layout.
         playlistNameTextView = findViewById(R.id.playlist_name_txt);
         backButton = findViewById(R.id.back_btn);
         saveButton = findViewById(R.id.save_btn);
@@ -55,6 +72,7 @@ public class AddSongsActivity extends AppCompatActivity {
         songSearchTable = findViewById(R.id.song_search_table);
         playlistSongsTable = findViewById(R.id.playlist_songs_table);
 
+        // Get data passed from the previous activity.
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             currentUsername = extras.getString("LOGGED_IN_USERNAME");
@@ -65,6 +83,7 @@ public class AddSongsActivity extends AppCompatActivity {
         // Fetch and display songs already in the playlist
         getPlaylistSongs();
 
+        // Set listener for the song search button.
         searchButton.setOnClickListener(view -> {
             String query = songSearchEditText.getText().toString();
             if (!query.isEmpty()) {
@@ -74,6 +93,7 @@ public class AddSongsActivity extends AppCompatActivity {
             }
         });
 
+        // Set listener for the back button.
         backButton.setOnClickListener(view -> {
             if (extras.getString("PREVIOUS_PAGE").equals("CREATE")) {
                 Intent intent = new Intent(AddSongsActivity.this, CreateActivity.class);
@@ -86,6 +106,7 @@ public class AddSongsActivity extends AppCompatActivity {
             }
         });
 
+        // Set listener for the save button.
         saveButton.setOnClickListener(view -> {
             // The save button just goes back, maybe it should do more? For now, this is what it did.
             if (extras.getString("PREVIOUS_PAGE").equals("CREATE")) {
@@ -106,7 +127,7 @@ public class AddSongsActivity extends AppCompatActivity {
     private void getPlaylistSongs() {
         String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/songs";
 
-        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
                         populatePlaylistTable(response);
@@ -122,7 +143,7 @@ public class AddSongsActivity extends AppCompatActivity {
                     clearTable(playlistSongsTable);
                 });
 
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
     /**
@@ -195,6 +216,7 @@ public class AddSongsActivity extends AppCompatActivity {
      * On success, it refreshes the playlist table.
      *
      * @param songName The name of the song to add.
+     * @param artist The artist of the song.
      */
     private void addSongToPlaylist(final String songName, final String artist) {
         String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName + "/add";
@@ -228,6 +250,7 @@ public class AddSongsActivity extends AppCompatActivity {
      * On success, it refreshes the playlist table.
      *
      * @param songName The name of the song to remove.
+     * @param artist The artist of the song.
      */
     private void removeSongFromPlaylist(final String songName, final String artist) {
         String url = PLAYLISTS_URL + currentUsername + "/" + currentPlaylistName +
@@ -260,6 +283,8 @@ public class AddSongsActivity extends AppCompatActivity {
 
     /**
      * Creates a simple TextView for table cells.
+     * @param text The text to display.
+     * @return The created TextView.
      */
     private TextView createTextView(String text) {
         TextView textView = new TextView(this);
@@ -271,6 +296,9 @@ public class AddSongsActivity extends AppCompatActivity {
 
     /**
      * Creates an "Add" button for the search results table.
+     * @param songName The name of the song to add.
+     * @param artist The artist of the song.
+     * @return The created Button.
      */
     private Button createAddButton(final String songName, final String artist) {
         Button button = new Button(this);
@@ -281,6 +309,9 @@ public class AddSongsActivity extends AppCompatActivity {
 
     /**
      * Creates a "Remove" button for the playlist table.
+     * @param songName The name of the song to remove.
+     * @param artist The artist of the song.
+     * @return The created Button.
      */
     private Button createRemoveButton(final String songName, final String artist) {
         Button button = new Button(this);
@@ -291,6 +322,7 @@ public class AddSongsActivity extends AppCompatActivity {
 
     /**
      * Clears all rows from a TableLayout, except for the header row (at index 0).
+     * @param table The table to clear.
      */
     private void clearTable(TableLayout table) {
         int childCount = table.getChildCount();
@@ -299,6 +331,10 @@ public class AddSongsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Navigates to a specified activity, passing the current username.
+     * @param activityClass The class of the activity to navigate to.
+     */
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(AddSongsActivity.this, activityClass);
         intent.putExtra("LOGGED_IN_USERNAME", currentUsername);

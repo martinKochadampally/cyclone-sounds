@@ -1,6 +1,5 @@
 package cycloneSounds.Songs;
 
-import cycloneSounds.Albums.Album;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import cycloneSounds.Albums.Album;
@@ -14,7 +13,7 @@ public class Song {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int songId;
+    private Integer songId;
 
     private String songName;
     private String artist;
@@ -37,11 +36,11 @@ public class Song {
         this.searches = 0;
     }
 
-    public int getSongId() {
+    public Integer getSongId() {
         return songId;
     }
 
-    public void setSongId(int songId) {
+    public void setSongId(Integer songId) {
         this.songId = songId;
     }
 
@@ -79,6 +78,11 @@ public class Song {
         this.spotifyId = spotifyId;
     }
 
-    public Album getAlbum() { return album; }
-    public void setAlbum(Album album) { this.album = album; }
+    public Album getAlbum() {
+        return album;
+    }
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
 }

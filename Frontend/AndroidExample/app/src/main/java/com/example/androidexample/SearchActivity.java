@@ -29,45 +29,59 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+/**
+ * Activity for searching for different types of content within the app, such as user profiles and songs.
+ * It allows users to select a search category and enter a query.
+ */
 public class SearchActivity extends AppCompatActivity {
 
+    // Base URL for the backend API.
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
 
+    // UI elements for search functionality.
     private SearchView searchView;
     private Spinner searchTypeSpinner;
     private Button searchSubmitButton;
     private ListView profileResultsList;
     private ListView songResultsList;
-    // private ListView playlistResultsList;
     private TextView profilesHeader;
     private TextView songsHeader;
-    // private TextView playlistsHeader;
 
+    // Adapters for the result lists.
     private ArrayAdapter<String> profileAdapter;
     private ArrayAdapter<Song> songAdapter;
-    // private ArrayAdapter<Playlist> playlistAdapter;
 
+    // Data lists to hold search results.
     private ArrayList<String> profileUsernames;
     private ArrayList<Song> songList;
-    // private ArrayList<Playlist> playlistList;
 
+    // Volley request queue for handling network requests.
     private RequestQueue requestQueue;
     private String loggedInUsername;
     private String currentSearchType;
 
+    /**
+     * Inner class to represent a Song object.
+     */
     private static class Song {
         private final int songId;
         private final String songName;
         private final String artist;
+        private final String embedUrl;
 
-        public Song(int songId, String songName, String artist) {
+        public Song(int songId, String songName, String artist, String embedUrl) {
             this.songId = songId;
             this.songName = songName;
             this.artist = artist;
+            this.embedUrl = embedUrl;
         }
 
         public int getSongId() {
             return songId;
+        }
+        
+        public String getEmbedUrl() {
+            return embedUrl;
         }
 
         @NonNull
@@ -76,28 +90,6 @@ public class SearchActivity extends AppCompatActivity {
             return songName + " by " + artist;
         }
     }
-
-    /*
-    private static class Playlist {
-        private final String playlistName;
-        private final String username;
-
-        public Playlist(String playlistName, String username) {
-            this.playlistName = playlistName;
-            this.username = username;
-        }
-
-        public String getPlaylistName() {
-            return playlistName;
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return playlistName + " by " + username;
-        }
-    }
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,10 +111,8 @@ public class SearchActivity extends AppCompatActivity {
         searchSubmitButton = findViewById(R.id.search_submit_button);
         profileResultsList = findViewById(R.id.profile_results_list);
         songResultsList = findViewById(R.id.song_results_list);
-        // playlistResultsList = findViewById(R.id.playlist_results_list);
         profilesHeader = findViewById(R.id.profiles_header);
         songsHeader = findViewById(R.id.songs_header);
-        // playlistsHeader = findViewById(R.id.playlists_header);
 
         profileUsernames = new ArrayList<>();
         profileAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, profileUsernames);
@@ -132,10 +122,6 @@ public class SearchActivity extends AppCompatActivity {
         songAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, songList);
         songResultsList.setAdapter(songAdapter);
 
-        // playlistList = new ArrayList<>();
-        // playlistAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, playlistList);
-        // playlistResultsList.setAdapter(playlistAdapter);
-
         setupSpinner();
         setupSearchView();
         setupButtonListener();
@@ -143,8 +129,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupSpinner() {
-        // String[] searchTypes = {"Profiles", "Songs", "Playlists"};
-        String[] searchTypes = {"Profiles", "Songs"}; // Removed "Playlists"
+        String[] searchTypes = {"Profiles", "Songs"};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, searchTypes);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         searchTypeSpinner.setAdapter(spinnerAdapter);
@@ -173,8 +158,6 @@ public class SearchActivity extends AppCompatActivity {
         profileResultsList.setVisibility(View.GONE);
         songsHeader.setVisibility(View.GONE);
         songResultsList.setVisibility(View.GONE);
-        // playlistsHeader.setVisibility(View.GONE);
-        // playlistResultsList.setVisibility(View.GONE);
 
         if (currentSearchType.equals("Profiles")) {
             profilesHeader.setVisibility(View.VISIBLE);
@@ -185,13 +168,6 @@ public class SearchActivity extends AppCompatActivity {
             songResultsList.setVisibility(View.VISIBLE);
             searchView.setQueryHint("Search for songs or artists...");
         }
-        /*
-        else if (currentSearchType.equals("Playlists")) {
-            playlistsHeader.setVisibility(View.VISIBLE);
-            playlistResultsList.setVisibility(View.VISIBLE);
-            searchView.setQueryHint("Search for playlists...");
-        }
-        */
     }
 
     private void setupSearchView() {
@@ -233,16 +209,11 @@ public class SearchActivity extends AppCompatActivity {
         songResultsList.setOnItemClickListener((parent, view, position, id) -> {
             Song clickedSong = songList.get(position);
             incrementSongSearches(clickedSong.getSongId());
-            Toast.makeText(this, "Clicked on: " + clickedSong.toString(), Toast.LENGTH_SHORT).show();
-        });
 
-        /*
-        playlistResultsList.setOnItemClickListener((parent, view, position, id) -> {
-            Playlist clickedPlaylist = playlistList.get(position);
-            incrementPlaylistSearches(clickedPlaylist.getPlaylistName());
-            Toast.makeText(this, "Clicked on: " + clickedPlaylist.toString(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(SearchActivity.this, SpotifyPlayerActivity.class);
+            intent.putExtra("EMBED_URL", clickedSong.getEmbedUrl());
+            startActivity(intent);
         });
-        */
     }
 
     private void runSearch(String query) {
@@ -251,20 +222,13 @@ public class SearchActivity extends AppCompatActivity {
         } else if (currentSearchType.equals("Songs")) {
             searchSongs(query);
         }
-        /*
-        else if (currentSearchType.equals("Playlists")) {
-            searchPlaylists(query);
-        }
-        */
     }
 
     private void clearResults() {
         profileUsernames.clear();
         songList.clear();
-        // playlistList.clear();
         profileAdapter.notifyDataSetChanged();
         songAdapter.notifyDataSetChanged();
-        // playlistAdapter.notifyDataSetChanged();
     }
 
     private void searchProfiles(String query) {
@@ -283,11 +247,7 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
-                    String errorMessage = (error.networkResponse != null) ?
-                            "Status Code: " + error.networkResponse.statusCode :
-                            "No response/UnknownHost.";
                     Log.e("SearchActivity", "Volley profile search error: " + error.toString());
-                    Log.e("SearchActivity", "Volley Error Details: " + errorMessage);
                 }
         );
         requestQueue.add(jsonArrayRequest);
@@ -304,7 +264,8 @@ public class SearchActivity extends AppCompatActivity {
                             int songId = songJson.getInt("songId");
                             String songName = songJson.getString("songName");
                             String artistName = songJson.getString("artist");
-                            songList.add(new Song(songId, songName, artistName));
+                            String embedUrl = songJson.getString("embedUrl");
+                            songList.add(new Song(songId, songName, artistName, embedUrl));
                         }
                         songAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
@@ -312,53 +273,17 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
-                    String errorMessage = (error.networkResponse != null) ?
-                            "Status Code: " + error.networkResponse.statusCode :
-                            "No response/UnknownHost.";
                     Log.e("SearchActivity", "Volley song search error: " + error.toString());
-                    Log.e("SearchActivity", "Volley Error Details: " + errorMessage);
                 }
         );
         requestQueue.add(jsonArrayRequest);
     }
-
-    /*
-    private void searchPlaylists(String query) {
-        String url = BASE_URL + "/search/playlist/" + query;
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                response -> {
-                    try {
-                        playlistList.clear();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject playlistJson = response.getJSONObject(i);
-                            String playlistName = playlistJson.getString("playlistName");
-                            String username = playlistJson.getString("username");
-                            playlistList.add(new Playlist(playlistName, username));
-                        }
-                        playlistAdapter.notifyDataSetChanged();
-                    } catch (JSONException e) {
-                        Log.e("SearchActivity", "JSON playlist parsing error", e);
-                    }
-                },
-                error -> {
-                    String errorMessage = (error.networkResponse != null) ?
-                            "Status Code: " + error.networkResponse.statusCode :
-                            "No response/UnknownHost.";
-                    Log.e("SearchActivity", "Volley playlist search error: " + error.toString());
-                    Log.e("SearchActivity", "Volley Error Details: " + errorMessage);
-                }
-        );
-        requestQueue.add(jsonArrayRequest);
-    }
-    */
 
     private void incrementProfileViews(String username) {
         String url = BASE_URL + "/search/profiles/" + username;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
                 response -> Log.d("SearchActivity", "Profile view incremented: " + username),
-                error -> {
-                    Log.e("SearchActivity", "Failed to increment views: " + error.toString());
-                }
+                error -> Log.e("SearchActivity", "Failed to increment views: " + error.toString())
         );
         requestQueue.add(putRequest);
     }
@@ -367,25 +292,10 @@ public class SearchActivity extends AppCompatActivity {
         String url = BASE_URL + "/search/songs/" + songId;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
                 response -> Log.d("SearchActivity", "Song search incremented: " + songId),
-                error -> {
-                    Log.e("SearchActivity", "Failed to increment searches: " + error.toString());
-                }
+                error -> Log.e("SearchActivity", "Failed to increment searches: " + error.toString())
         );
         requestQueue.add(putRequest);
     }
-
-    /*
-    private void incrementPlaylistSearches(String playlistName) {
-        String url = BASE_URL + "/search/playlist/" + playlistName;
-        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                response -> Log.d("SearchActivity", "Playlist search incremented: " + playlistName),
-                error -> {
-                    Log.e("SearchActivity", "Failed to increment playlist searches: " + error.toString());
-                }
-        );
-        requestQueue.add(putRequest);
-    }
-    */
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
