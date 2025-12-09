@@ -59,6 +59,8 @@ public class CreateReviewActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             currentUsername = extras.getString("LOGGED_IN_USERNAME");
+            songName.setText(extras.getString("SONG_NAME"));
+            artistName.setText(extras.getString("ARTIST_NAME"));
         }
 
         // Set listener for the back button to return to the CreateActivity.

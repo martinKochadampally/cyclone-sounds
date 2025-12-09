@@ -157,11 +157,29 @@ public class AddSongsActivity extends AppCompatActivity {
             JSONObject song = songs.getJSONObject(i);
             String songName = song.optString("songName", "N/A");
             String artist = song.optString("artist", "N/A");
+            String embedUrl = song.optString("embedURL", "");
+
 
             TableRow tableRow = new TableRow(this);
             tableRow.addView(createTextView(songName));
             tableRow.addView(createTextView(artist));
             tableRow.addView(createRemoveButton(songName, artist));
+
+            if (embedUrl != null && !embedUrl.isEmpty()) {
+                tableRow.setOnClickListener(v -> {
+                    Intent intent = new Intent(AddSongsActivity.this, SpotifyPlayerActivity.class);
+                    intent.putExtra("EMBED_URL", embedUrl);
+                    intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                    intent.putExtra("SONG_NAME", songName);
+                    intent.putExtra("ARTIST_NAME", artist);
+                    startActivity(intent);
+                });
+            } else {
+                tableRow.setOnClickListener(v -> {
+                    Toast.makeText(getApplicationContext(), "Song not playable", Toast.LENGTH_SHORT).show();
+                });
+            }
+
             playlistSongsTable.addView(tableRow);
         }
     }
@@ -197,11 +215,23 @@ public class AddSongsActivity extends AppCompatActivity {
                 JSONObject song = songs.getJSONObject(i);
                 String songName = song.optString("songName", "N/A");
                 String artist = song.optString("artist", "N/A");
+                String embedUrl = song.optString("embedURL", "");
 
                 TableRow tableRow = new TableRow(this);
                 tableRow.addView(createTextView(songName));
                 tableRow.addView(createTextView(artist));
                 tableRow.addView(createAddButton(songName, artist));
+
+                if (embedUrl != null && !embedUrl.isEmpty()) {
+                    tableRow.setOnClickListener(v -> {
+                        Intent intent = new Intent(AddSongsActivity.this, SpotifyPlayerActivity.class);
+                        intent.putExtra("EMBED_URL", embedUrl);
+                        intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+                        intent.putExtra("SONG_NAME", songName);
+                        intent.putExtra("ARTIST_NAME", artist);
+                        startActivity(intent);
+                    });
+                }
 
                 songSearchTable.addView(tableRow);
             }
