@@ -54,7 +54,6 @@ public class MartinSystemTest {
      */
     @Test
     public void jamPostTest1() {
-        // Create jam manager
         RestAssured.given()
                 .param("username", "user1")
                 .param("password", "password1")
@@ -62,19 +61,18 @@ public class MartinSystemTest {
                 .when()
                 .post("/credentials");
 
-        // Optionally confirm credentials exist
         RestAssured.given()
                 .when()
                 .get("/credentials/" + "user1")
                 .then()
                 .statusCode(200);
 
-        // Create jam
         Response response = RestAssured.given()
                 .pathParam("username", "user1")
                 .pathParam("jamName", "jam-test1")
+                .pathParam("approvalType", "Voting")
                 .when()
-                .post("/api/jams/{username}/{jamName}");
+                .post("/api/jams/{username}/{jamName}/{approvalType}");
 
         assertEquals(200, response.getStatusCode());
 
@@ -84,25 +82,25 @@ public class MartinSystemTest {
         assertEquals("user1", json.getString("manager"));
     }
 
-
     /**
      * Checks that a regular user is unable to make a jam.
      */
     @Test
     public void jamPostTest2() {
-        RestAssured.given().
-                param("username", "user3").
-                param("password", "password3").
-                param("accountType", "regular").
-                when().
-                post("/credentials");
+        RestAssured.given()
+                .param("username", "user3")
+                .param("password", "password3")
+                .param("accountType", "regular").
+                when()
+                .post("/credentials");
 
-        RestAssured.given().
-                pathParam("username", "user3").
-                pathParam("jamName", "jam3").
-                when().
-                post("/api/jams/{username}/{jamName}").
-                then().statusCode(403);
+        RestAssured.given()
+                .pathParam("username", "user3")
+                .pathParam("jamName", "jam3")
+                .pathParam("approvalType", "Voting")
+                .when()
+                .post("/api/jams/{username}/{jamName}/{approvalType}")
+                .then().statusCode(403);
     }
 
     /**
@@ -110,32 +108,34 @@ public class MartinSystemTest {
      */
     @Test
     public void jamPostTest3() {
-        RestAssured.given().
-                param("username", "user4").
-                param("password", "password4").
-                param("accountType", "jamManager").
-                when().
-                post("/credentials");
+        RestAssured.given()
+                .param("username", "user4")
+                .param("password", "password4")
+                .param("accountType", "jamManager")
+                .when()
+                .post("/credentials");
 
-        RestAssured.given().
-                param("username", "user5").
-                param("password", "password5").
-                param("accountType", "jamManager").
-                when().
-                post("/credentials");
+        RestAssured.given()
+                .param("username", "user5").
+                param("password", "password5")
+                .param("accountType", "jamManager")
+                .when()
+                .post("/credentials");
 
-        RestAssured.given().
-                pathParam("username", "user4").
-                pathParam("jamName", "jam").
-                when().
-                post("/api/jams/{username}/{jamName}");
+        RestAssured.given()
+                .pathParam("username", "user4")
+                .pathParam("jamName", "jam")
+                .pathParam("approvalType", "Voting")
+                .when()
+                .post("/api/jams/{username}/{jamName}/{approvalType}");
 
-        RestAssured.given().
-                pathParam("username", "user5").
-                pathParam("jamName", "jam").
-                when().
-                post("/api/jams/{username}/{jamName}").
-                then().
+        RestAssured.given()
+                .pathParam("username", "user5")
+                .pathParam("jamName", "jam")
+                .pathParam("approvalType", "Voting")
+                .when()
+                .post("/api/jams/{username}/{jamName}/{approvalType}")
+                .then().
                 statusCode(400);
     }
 
