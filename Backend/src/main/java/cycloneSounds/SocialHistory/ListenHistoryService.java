@@ -32,11 +32,8 @@ public class ListenHistoryService {
         List<ListenHistory> rawHistory = historyRepo.findTop10BySongIdOrderByListenedAtDesc(songId);
 
         return rawHistory.stream()
-                .map(h -> new HistoryResponse(
-                        h.getCredentials().getUsername(),
-                        calculateTime(h.getListenedAt())
-                ))
-                .collect(Collectors.toList());
+                .map(h -> new HistoryResponse(h.getCredentials().getUsername(), calculateTime(h.getListenedAt())
+                )).collect(Collectors.toList());
     }
 
 

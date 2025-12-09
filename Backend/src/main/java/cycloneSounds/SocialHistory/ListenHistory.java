@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import cycloneSounds.Credentials.Credentials;
 
 @Entity
-@Table(name = "listenHistory")
+@Table(name = "listen_history")
 public class ListenHistory {
 
     @Id
@@ -14,15 +14,15 @@ public class ListenHistory {
 
 
     @ManyToOne
-    @JoinColumn(name = "usernameId", nullable = false)
+    @JoinColumn(name = "username_id", nullable = false)
     private Credentials credentials;
 
 
-    @Column(name = "songId", nullable = false)
+    @Column(name = "song_id", nullable = false)
     private String songId;
 
 
-    @Column(name = "listenedAt", nullable = false)
+    @Column(name = "listened_at", nullable = false)
     private LocalDateTime listenedAt;
 
     public ListenHistory() {

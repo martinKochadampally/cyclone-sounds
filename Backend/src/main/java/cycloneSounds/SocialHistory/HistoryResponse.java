@@ -2,17 +2,18 @@ package cycloneSounds.SocialHistory;
 
 public class HistoryResponse {
     private String username;
-    private String lengthInTime;
+    private String time;
 
-    public HistoryResponse(String username, String timeAgo) {
+    public HistoryResponse(String username, String time) {
         this.username = username;
-        this.lengthInTime = timeAgo;
+        this.time = time;
     }
 
     public String getUsername() {
         return username;
     }
-    public String getTimeAgo() {
-        return lengthInTime;
+    public String getTime() {
+
+        return time;
     }
 }
