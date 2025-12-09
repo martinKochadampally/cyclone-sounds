@@ -8,6 +8,9 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
+import cycloneSounds.Songs.Song;
+import org.springframework.beans.factory.annotation.Autowired;
+import cycloneSounds.Songs.SongRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,11 +24,15 @@ public class MarkSystemTest {
     @LocalServerPort
     int port;
 
+    @Autowired
+    private SongRepository songRepository;
+
     @Before
     public void setUp() {
         RestAssured.port = port;
         RestAssured.baseURI = "http://localhost";
     }
+
 
     @Test
     public void postReviewCheck() {
@@ -53,6 +60,10 @@ public class MarkSystemTest {
                 .param("playlistName", "Study")
                 .param("username", "mgseward")
                 .post("/api/playlists/create");
+
+        Song testSong = new Song("Runnin", "21 Savage, Metro Boomin");
+        testSong.setSpotifyId("testSpotifyId123"); // Required if your entity enforces it
+        songRepository.save(testSong);
 
         Response response = RestAssured.given()
                 .param("songName", "Runnin")
