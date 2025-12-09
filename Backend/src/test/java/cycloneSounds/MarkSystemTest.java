@@ -62,7 +62,7 @@ public class MarkSystemTest {
                 .post("/api/playlists/create");
 
         Song testSong = new Song("Runnin", "21 Savage, Metro Boomin");
-        testSong.setSpotifyId("testSpotifyId123"); // Required if your entity enforces it
+        testSong.setSpotifyId("testSpotifyId123");
         songRepository.save(testSong);
 
         Response response = RestAssured.given()
