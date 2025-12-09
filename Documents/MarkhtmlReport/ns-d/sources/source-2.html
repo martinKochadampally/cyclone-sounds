@@ -1,0 +1,243 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ProfileController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.profilePage</a>
+</div>
+
+<h1>Coverage Summary for Class: ProfileController (cycloneSounds.profilePage)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProfileController</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (6/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28%
+  </span>
+  <span class="absValue">
+    (7/25)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ProfileController$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37.5%
+  </span>
+  <span class="absValue">
+    (6/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28%
+  </span>
+  <span class="absValue">
+    (7/25)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.profilePage;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.DeleteMapping;
+&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+&nbsp;import org.springframework.web.bind.annotation.PathVariable;
+&nbsp;import org.springframework.web.bind.annotation.PostMapping;
+&nbsp;import org.springframework.web.bind.annotation.PutMapping;
+&nbsp;import org.springframework.web.bind.annotation.RequestBody;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;/**
+&nbsp; * A REST controller for handling HTTP requests related to Profiles.
+&nbsp; *
+&nbsp; * @author Mark Seward
+&nbsp; *
+&nbsp; */
+&nbsp;@RestController
+<b class="fc">&nbsp;public class ProfileController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    ProfileRepository profileRepository;
+&nbsp;
+<b class="fc">&nbsp;    private final String success = &quot;{\&quot;message\&quot;:\&quot;success\&quot;}&quot;;</b>
+<b class="fc">&nbsp;    private final String failure = &quot;{\&quot;message\&quot;:\&quot;failure\&quot;}&quot;;</b>
+&nbsp;
+&nbsp;    /**
+&nbsp;     * GET endpoint to list all profiles. (List)
+&nbsp;     *
+&nbsp;     * @return A List of all Profile objects in the database.
+&nbsp;     */
+&nbsp;    @GetMapping(path = &quot;/profiles&quot;)
+&nbsp;    public List&lt;Profile&gt; getAllProfiles() {
+<b class="nc">&nbsp;        return profileRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * GET endpoint
+&nbsp;     * @param username
+&nbsp;     * @return the information for the given username
+&nbsp;     */
+&nbsp;    @GetMapping(path = &quot;/profiles/{username}&quot;)
+&nbsp;    public Profile getProfilebyUsername(@PathVariable String username) {
+<b class="nc">&nbsp;        return profileRepository.findById(username).orElse(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * POST endpoint to create a new profile. (Create)
+&nbsp;     *
+&nbsp;     * @param profile The Profile object sent in the request body.
+&nbsp;     * @return A JSON string indicating success or failure.
+&nbsp;     */
+&nbsp;    @PostMapping(path = &quot;/profiles&quot;)
+&nbsp;    public String createProfile(@RequestBody Profile profile) {
+<b class="pc">&nbsp;        if (profile == null || profile.getUsername() == null || profile.getName() == null || profile.getFavArtist() == null ||</b>
+<b class="pc">&nbsp;            profile.getFavGenre() == null || profile.getFavSong() == null) {</b>
+<b class="nc">&nbsp;            return failure;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        profileRepository.save(profile);</b>
+<b class="fc">&nbsp;        return success;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * PUT endpoint to update an existing profile. (Update)
+&nbsp;     *
+&nbsp;     * @param username      The ID of the profile to update.
+&nbsp;     * @param request The Profile object containing the new data.
+&nbsp;     * @return The updated Profile object, or null if the profile wasn&#39;t found.
+&nbsp;     */
+&nbsp;    @PutMapping(&quot;/profiles/{username}&quot;)
+&nbsp;    public Profile updateProfile(@PathVariable String username, @RequestBody Profile request) {
+<b class="nc">&nbsp;        Optional&lt;Profile&gt; profileOptional = profileRepository.findById(username);</b>
+<b class="nc">&nbsp;        if (profileOptional.isEmpty()) {</b>
+<b class="nc">&nbsp;            return null; // User not found</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Profile profileToUpdate = profileOptional.get();</b>
+&nbsp;
+<b class="nc">&nbsp;        profileToUpdate.setName(request.getName());</b>
+<b class="nc">&nbsp;        profileToUpdate.setFavSong(request.getFavSong());</b>
+<b class="nc">&nbsp;        profileToUpdate.setFavArtist(request.getFavArtist());</b>
+<b class="nc">&nbsp;        profileToUpdate.setFavGenre(request.getFavGenre());</b>
+<b class="nc">&nbsp;        profileToUpdate.setBiography(request.getBiography());</b>
+&nbsp;
+<b class="nc">&nbsp;        profileRepository.save(profileToUpdate);</b>
+<b class="nc">&nbsp;        return profileToUpdate;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * DELETE endpoint to remove a profile by its username. (Delete)
+&nbsp;     *
+&nbsp;     * @param username The name of the profile to delete.
+&nbsp;     * @return A JSON string indicating success.
+&nbsp;     */
+&nbsp;    @Transactional
+&nbsp;    @DeleteMapping(path = &quot;/profiles/{username}&quot;)
+&nbsp;    public String deleteProfile(@PathVariable String username) {
+<b class="nc">&nbsp;        if (profileRepository.existsById(username)) {</b>
+<b class="nc">&nbsp;            profileRepository.deleteById(username);</b>
+<b class="nc">&nbsp;            return success;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return failure;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-02 21:29</div>
+</div>
+</body>
+</html>

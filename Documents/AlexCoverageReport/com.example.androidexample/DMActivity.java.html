@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DMActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">DMActivity.java</span></div><h1>DMActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="nc" id="L29">public class DMActivity extends AppCompatActivity {</span>
+
+    private static final String HTTP_BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api&quot;;
+    private String WEB_SOCKET_URL;
+
+    private RequestQueue requestQueue;
+    private String currentUsername;
+    private String friendUsername;
+
+    private RecyclerView chatRecyclerView;
+    private EditText messageInput;
+    private Button sendButton;
+
+    private ChatAdapter chatAdapter;
+    private List&lt;ChatMessage&gt; messageList;
+
+    private WebSocketClient webSocketClient;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L49">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L50">        setContentView(R.layout.activity_dm);</span>
+
+<span class="nc" id="L52">        Toolbar toolbar = findViewById(R.id.dm_toolbar);</span>
+<span class="nc" id="L53">        setSupportActionBar(toolbar);</span>
+
+<span class="nc" id="L55">        currentUsername = getIntent().getStringExtra(&quot;LOGGED_IN_USERNAME&quot;);</span>
+<span class="nc" id="L56">        friendUsername = getIntent().getStringExtra(&quot;FRIEND_USERNAME&quot;);</span>
+
+<span class="nc" id="L58">        WEB_SOCKET_URL = &quot;ws://coms-3090-008.class.las.iastate.edu:8080/websocket/chat/&quot; + currentUsername;</span>
+
+<span class="nc" id="L60">        requestQueue = Volley.newRequestQueue(this);</span>
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="nc" id="L63">            getSupportActionBar().setTitle(&quot;DM with &quot; + friendUsername);</span>
+<span class="nc" id="L64">            getSupportActionBar().setDisplayHomeAsUpEnabled(true);</span>
+        }
+
+<span class="nc" id="L67">        chatRecyclerView = findViewById(R.id.chat_recycler_view);</span>
+<span class="nc" id="L68">        messageInput = findViewById(R.id.message_input);</span>
+<span class="nc" id="L69">        sendButton = findViewById(R.id.send_button);</span>
+
+<span class="nc" id="L71">        messageList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L72">        chatAdapter = new ChatAdapter(messageList, currentUsername);</span>
+
+<span class="nc" id="L74">        LinearLayoutManager layoutManager = new LinearLayoutManager(this);</span>
+<span class="nc" id="L75">        layoutManager.setStackFromEnd(true);</span>
+<span class="nc" id="L76">        chatRecyclerView.setLayoutManager(layoutManager);</span>
+<span class="nc" id="L77">        chatRecyclerView.setAdapter(chatAdapter);</span>
+
+<span class="nc" id="L79">        sendButton.setOnClickListener(view -&gt; sendMessage());</span>
+
+<span class="nc bnc" id="L81" title="All 4 branches missed.">        if (currentUsername != null &amp;&amp; friendUsername != null) {</span>
+<span class="nc" id="L82">            fetchChatHistory(currentUsername, friendUsername);</span>
+        }
+
+<span class="nc" id="L85">        createWebSocketClient();</span>
+<span class="nc" id="L86">    }</span>
+
+    @Override
+    public boolean onSupportNavigateUp() {
+<span class="nc" id="L90">        finish();</span>
+<span class="nc" id="L91">        return true;</span>
+    }
+
+    private void fetchChatHistory(String user1, String user2) {
+<span class="nc" id="L95">        String url = HTTP_BASE_URL + &quot;/chat/history/&quot; + user1 + &quot;/&quot; + user2;</span>
+
+<span class="nc" id="L97">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L100">                        messageList.clear();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L102">                            JSONObject messageJson = response.getJSONObject(i);</span>
+<span class="nc" id="L103">                            String sender = messageJson.getString(&quot;sender&quot;);</span>
+<span class="nc" id="L104">                            String content = messageJson.getString(&quot;content&quot;);</span>
+
+<span class="nc" id="L106">                            messageList.add(new ChatMessage(sender, content));</span>
+                        }
+<span class="nc" id="L108">                        chatAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L109">                        chatRecyclerView.scrollToPosition(messageList.size() - 1);</span>
+
+<span class="nc" id="L111">                    } catch (JSONException e) {</span>
+<span class="nc" id="L112">                        Log.e(&quot;DMActivity&quot;, &quot;JSON parsing error&quot;, e);</span>
+<span class="nc" id="L113">                    }</span>
+<span class="nc" id="L114">                },</span>
+                error -&gt; {
+<span class="nc" id="L116">                    String errorMessage = &quot;Error loading chat history&quot;;</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">                    if (error.networkResponse != null &amp;&amp; error.networkResponse.data != null) {</span>
+                        try {
+<span class="nc" id="L119">                            String responseBody = new String(error.networkResponse.data, &quot;utf-8&quot;);</span>
+<span class="nc" id="L120">                            errorMessage = &quot;Error: &quot; + error.networkResponse.statusCode + &quot; &quot; + responseBody;</span>
+<span class="nc" id="L121">                        } catch (Exception e) {</span>
+<span class="nc" id="L122">                            Log.e(&quot;DMActivity&quot;, &quot;Error parsing error response&quot;, e);</span>
+<span class="nc" id="L123">                        }</span>
+                    }
+<span class="nc" id="L125">                    Log.e(&quot;DMActivity&quot;, &quot;Volley error: &quot; + errorMessage, error);</span>
+<span class="nc" id="L126">                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L127">                }</span>
+        );
+
+<span class="nc" id="L130">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L131">    }</span>
+
+    private void createWebSocketClient() {
+        URI uri;
+        try {
+<span class="nc" id="L136">            uri = new URI(WEB_SOCKET_URL);</span>
+<span class="nc" id="L137">            Log.d(&quot;DMActivity&quot;, &quot;Attempting to connect to: &quot; + uri);</span>
+<span class="nc" id="L138">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L139">            Log.e(&quot;DMActivity&quot;, &quot;Invalid WebSocket URL&quot;, e);</span>
+<span class="nc" id="L140">            return;</span>
+<span class="nc" id="L141">        }</span>
+
+<span class="nc" id="L143">        webSocketClient = new WebSocketClient(uri) {</span>
+            @Override
+            public void onOpen(ServerHandshake handshakedata) {
+<span class="nc" id="L146">                Log.d(&quot;DMActivity&quot;, &quot;WebSocket onOpen: Connected successfully!&quot;);</span>
+<span class="nc" id="L147">            }</span>
+
+            @Override
+            public void onMessage(String message) {
+<span class="nc" id="L151">                Log.d(&quot;DMActivity&quot;, &quot;Received message: &quot; + message);</span>
+                try {
+<span class="nc" id="L153">                    JSONObject messageJson = new JSONObject(message);</span>
+<span class="nc" id="L154">                    String sender = messageJson.getString(&quot;sender&quot;);</span>
+<span class="nc" id="L155">                    String content = messageJson.getString(&quot;content&quot;);</span>
+
+<span class="nc" id="L157">                    runOnUiThread(() -&gt; {</span>
+<span class="nc" id="L158">                        messageList.add(new ChatMessage(sender, content));</span>
+<span class="nc" id="L159">                        chatAdapter.notifyItemInserted(messageList.size() - 1);</span>
+<span class="nc" id="L160">                        chatRecyclerView.scrollToPosition(messageList.size() - 1);</span>
+<span class="nc" id="L161">                    });</span>
+
+<span class="nc" id="L163">                } catch (JSONException e) {</span>
+<span class="nc" id="L164">                    Log.e(&quot;DMActivity&quot;, &quot;Error parsing received message&quot;, e);</span>
+<span class="nc" id="L165">                }</span>
+<span class="nc" id="L166">            }</span>
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                Log.e(&quot;DMActivity&quot;, &quot;WebSocket onClose: Connection closed by &quot; + (remote ? &quot;server&quot; : &quot;us&quot;));</span>
+<span class="nc" id="L171">                Log.e(&quot;DMActivity&quot;, &quot;WebSocket onClose: Code: &quot; + code + &quot;, Reason: &quot; + reason);</span>
+<span class="nc" id="L172">            }</span>
+
+            @Override
+            public void onError(Exception ex) {
+<span class="nc" id="L176">                Log.e(&quot;DMActivity&quot;, &quot;WebSocket onError: An error occurred&quot;, ex);</span>
+<span class="nc" id="L177">            }</span>
+        };
+
+<span class="nc" id="L180">        Log.d(&quot;DMActivity&quot;, &quot;Calling webSocketClient.connect()...&quot;);</span>
+<span class="nc" id="L181">        webSocketClient.connect();</span>
+<span class="nc" id="L182">    }</span>
+
+    private void sendMessage() {
+<span class="nc" id="L185">        String content = messageInput.getText().toString().trim();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (content.isEmpty()) {</span>
+<span class="nc" id="L187">            return;</span>
+        }
+
+<span class="nc" id="L190">        messageInput.setText(&quot;&quot;);</span>
+
+<span class="nc" id="L192">        ChatMessage message = new ChatMessage(currentUsername, content);</span>
+<span class="nc" id="L193">        messageList.add(message);</span>
+<span class="nc" id="L194">        chatAdapter.notifyItemInserted(messageList.size() - 1);</span>
+<span class="nc" id="L195">        chatRecyclerView.scrollToPosition(messageList.size() - 1);</span>
+
+<span class="nc" id="L197">        sendMessageToBackend(message);</span>
+<span class="nc" id="L198">    }</span>
+
+    private void sendMessageToBackend(ChatMessage message) {
+<span class="nc" id="L201">        JSONObject requestBody = new JSONObject();</span>
+        try {
+<span class="nc" id="L203">            requestBody.put(&quot;receiver&quot;, friendUsername);</span>
+<span class="nc" id="L204">            requestBody.put(&quot;content&quot;, message.getContent());</span>
+<span class="nc" id="L205">        } catch (JSONException e) {</span>
+<span class="nc" id="L206">            Log.e(&quot;DMActivity&quot;, &quot;Error creating JSON for WebSocket&quot;, e);</span>
+<span class="nc" id="L207">        }</span>
+
+<span class="nc bnc" id="L209" title="All 4 branches missed.">        if (webSocketClient != null &amp;&amp; webSocketClient.isOpen()) {</span>
+<span class="nc" id="L210">            webSocketClient.send(requestBody.toString());</span>
+<span class="nc" id="L211">            Log.d(&quot;DMActivity&quot;, &quot;Sent message: &quot; + requestBody.toString());</span>
+        } else {
+<span class="nc" id="L213">            Log.e(&quot;DMActivity&quot;, &quot;WebSocket is not connected!&quot;);</span>
+<span class="nc" id="L214">            Toast.makeText(this, &quot;Failed to send: Not connected&quot;, Toast.LENGTH_SHORT).show();</span>
+        }
+<span class="nc" id="L216">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L220">        super.onDestroy();</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (webSocketClient != null) {</span>
+<span class="nc" id="L222">            webSocketClient.close();</span>
+        }
+<span class="nc" id="L224">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

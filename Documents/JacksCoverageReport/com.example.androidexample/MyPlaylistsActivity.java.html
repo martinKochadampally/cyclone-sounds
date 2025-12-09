@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MyPlaylistsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">MyPlaylistsActivity.java</span></div><h1>MyPlaylistsActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="nc" id="L23">public class MyPlaylistsActivity extends AppCompatActivity {</span>
+    private Button backButton;
+    private TableLayout tableLayout;
+    private String currentUsername;
+
+    private static final String PLAYLISTS_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L32">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L33">        setContentView(R.layout.activity_my_playlists);</span>
+
+<span class="nc" id="L35">        backButton = findViewById(R.id.back_btn);</span>
+<span class="nc" id="L36">        tableLayout = findViewById(R.id.playlists_table);</span>
+
+<span class="nc" id="L38">        Bundle extras = getIntent().getExtras();</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (extras != null) {</span>
+<span class="nc" id="L40">            currentUsername = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+        }
+
+<span class="nc" id="L43">        fetchPlaylists(currentUsername);</span>
+
+<span class="nc" id="L45">        backButton.setOnClickListener(view -&gt; navigateTo(HomeActivity.class, currentUsername));</span>
+<span class="nc" id="L46">    }</span>
+
+    private void fetchPlaylists(final String username) {
+<span class="nc" id="L49">        clearTable();</span>
+<span class="nc" id="L50">        String url = PLAYLISTS_URL + &quot;owner/&quot; + username;</span>
+
+<span class="nc" id="L52">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(</span>
+                Request.Method.GET,
+                url, 
+                null,
+                response -&gt; {
+<span class="nc" id="L57">                    Log.d(&quot;Volley Response&quot;, &quot;Received &quot; + response.length() + &quot; playlists.&quot;);</span>
+                    try {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L60">                            JSONObject playlistObject = response.getJSONObject(i);</span>
+<span class="nc" id="L61">                            String playlistName = playlistObject.optString(&quot;playlistName&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L62">                            JSONArray songs = playlistObject.optJSONArray(&quot;songs&quot;);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                            int songCount = (songs != null) ? songs.length() : 0;</span>
+
+<span class="nc" id="L65">                            TableRow tableRow = new TableRow(MyPlaylistsActivity.this);</span>
+<span class="nc" id="L66">                            tableRow.addView(createTextView(playlistName));</span>
+<span class="nc" id="L67">                            tableRow.addView(createTextView(String.valueOf(songCount)));</span>
+<span class="nc" id="L68">                            tableRow.addView(createEditButton(playlistName, username));</span>
+<span class="nc" id="L69">                            tableRow.addView(createDeleteButton(playlistName, username));</span>
+<span class="nc" id="L70">                            tableLayout.addView(tableRow);</span>
+                        }
+<span class="nc" id="L72">                    } catch (JSONException e) {</span>
+<span class="nc" id="L73">                        Log.e(&quot;Volley JSON Error&quot;, &quot;Error parsing JSON array: &quot; + e.getMessage());</span>
+<span class="nc" id="L74">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L75">                    }</span>
+<span class="nc" id="L76">                },</span>
+                error -&gt; {
+<span class="nc" id="L78">                    Log.e(&quot;Volley Error&quot;, &quot;Error fetching playlists: &quot; + error.toString());</span>
+<span class="nc" id="L79">                    Toast.makeText(getApplicationContext(), &quot;Could not load playlists&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L80">                }</span>
+        );
+<span class="nc" id="L82">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);</span>
+<span class="nc" id="L83">    }</span>
+
+    private TextView createTextView(String text) {
+<span class="nc" id="L86">        TextView textView = new TextView(this);</span>
+<span class="nc" id="L87">        textView.setText(text);</span>
+<span class="nc" id="L88">        textView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L89">        return textView;</span>
+    }
+
+    private Button createEditButton(final String playlistName, final String username) {
+<span class="nc" id="L93">        Button button = new Button(this);</span>
+<span class="nc" id="L94">        button.setText(&quot;Edit&quot;);</span>
+<span class="nc" id="L95">        button.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L96">            Intent intent = new Intent(MyPlaylistsActivity.this, AddSongsActivity.class);</span>
+<span class="nc" id="L97">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L98">            intent.putExtra(&quot;PLAYLIST_NAME&quot;, playlistName);</span>
+<span class="nc" id="L99">            intent.putExtra(&quot;PREVIOUS_PAGE&quot;, &quot;MY_PLAYLISTS&quot;);</span>
+<span class="nc" id="L100">            startActivity(intent);</span>
+<span class="nc" id="L101">        });</span>
+<span class="nc" id="L102">        return button;</span>
+    }
+
+    private Button createDeleteButton(final String playlistName, final String username) {
+<span class="nc" id="L106">        Button button = new Button(this);</span>
+<span class="nc" id="L107">        button.setText(&quot;Delete&quot;);</span>
+<span class="nc" id="L108">        button.setOnClickListener(view -&gt; deletePlaylist(playlistName, username));</span>
+<span class="nc" id="L109">        return button;</span>
+    }
+
+    private void deletePlaylist(final String playlistName, final String username) {
+<span class="nc" id="L113">        String url = PLAYLISTS_URL + username + &quot;/&quot; + playlistName;</span>
+
+<span class="nc" id="L115">        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,</span>
+                response -&gt; {
+<span class="nc" id="L117">                    Log.d(&quot;Delete Response&quot;, response);</span>
+<span class="nc" id="L118">                    Toast.makeText(MyPlaylistsActivity.this, &quot;Playlist deleted&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L119">                    fetchPlaylists(username); // Refresh the list</span>
+<span class="nc" id="L120">                },</span>
+                error -&gt; {
+<span class="nc" id="L122">                    Log.e(&quot;Delete Error&quot;, error.toString());</span>
+<span class="nc" id="L123">                    Toast.makeText(MyPlaylistsActivity.this, &quot;Delete failed&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L124">                });</span>
+<span class="nc" id="L125">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L126">    }</span>
+
+    private void clearTable() {
+<span class="nc" id="L129">        int childCount = tableLayout.getChildCount();</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (childCount &gt; 1) {</span>
+<span class="nc" id="L131">            tableLayout.removeViews(1, childCount - 1);</span>
+        }
+<span class="nc" id="L133">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass, String username) {
+<span class="nc" id="L136">        Intent intent = new Intent(MyPlaylistsActivity.this, activityClass);</span>
+<span class="nc" id="L137">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L138">        startActivity(intent);</span>
+<span class="nc" id="L139">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

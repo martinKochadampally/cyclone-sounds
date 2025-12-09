@@ -2,56 +2,52 @@ package cycloneSounds.Jams;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 @Entity
 @Table(name = "jams")
 public class Jam {
     @Id
+    @Getter
+    @Setter
     private String name;
 
+    @Getter
+    @Setter
     private String manager;
+
+    @Getter
+    @Setter
+    private String approvalType;
 
     @ElementCollection
     private List<String> members;
 
     @OneToMany(mappedBy = "jam", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<JamMessage> messages;
 
     // Constructors
     public Jam() {
     }
 
-    public Jam(String name, String manager, List<String> members) {
+    public Jam(String name, String manager, List<String> members, String approvalType) {
         this.name = name;
         this.manager = manager;
         this.members = members;
+        this.approvalType = approvalType;
     }
 
     // Getters and Setters
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getManager() {
-        return manager;
-    }
-
-    public void setManager(String manager) {
-        this.manager = manager;
-    }
-
     public List<String> getMembers() {
         return members;
     }
 
     public int getMembersSize() {
-        return members.size();
+        return members != null ? members.size() : 0;
     }
 
     public void setMembers(List<String> members) {
