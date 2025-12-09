@@ -28,7 +28,15 @@ public class AlbumController {
 
     @GetMapping(path = "/{id}")
     public Album getAlbumById(@PathVariable int id) {
-        return albumRepository.findById(id).orElse(null);
+        Album album = albumRepository.findById(id).orElse(null);
+        if (album == null){
+            return null;
+        }
+        if(album.getSongs() == null || album.getSongs().isEmpty()){
+            spotifyService.populateAlbumTracks(album);
+            album = albumRepository.findById(id).orElse(null);
+        }
+        return album;
     }
 
     @GetMapping("/spotify/{spotifyId}")
