@@ -13,7 +13,7 @@ public class Song {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int songId;
+    private Integer songId;
 
     private String songName;
     private String artist;
@@ -36,11 +36,11 @@ public class Song {
         this.searches = 0;
     }
 
-    public int getSongId() {
+    public Integer getSongId() {
         return songId;
     }
 
-    public void setSongId(int songId) {
+    public void setSongId(Integer songId) {
         this.songId = songId;
     }
 
@@ -85,8 +85,4 @@ public class Song {
         this.album = album;
     }
 
-    //URL for frontend to use when building embedded spotify player
-    public String getEmbedUrl() {
-        return "https://open.spotify.com/embed/track/" + this.spotifyId;
-    }
 }
