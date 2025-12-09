@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("albums")
+@RequestMapping("/albums")
 @RestController
 public class AlbumController {
 
@@ -18,7 +18,7 @@ public class AlbumController {
 
     @GetMapping(path = "/search/{name}")
     public List<Album> searchAlbum(@PathVariable String name) {
-        return albumRepository.findByTitleContaining(name);
+        return albumRepository.findByTitleContainingIgnoreCase(name);
     }
 
     @GetMapping(path = "/")

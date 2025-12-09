@@ -7,7 +7,6 @@ import java.util.List;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Integer> {
 
-    List<Album> findByTitleContaining(String title);
-
     Album findBySpotifyId(String spotifyId);
+    List<Album> findByTitleContainingIgnoreCase(String name);
 }
