@@ -9,12 +9,14 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
 import cycloneSounds.Reviews.ReviewRepository;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * @author Vivek Bengre
  */
 @SpringBootApplication
 @EnableJpaRepositories
+@EnableAsync
 public class Main {
 
     public static void main(String[] args) {
