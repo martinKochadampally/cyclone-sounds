@@ -241,7 +241,8 @@ public class IndividualJamActivity extends AppCompatActivity {
                                 String song = messageJson.getString("song");
                                 String artist = messageJson.getString("artist");
                                 String suggester = messageJson.getString("suggester");
-                                runOnUiThread(() -> showVoteDialog(song, artist, suggester));
+                                String songId = messageJson.getString("songId");
+                                runOnUiThread(() -> showVoteDialog(song, songId, artist, suggester));
                                 break;
                             case "vote_result": // Final result of a vote
                                 String resultSong = messageJson.getString("song");
@@ -403,11 +404,13 @@ public class IndividualJamActivity extends AppCompatActivity {
             JSONObject song = songs.getJSONObject(i);
             String songName = song.optString("songName", "N/A");
             String artist = song.optString("artist", "N/A");
+            String songId = song.optString("songId", "N/A");
+
 
             TableRow tableRow = new TableRow(this);
             tableRow.addView(createTextViewForDialog(songName));
             tableRow.addView(createTextViewForDialog(artist));
-            tableRow.addView(createSuggestButton(songName, artist, dialog));
+            tableRow.addView(createSuggestButton(songId, songName, artist, dialog));
 
             table.addView(tableRow);
         }
@@ -513,12 +516,12 @@ public class IndividualJamActivity extends AppCompatActivity {
         return textView;
     }
 
-    private Button createSuggestButton(final String songName, final String artist, final AlertDialog dialog) {
+    private Button createSuggestButton(final String songID, final String songName, final String artist, final AlertDialog dialog) {
         Button button = new Button(this);
         button.setText("Suggest");
         button.setOnClickListener(v -> {
             if ("Voting".equals(approvalType)) {
-                startSongVote(songName, artist); // Initiate a vote
+                startSongVote(songName, songID, artist); // Initiate a vote
             } else { // Default to Manager approval
                 sendSongSuggestion(songName, artist);
             }
@@ -547,12 +550,13 @@ public class IndividualJamActivity extends AppCompatActivity {
     }
 
     // Start a vote for Voting-based approval
-    private void startSongVote(String songName, String artist) {
+    private void startSongVote(String songName, String songID, String artist) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject voteRequestJson = new JSONObject();
             try {
                 voteRequestJson.put("type", "song_vote_request");
                 voteRequestJson.put("song", songName);
+                voteRequestJson.put("songId", songID);
                 voteRequestJson.put("artist", artist);
                 voteRequestJson.put("suggester", currentUsername);
                 webSocketClient.send(voteRequestJson.toString());
@@ -565,16 +569,16 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
-    private void showVoteDialog(String song, String artist, String suggester) {
+    private void showVoteDialog(String song, String songId, String artist, String suggester) {
         new AlertDialog.Builder(this)
                 .setTitle("Vote for a Song")
                 .setMessage(suggester + " wants to add \"" + song + "\" by " + artist + ".")
-                .setPositiveButton("Yes", (dialog, which) -> sendVote(song, artist, "yes"))
-                .setNegativeButton("No", (dialog, which) -> sendVote(song, artist, "no"))
+                .setPositiveButton("Yes", (dialog, which) -> sendVote(song, artist, songId,"yes"))
+                .setNegativeButton("No", (dialog, which) -> sendVote(song, artist, songId, "no"))
                 .show();
     }
 
-    private void sendVote(String songName, String artist, String vote) {
+    private void sendVote(String songName, String songId, String artist, String vote) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject voteJson = new JSONObject();
             try {
@@ -583,6 +587,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                 voteJson.put("artist", artist);
                 voteJson.put("voter", currentUsername);
                 voteJson.put("vote", vote);
+                voteJson.put("songId", songId);
                 webSocketClient.send(voteJson.toString());
                 Toast.makeText(this, "You voted " + vote, Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
