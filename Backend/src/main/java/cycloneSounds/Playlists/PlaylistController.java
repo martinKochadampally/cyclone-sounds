@@ -85,7 +85,7 @@ public class PlaylistController {
             Playlist playlist = playlistService.addSongToPlaylist(username, playlistName, songName, artist);
             return ResponseEntity.ok(playlist);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(e.getMessage());
+            return ResponseEntity.status(404).body(null);
         }
     }
 
