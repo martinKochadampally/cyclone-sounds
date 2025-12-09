@@ -18,7 +18,7 @@ public class HomeActivity extends AppCompatActivity {
     private Button createButton;
     private Button myPlaylistsButton;
     private Button friendsButton;
-    private Button albumsButton;
+    private Button blindReviewButton;
     private ImageButton searchButton;
 
     private String currentUsername;
@@ -36,7 +36,7 @@ public class HomeActivity extends AppCompatActivity {
         createButton = findViewById(R.id.create_button_btn);
         myPlaylistsButton = findViewById(R.id.my_playlists_btn);
         friendsButton = findViewById(R.id.friends_button_btn);
-        albumsButton = findViewById(R.id.albums_button_btn);
+        blindReviewButton = findViewById(R.id.blind_review_btn); // Find ID
         searchButton = findViewById(R.id.search_button);
 
         Intent intent = getIntent();
@@ -55,10 +55,11 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(myPlaylistsIntent);
         });
 
-        albumsButton.setOnClickListener(view -> {
-            Intent albumsIntent = new Intent(HomeActivity.this, AlbumsActivity.class);
-            albumsIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
-            startActivity(albumsIntent);
+        // New Listener for Blind Review
+        blindReviewButton.setOnClickListener(view -> {
+            Intent blindIntent = new Intent(HomeActivity.this, BlindReviewActivity.class);
+            blindIntent.putExtra("LOGGED_IN_USERNAME", currentUsername);
+            startActivity(blindIntent);
         });
 
         searchButton.setOnClickListener(view -> {

@@ -58,6 +58,10 @@
         <activity android:name=".FriendsActivity" android:exported="false" />
         <activity android:name=".DMActivity" android:exported="false" />
         <activity android:name=".SearchActivity" android:exported="false" />
+        <activity android:name=".AlbumActivity" android:exported="false" />
+        <activity android:name=".AlbumReviewActivity" android:exported="false" />
+        <activity android:name=".BlindReviewActivity" android:exported="false" />
+
     </application>
 
 </manifest>
