@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cycloneSounds.Songs.Song;
+import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Vote.*;
 import cycloneSounds.websocketChats.CustomSpringConfigurator;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -17,6 +20,7 @@ import jakarta.websocket.server.ServerEndpoint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -26,13 +30,44 @@ import org.json.JSONException;
 @ServerEndpoint(value = "/websocket/jams/{jamName}/{username}", configurator = CustomSpringConfigurator.class)
 public class JamSocket {
 
+    private static JamRepository jamRepository;
+    private static VoteService voteService;
+    private static VoteRepository voteRepository;
+    private static UserVoteRepository userVoteRepository;
+    private static SongRepository songRepository;
+
     private static final Map<Session, String> sessionJamMap = new Hashtable<>();
     private static final Map<Session, String> sessionUsernameMap = new Hashtable<>();
     private static final Map<String, Map<Session, String>> jamSessions = new ConcurrentHashMap<>();
     // <Jam Name, <Song Id, <Username, Vote>>>
-    private static final Map<String, Map<String, Map<String, String>>> jamVotes = new ConcurrentHashMap<>();
+    private static final Map<String, Map<Integer, Map<String, String>>> jamVotes = new ConcurrentHashMap<>();
 
     private final Logger logger = LoggerFactory.getLogger(JamSocket.class);
+
+    @Autowired
+    public void setJamRepository(JamRepository repository) {
+        JamSocket.jamRepository = repository;
+    }
+
+    @Autowired
+    public void setVoteService(VoteService service) {
+        JamSocket.voteService = service;
+    }
+
+    @Autowired
+    public void setVoteRepository(VoteRepository repository) {
+        JamSocket.voteRepository = repository;
+    }
+
+    @Autowired
+    public void setUserVoteRepository(UserVoteRepository repository) {
+        JamSocket.userVoteRepository = repository;
+    }
+
+    @Autowired
+    public void setSongRepository(SongRepository repository) {
+        JamSocket.songRepository = repository;
+    }
 
     @OnOpen
     public void onOpen(Session session, @PathParam("jamName") String jamName, @PathParam("username") String username) throws IOException {
@@ -98,23 +133,57 @@ public class JamSocket {
                 else if ("chat".equals(type)) {
                     message = messageJson.getString("content");
                 }
-                else if ("song_vote".equals(type)) {
-                    String song = messageJson.getString("song");
-                    String artist = messageJson.getString("artist");
-                    String voter = messageJson.getString("voter");
-                    String vote = messageJson.getString("vote"); // "yes" or "no"
-                    String songId = song + ":" + artist;
+                else if ("song_vote_request".equals(type)) {
+                    Integer songId = messageJson.getInt("songId");
+                    String suggester = messageJson.getString("suggester");
 
                     jamVotes.putIfAbsent(jamName, new ConcurrentHashMap<>());
-                    Map<String, Map<String, String>> songsInJam = jamVotes.get(jamName);
+                    Map<Integer, Map<String, String>> voteSessions = jamVotes.get(jamName);
+
+                    voteSessions.putIfAbsent(songId, new ConcurrentHashMap<>());
+                    Map<String, String> currentVotes = voteSessions.get(songId);
+                    currentVotes.put(suggester, "yes");// Suggester automatically votes yes
+
+                    Jam jam = jamRepository.findById(jamName).orElse(null);
+                    Song song = songRepository.findById(songId).orElse(null);
+
+                    Vote vote = new Vote(jam, song, suggester);
+                    voteRepository.save(vote);
+
+                    int voteId = vote.getVoteId();
+                    voteService.recordVoteAsync(voteId, suggester, "yes");
+
+                    JSONObject broadcastJson = new JSONObject();
+                    broadcastJson.put("type", "song_vote_request");
+                    broadcastJson.put("voteId", voteId);
+                    broadcastJson.put("songId", songId);
+                    broadcastJson.put("suggester", suggester);
+
+                    broadcastToJam(jamName, broadcastJson.toString());
+                }
+                else if ("song_vote".equals(type)) {
+                    Integer songId = messageJson.getInt("songId");
+                    String voter = messageJson.getString("voter");
+                    String userVote = messageJson.getString("vote"); // "yes" or "no"
+
+                    int voteId = voteRepository.findByJam_NameAndSong_SongId(jamName, songId)
+                            .map(Vote::getVoteId)
+                            .orElse(-1);
+
+
+                    jamVotes.putIfAbsent(jamName, new ConcurrentHashMap<>());
+                    Map<Integer, Map<String, String>> songsInJam = jamVotes.get(jamName);
 
                     songsInJam.putIfAbsent(songId, new ConcurrentHashMap<>());
                     Map<String, String> currentVotes = songsInJam.get(songId);
 
 
-                    currentVotes.put(voter, vote);
+                    currentVotes.put(voter, userVote);
+                    if (voteId != -1) {
+                        voteService.recordVoteAsync(voteId, voter, userVote);
+                    }
 
-                    checkVoteResult(jamName, song, artist, currentVotes);
+                    checkVoteResult(jamName, songId, currentVotes);
                 }
             }
 
@@ -180,7 +249,7 @@ public class JamSocket {
         }
     }
 
-    private void checkVoteResult(String jamName, String song, String artist, Map<String, String> votes) {
+    private void checkVoteResult(String jamName, int songId, Map<String, String> votes) {
         int totalUsers = jamSessions.get(jamName).size();
         long yesVotes = votes.values().stream().filter(v -> "yes".equals(v)).count();
         long noVotes = votes.values().stream().filter(v -> "no".equals(v)).count();
@@ -188,14 +257,14 @@ public class JamSocket {
         JSONObject resultJson = new JSONObject();
         try {
             resultJson.put("type", "vote_result");
-            resultJson.put("song", song);
+            resultJson.put("song", songId);
 
             if (yesVotes > totalUsers / 2.0) {
                 resultJson.put("result", "approved");
                 broadcastToJam(jamName, resultJson.toString());
                 votes.clear();
             } else if (noVotes >= totalUsers / 2.0) {
-                resultJson.put("result", "rejected");
+                resultJson.put("result", "denied");
                 broadcastToJam(jamName, resultJson.toString());
                 votes.clear();
             }
