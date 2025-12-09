@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FriendsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">FriendsActivity.java</span></div><h1>FriendsActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+<span class="nc" id="L28">public class FriendsActivity extends AppCompatActivity {</span>
+
+    private static final String BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080&quot;;
+
+    private ListView friendsListView;
+    private TextView emptyListText;
+    private Button addFriendButton;
+    private Button pendingRequestsButton;
+
+    private ArrayAdapter&lt;String&gt; friendsAdapter;
+    private ArrayList&lt;String&gt; friendsList;
+    private String currentUsername;
+    private RequestQueue requestQueue;
+
+    private Button homeButton, musicButton, createButton, jamsButton, profileButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L46">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L47">        setContentView(R.layout.activity_friends);</span>
+
+<span class="nc" id="L49">        currentUsername = getIntent().getStringExtra(&quot;LOGGED_IN_USERNAME&quot;);</span>
+
+<span class="nc" id="L51">        requestQueue = Volley.newRequestQueue(this);</span>
+
+<span class="nc" id="L53">        friendsListView = findViewById(R.id.friends_list_view);</span>
+<span class="nc" id="L54">        emptyListText = findViewById(R.id.empty_list_text);</span>
+<span class="nc" id="L55">        addFriendButton = findViewById(R.id.add_friend_button);</span>
+<span class="nc" id="L56">        pendingRequestsButton = findViewById(R.id.pending_requests_button);</span>
+
+<span class="nc" id="L58">        homeButton = findViewById(R.id.home_button_btn);</span>
+<span class="nc" id="L59">        musicButton = findViewById(R.id.music_button_btn);</span>
+<span class="nc" id="L60">        createButton = findViewById(R.id.create_button_btn);</span>
+<span class="nc" id="L61">        jamsButton = findViewById(R.id.jams_button_btn);</span>
+<span class="nc" id="L62">        profileButton = findViewById(R.id.profile_button_btn);</span>
+
+<span class="nc" id="L64">        friendsList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L65">        friendsAdapter = new ArrayAdapter&lt;&gt;(this,</span>
+                android.R.layout.simple_list_item_1, friendsList);
+<span class="nc" id="L67">        friendsListView.setAdapter(friendsAdapter);</span>
+
+<span class="nc" id="L69">        friendsListView.setEmptyView(emptyListText);</span>
+
+<span class="nc" id="L71">        addFriendButton.setOnClickListener(view -&gt; showAddFriendDialog());</span>
+
+<span class="nc" id="L73">        pendingRequestsButton.setOnClickListener(view -&gt; fetchPendingRequests());</span>
+
+<span class="nc" id="L75">        friendsListView.setOnItemClickListener((parent, view, position, id) -&gt; {</span>
+<span class="nc" id="L76">            String friendUsername = friendsList.get(position);</span>
+<span class="nc" id="L77">            showFriendOptionsDialog(friendUsername);</span>
+<span class="nc" id="L78">        });</span>
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (currentUsername != null) {</span>
+<span class="nc" id="L81">            fetchFriendsFromDatabase(currentUsername);</span>
+        }
+
+<span class="nc" id="L84">        setupNavigation();</span>
+<span class="nc" id="L85">    }</span>
+
+    private void showFriendOptionsDialog(String friendUsername) {
+<span class="nc" id="L88">        CharSequence[] options = {&quot;View Profile&quot;, &quot;Send DM&quot;};</span>
+<span class="nc" id="L89">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L90">        builder.setTitle(friendUsername);</span>
+<span class="nc" id="L91">        builder.setItems(options, (dialog, item) -&gt; {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            if (options[item].equals(&quot;View Profile&quot;)) {</span>
+<span class="nc" id="L93">                Intent profileIntent = new Intent(FriendsActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L94">                profileIntent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L95">                profileIntent.putExtra(&quot;PROFILE_TO_VIEW&quot;, friendUsername);</span>
+<span class="nc" id="L96">                startActivity(profileIntent);</span>
+
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            } else if (options[item].equals(&quot;Send DM&quot;)) {</span>
+<span class="nc" id="L99">                Intent dmIntent = new Intent(FriendsActivity.this, DMActivity.class);</span>
+<span class="nc" id="L100">                dmIntent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L101">                dmIntent.putExtra(&quot;FRIEND_USERNAME&quot;, friendUsername);</span>
+<span class="nc" id="L102">                startActivity(dmIntent);</span>
+            }
+<span class="nc" id="L104">        });</span>
+<span class="nc" id="L105">        builder.show();</span>
+<span class="nc" id="L106">    }</span>
+
+    private void showAddFriendDialog() {
+<span class="nc" id="L109">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L110">        builder.setTitle(&quot;Add Friend&quot;);</span>
+
+<span class="nc" id="L112">        final EditText input = new EditText(this);</span>
+<span class="nc" id="L113">        input.setHint(&quot;Enter username&quot;);</span>
+<span class="nc" id="L114">        builder.setView(input);</span>
+
+<span class="nc" id="L116">        builder.setPositiveButton(&quot;Add&quot;, (dialog, which) -&gt; {</span>
+<span class="nc" id="L117">            String friendUsername = input.getText().toString().trim();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            if (!friendUsername.isEmpty()) {</span>
+<span class="nc" id="L119">                sendFriendRequestToDatabase(friendUsername);</span>
+            } else {
+<span class="nc" id="L121">                Toast.makeText(this, &quot;Username cannot be empty&quot;, Toast.LENGTH_SHORT).show();</span>
+            }
+<span class="nc" id="L123">        });</span>
+<span class="nc" id="L124">        builder.setNegativeButton(&quot;Cancel&quot;, (dialog, which) -&gt; dialog.cancel());</span>
+
+<span class="nc" id="L126">        builder.show();</span>
+<span class="nc" id="L127">    }</span>
+
+    private void fetchFriendsFromDatabase(String username) {
+<span class="nc" id="L130">        String url = BASE_URL + &quot;/api/friends/accepted/&quot; + username;</span>
+
+<span class="nc" id="L132">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L135">                        friendsList.clear();</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L137">                            JSONObject friendProfile = response.getJSONObject(i);</span>
+<span class="nc" id="L138">                            String friendUsername = friendProfile.getString(&quot;username&quot;);</span>
+<span class="nc" id="L139">                            friendsList.add(friendUsername);</span>
+                        }
+<span class="nc" id="L141">                        friendsAdapter.notifyDataSetChanged();</span>
+<span class="nc" id="L142">                    } catch (JSONException e) {</span>
+<span class="nc" id="L143">                        Log.e(&quot;FriendsActivity&quot;, &quot;JSON parsing error&quot;, e);</span>
+<span class="nc" id="L144">                    }</span>
+<span class="nc" id="L145">                },</span>
+                error -&gt; {
+<span class="nc" id="L147">                    Log.e(&quot;FriendsActivity&quot;, &quot;Volley error&quot;, error);</span>
+<span class="nc" id="L148">                    Toast.makeText(this, &quot;Error loading friends&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L149">                }</span>
+        );
+
+<span class="nc" id="L152">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L153">    }</span>
+
+    private void sendFriendRequestToDatabase(String friendUsername) {
+<span class="nc" id="L156">        String url = BASE_URL + &quot;/api/friends/request&quot;;</span>
+
+<span class="nc" id="L158">        JSONObject requestBody = new JSONObject();</span>
+        try {
+<span class="nc" id="L160">            requestBody.put(&quot;requester&quot;, currentUsername);</span>
+<span class="nc" id="L161">            requestBody.put(&quot;receiver&quot;, friendUsername);</span>
+<span class="nc" id="L162">        } catch (JSONException e) {</span>
+<span class="nc" id="L163">            Log.e(&quot;FriendsActivity&quot;, &quot;JSON creation error&quot;, e);</span>
+<span class="nc" id="L164">            return;</span>
+<span class="nc" id="L165">        }</span>
+
+<span class="nc" id="L167">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, requestBody,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L170">                        String status = response.getString(&quot;status&quot;);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                        if (&quot;PENDING&quot;.equals(status)) {</span>
+<span class="nc" id="L172">                            Toast.makeText(this, &quot;Friend request sent!&quot;, Toast.LENGTH_SHORT).show();</span>
+                        }
+<span class="nc" id="L174">                    } catch (JSONException e) {</span>
+<span class="nc" id="L175">                        Log.e(&quot;FriendsActivity&quot;, &quot;JSON response error&quot;, e);</span>
+<span class="nc" id="L176">                    }</span>
+<span class="nc" id="L177">                },</span>
+                error -&gt; {
+<span class="nc" id="L179">                    String errorMessage = &quot;Failed to send request&quot;;</span>
+<span class="nc bnc" id="L180" title="All 4 branches missed.">                    if (error.networkResponse != null &amp;&amp; error.networkResponse.data != null) {</span>
+                        try {
+<span class="nc" id="L182">                            String responseBody = new String(error.networkResponse.data, &quot;utf-8&quot;);</span>
+<span class="nc" id="L183">                            errorMessage = &quot;Error: &quot; + error.networkResponse.statusCode + &quot; &quot; + responseBody;</span>
+<span class="nc" id="L184">                        } catch (Exception e) {</span>
+<span class="nc" id="L185">                            Log.e(&quot;FriendsActivity&quot;, &quot;Error parsing error response&quot;, e);</span>
+<span class="nc" id="L186">                        }</span>
+                    }
+<span class="nc" id="L188">                    Log.e(&quot;FriendsActivity&quot;, &quot;Volley error: &quot; + errorMessage, error);</span>
+<span class="nc" id="L189">                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L190">                }</span>
+        );
+
+<span class="nc" id="L193">        requestQueue.add(jsonObjectRequest);</span>
+<span class="nc" id="L194">    }</span>
+
+    private void fetchPendingRequests() {
+<span class="nc" id="L197">        String url = BASE_URL + &quot;/api/friends/pending/&quot; + currentUsername;</span>
+
+<span class="nc" id="L199">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L202">                        ArrayList&lt;String&gt; displayNames = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L203">                        ArrayList&lt;String&gt; requestIds = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L206">                            JSONObject friendRequest = response.getJSONObject(i);</span>
+
+<span class="nc" id="L208">                            String requestId = friendRequest.getString(&quot;id&quot;);</span>
+
+<span class="nc" id="L210">                            JSONObject requesterProfile = friendRequest.getJSONObject(&quot;requester&quot;);</span>
+<span class="nc" id="L211">                            String requesterUsername = requesterProfile.getString(&quot;username&quot;);</span>
+
+<span class="nc" id="L213">                            displayNames.add(requesterUsername);</span>
+<span class="nc" id="L214">                            requestIds.add(requestId);</span>
+                        }
+
+<span class="nc" id="L217">                        showPendingRequestsDialog(displayNames, requestIds);</span>
+
+<span class="nc" id="L219">                    } catch (JSONException e) {</span>
+<span class="nc" id="L220">                        Log.e(&quot;FriendsActivity&quot;, &quot;JSON parsing error&quot;, e);</span>
+<span class="nc" id="L221">                    }</span>
+<span class="nc" id="L222">                },</span>
+                error -&gt; {
+<span class="nc" id="L224">                    Log.e(&quot;FriendsActivity&quot;, &quot;Volley error&quot;, error);</span>
+<span class="nc" id="L225">                    Toast.makeText(this, &quot;Error fetching requests&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L226">                }</span>
+        );
+
+<span class="nc" id="L229">        requestQueue.add(jsonArrayRequest);</span>
+<span class="nc" id="L230">    }</span>
+
+    private void showPendingRequestsDialog(ArrayList&lt;String&gt; displayNames, ArrayList&lt;String&gt; requestIds) {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (displayNames.isEmpty()) {</span>
+<span class="nc" id="L234">            Toast.makeText(this, &quot;No pending requests&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L235">            return;</span>
+        }
+
+<span class="nc" id="L238">        CharSequence[] items = displayNames.toArray(new CharSequence[0]);</span>
+
+<span class="nc" id="L240">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L241">        builder.setTitle(&quot;Pending Requests&quot;);</span>
+<span class="nc" id="L242">        builder.setItems(items, (dialog, which) -&gt; {</span>
+<span class="nc" id="L243">            String selectedUsername = displayNames.get(which);</span>
+<span class="nc" id="L244">            String selectedRequestId = requestIds.get(which);</span>
+
+<span class="nc" id="L246">            showRespondToRequestDialog(selectedUsername, selectedRequestId);</span>
+<span class="nc" id="L247">        });</span>
+<span class="nc" id="L248">        builder.show();</span>
+<span class="nc" id="L249">    }</span>
+
+    private void showRespondToRequestDialog(String username, String requestId) {
+<span class="nc" id="L252">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L253">        builder.setTitle(&quot;Respond to &quot; + username);</span>
+<span class="nc" id="L254">        builder.setMessage(&quot;Do you want to accept this friend request?&quot;);</span>
+
+<span class="nc" id="L256">        builder.setPositiveButton(&quot;Accept&quot;, (dialog, which) -&gt; {</span>
+<span class="nc" id="L257">            sendFriendResponse(requestId, &quot;ACCEPTED&quot;);</span>
+<span class="nc" id="L258">        });</span>
+
+<span class="nc" id="L260">        builder.setNegativeButton(&quot;Decline&quot;, (dialog, which) -&gt; {</span>
+<span class="nc" id="L261">            sendFriendResponse(requestId, &quot;DECLINED&quot;);</span>
+<span class="nc" id="L262">        });</span>
+
+<span class="nc" id="L264">        builder.setNeutralButton(&quot;Cancel&quot;, (dialog, which) -&gt; dialog.dismiss());</span>
+
+<span class="nc" id="L266">        builder.show();</span>
+<span class="nc" id="L267">    }</span>
+
+    private void sendFriendResponse(String requestId, String status) {
+<span class="nc" id="L270">        String url = BASE_URL + &quot;/api/friends/respond/&quot; + requestId;</span>
+
+<span class="nc" id="L272">        JSONObject requestBody = new JSONObject();</span>
+        try {
+<span class="nc" id="L274">            requestBody.put(&quot;status&quot;, status);</span>
+<span class="nc" id="L275">        } catch (JSONException e) {</span>
+<span class="nc" id="L276">            Log.e(&quot;FriendsActivity&quot;, &quot;JSON creation error&quot;, e);</span>
+<span class="nc" id="L277">            return;</span>
+<span class="nc" id="L278">        }</span>
+
+<span class="nc" id="L280">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, requestBody,</span>
+                response -&gt; {
+<span class="nc bnc" id="L282" title="All 2 branches missed.">                    if (&quot;ACCEPTED&quot;.equals(status)) {</span>
+<span class="nc" id="L283">                        Toast.makeText(this, &quot;Friend added!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L284">                        fetchFriendsFromDatabase(currentUsername);</span>
+                    } else {
+<span class="nc" id="L286">                        Toast.makeText(this, &quot;Request declined&quot;, Toast.LENGTH_SHORT).show();</span>
+                    }
+<span class="nc" id="L288">                },</span>
+                error -&gt; {
+<span class="nc" id="L290">                    String errorMessage = &quot;Error loading friends&quot;;</span>
+                    // Check if the server sent a response
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                    if (error.networkResponse != null) {</span>
+                        // Get the HTTP status code (e.g., 404, 500)
+<span class="nc" id="L294">                        int statusCode = error.networkResponse.statusCode;</span>
+<span class="nc" id="L295">                        errorMessage += &quot; (Status &quot; + statusCode + &quot;)&quot;; // e.g., &quot;Error loading friends (Status 404)&quot;</span>
+
+                        // Try to get the server's error message from the response body
+                        try {
+<span class="nc" id="L299">                            String responseBody = new String(error.networkResponse.data, &quot;utf-8&quot;);</span>
+<span class="nc" id="L300">                            Log.e(&quot;FriendsActivity&quot;, &quot;Volley Error &quot; + statusCode + &quot;: &quot; + responseBody, error);</span>
+<span class="nc" id="L301">                        } catch (Exception e) {</span>
+<span class="nc" id="L302">                            Log.e(&quot;FriendsActivity&quot;, &quot;Volley error parsing response&quot;, e);</span>
+<span class="nc" id="L303">                        }</span>
+<span class="nc" id="L304">                    } else {</span>
+                        // No network response (e.g., couldn't connect, DNS error)
+<span class="nc" id="L306">                        Log.e(&quot;FriendsActivity&quot;, &quot;Volley error (no network response)&quot;, error);</span>
+                    }
+
+                    // Show the more detailed error on screen
+<span class="nc" id="L310">                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L311">                }</span>
+        );
+
+<span class="nc" id="L314">        requestQueue.add(jsonObjectRequest);</span>
+<span class="nc" id="L315">    }</span>
+
+    private void setupNavigation() {
+<span class="nc" id="L318">        homeButton.setOnClickListener(view -&gt; navigateTo(HomeActivity.class));</span>
+<span class="nc" id="L319">        musicButton.setOnClickListener(view -&gt; navigateTo(MusicActivity.class));</span>
+<span class="nc" id="L320">        createButton.setOnClickListener(view -&gt; navigateTo(CreateActivity.class));</span>
+<span class="nc" id="L321">        jamsButton.setOnClickListener(view -&gt; navigateTo(JamsActivity.class));</span>
+
+<span class="nc" id="L323">        profileButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L324">            Intent intent = new Intent(FriendsActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L325">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L326">            intent.putExtra(&quot;PROFILE_TO_VIEW&quot;, currentUsername);</span>
+<span class="nc" id="L327">            startActivity(intent);</span>
+<span class="nc" id="L328">        });</span>
+<span class="nc" id="L329">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass) {
+<span class="nc" id="L332">        Intent intent = new Intent(FriendsActivity.this, activityClass);</span>
+<span class="nc" id="L333">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L334">        startActivity(intent);</span>
+<span class="nc" id="L335">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

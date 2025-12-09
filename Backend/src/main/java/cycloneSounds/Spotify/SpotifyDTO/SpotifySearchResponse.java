@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class SpotifySearchResponse {
 
     private TrackSearchResult tracks;
+    private AlbumSearchResult albums;
 
     public TrackSearchResult getTracks() {
         return tracks;
@@ -17,4 +18,12 @@ public class SpotifySearchResponse {
     public void setTracks(TrackSearchResult tracks) {
         this.tracks = tracks;
     }
+
+    public AlbumSearchResult getAlbums() {
+        return albums;
+    }
+    public void setAlbums(AlbumSearchResult albums) {
+        this.albums = albums;
+    }
+
 }

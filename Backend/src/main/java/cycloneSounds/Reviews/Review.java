@@ -1,6 +1,7 @@
 package cycloneSounds.Reviews;
 
 import cycloneSounds.Songs.Song;
+import cycloneSounds.Albums.Album;
 import jakarta.persistence.*;
 
 /**
