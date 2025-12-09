@@ -5,9 +5,41 @@
     android:layout_height="match_parent"
     tools:context=".SpotifyPlayerActivity">
 
+
     <WebView
         android:id="@+id/spotify_web_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="65dp"
+        android:layout_marginBottom="300dp"/>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/bottom_button_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/close_button"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Close" />
+
+        <Button
+            android:id="@+id/review_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Review Song" />
+
+    </LinearLayout>
+
 
 </RelativeLayout>

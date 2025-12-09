@@ -83,6 +83,12 @@ public class SearchActivity extends AppCompatActivity {
         public String getEmbedUrl() {
             return embedUrl;
         }
+        public String getName() {
+            return songName;
+        }
+        public String getArtist() {
+            return artist;
+        }
 
         @NonNull
         @Override
@@ -212,6 +218,9 @@ public class SearchActivity extends AppCompatActivity {
 
             Intent intent = new Intent(SearchActivity.this, SpotifyPlayerActivity.class);
             intent.putExtra("EMBED_URL", clickedSong.getEmbedUrl());
+            intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
+            intent.putExtra("SONG_NAME", clickedSong.getName());
+            intent.putExtra("ARTIST_NAME", clickedSong.getArtist());
             startActivity(intent);
         });
     }
@@ -264,7 +273,7 @@ public class SearchActivity extends AppCompatActivity {
                             int songId = songJson.getInt("songId");
                             String songName = songJson.getString("songName");
                             String artistName = songJson.getString("artist");
-                            String embedUrl = songJson.getString("embedUrl");
+                            String embedUrl = songJson.getString("embedURL");
                             songList.add(new Song(songId, songName, artistName, embedUrl));
                         }
                         songAdapter.notifyDataSetChanged();
