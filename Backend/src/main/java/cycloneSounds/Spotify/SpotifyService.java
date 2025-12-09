@@ -96,6 +96,49 @@ public class SpotifyService {
     }
 
     /**
+     * Fetches tracks for an existing Album entity and saves them to the DB.
+     * This blocks (waits) until the operation is done so the Controller can return the full list immediately.
+     */
+    public void populateAlbumTracks(Album album) {
+        String spotifyAlbumId = album.getSpotifyId();
+
+        if (spotifyAlbumId == null || spotifyAlbumId.isEmpty()) {
+            return;
+        }
+
+        getAccessToken().flatMap(token -> {
+            return webClient.get()
+                    .uri("/albums/" + spotifyAlbumId + "/tracks?limit=50")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).retrieve()
+                    .bodyToMono(SpotifyTracksResponse.class)
+                    .doOnNext(response -> {
+                        if (response != null && response.getItems() != null) {
+                            List<SpotifyTrack> tracks = response.getItems();
+
+                            for (SpotifyTrack track : tracks) {
+                                try {
+                                    Song song = songRepository.findBySpotifyId(track.getId()).orElse(new Song());
+                                    song.setSongName(track.getName());
+                                    song.setSpotifyId(track.getId());
+
+                                    if (track.getArtists() != null && !track.getArtists().isEmpty()) {
+                                        song.setArtist(track.getArtists().get(0).getName());
+                                    } else {
+                                        song.setArtist(album.getArtist());
+                                    }
+                                    song.setAlbum(album);
+                                    songRepository.save(song);
+
+                                } catch (Exception e) {
+                                    System.err.println("Error saving track: " + track.getName());
+                                }
+                            }
+                        }
+                    });
+        }).block();
+    }
+
+    /**
      * Saves new tracks from Spotify to the local database.
      * Ensures no duplicate entries exist by checking Spotify ID.
      * @param spotifyTracks

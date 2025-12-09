@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("albums")
+@RequestMapping("/albums")
 @RestController
 public class AlbumController {
 
@@ -18,7 +18,7 @@ public class AlbumController {
 
     @GetMapping(path = "/search/{name}")
     public List<Album> searchAlbum(@PathVariable String name) {
-        return albumRepository.findByTitleContaining(name);
+        return albumRepository.findByTitleContainingIgnoreCase(name);
     }
 
     @GetMapping(path = "/")
@@ -28,7 +28,15 @@ public class AlbumController {
 
     @GetMapping(path = "/{id}")
     public Album getAlbumById(@PathVariable int id) {
-        return albumRepository.findById(id).orElse(null);
+        Album album = albumRepository.findById(id).orElse(null);
+        if (album == null){
+            return null;
+        }
+        if(album.getSongs() == null || album.getSongs().isEmpty()){
+            spotifyService.populateAlbumTracks(album);
+            album = albumRepository.findById(id).orElse(null);
+        }
+        return album;
     }
 
     @GetMapping("/spotify/{spotifyId}")
