@@ -24,6 +24,14 @@
         android:gravity="end"
         android:orientation="horizontal">
 
+        <TextView
+            android:id="@+id/approval_type_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:padding="8dp"
+            android:text="Approval: Manager" />
+
         <Button
             android:id="@+id/suggest_song_btn"
             android:layout_width="wrap_content"

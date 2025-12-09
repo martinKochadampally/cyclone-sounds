@@ -41,47 +41,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * This activity represents a single "Jam" session. It includes a real-time chat, a feature
- * for suggesting songs, and admin controls for managing the jam's associated playlist.
- */
 public class IndividualJamActivity extends AppCompatActivity {
 
-    // API and WebSocket URLs
     private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
     private static final String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
     private static final String SONGS_SEARCH_URL = "http://coms-3090-008.class.las.iastate.edu:8080/search/songs";
     private String WEB_SOCKET_URL;
-
-    // Volley and user/jam data
     private RequestQueue requestQueue;
     private String currentUsername;
     private String jamName;
     private String jamAdmin;
-
-    // UI elements
+    private String approvalType;
     private RecyclerView chatRecyclerView;
     private EditText messageInput;
     private Button sendButton, suggestSongButton, jamSettingsButton;
+    private TextView approvalTypeText;
 
-    // State flag
     private boolean jamHasPlaylist = false;
 
-    // Chat components
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messageList;
 
-    // WebSocket client
     private WebSocketClient webSocketClient;
 
-    /**
-     * Called when the activity is first created. Initializes the UI, sets up the WebSocket connection,
-     * fetches chat history, and configures user/admin specific UI elements.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after
-     *     previously being shut down then this Bundle contains the data it most
-     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,10 +75,11 @@ public class IndividualJamActivity extends AppCompatActivity {
         currentUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
         jamName = getIntent().getStringExtra("JAM_NAME");
         jamAdmin = getIntent().getStringExtra("JAM_ADMIN");
+        approvalType = getIntent().getStringExtra("APPROVAL_TYPE");
 
         Log.d("IndividualJamActivity", "Jam Admin: " + jamAdmin);
 
-        // Construct WebSocket URL for this specific jam and user.
+
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/jams/" + jamName + "/"+ currentUsername;
 
         requestQueue = Volley.newRequestQueue(this);
@@ -111,10 +94,12 @@ public class IndividualJamActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.send_btn);
         suggestSongButton = findViewById(R.id.suggest_song_btn);
         jamSettingsButton = findViewById(R.id.jam_settings_btn);
+        approvalTypeText = findViewById(R.id.approval_type_text);
+
+        approvalTypeText.setText("Approval: " + approvalType);
 
         suggestSongButton.setEnabled(false);
 
-        // Show admin-specific buttons if the user is the jam admin.
         if (currentUsername != null && currentUsername.equals(jamAdmin)) {
             jamSettingsButton.setVisibility(View.VISIBLE);
         }
@@ -128,7 +113,15 @@ public class IndividualJamActivity extends AppCompatActivity {
         chatRecyclerView.setAdapter(chatAdapter);
 
         sendButton.setOnClickListener(view -> sendMessage());
-        suggestSongButton.setOnClickListener(view -> showSuggestSongDialog());
+        suggestSongButton.setOnClickListener(view -> {
+            if ("Manager".equals(approvalType)) {
+                showSuggestSongDialog(); // Existing logic for manager approval
+            } else if ("Voting".equals(approvalType)) {
+                showSuggestSongDialog(); // Same dialog, but button action will be different
+            } else { // Open
+                showOpenAddSongDialog();
+            }
+        });
         jamSettingsButton.setOnClickListener(view -> showAdminMenu());
 
         if (jamName != null) {
@@ -139,21 +132,15 @@ public class IndividualJamActivity extends AppCompatActivity {
         fetchPlaylistsAndSetupSuggestionsButton();
     }
 
-    /**
-     * Handles the up navigation button press, finishing the activity.
-     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
 
-    /**
-     * Fetches the chat history for this jam from the server.
-     * @param jamName The name of the jam.
-     */
+
     private void fetchChatHistory(String jamName) {
-        String url = HTTP_BASE_URL + "/api/jam/chatHistory/" + jamName;
+        String url = HTTP_BASE_URL + "/api/jams/chatHistory/" + jamName;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
@@ -162,14 +149,12 @@ public class IndividualJamActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject messageJson = response.getJSONObject(i);
                             String content = messageJson.getString("content");
-                            String[] messages = content.split("\\r?\\n"); // Split history which might be a single block.
+                            String[] messages = content.split("\\r?\\n");
                             for (String msg : messages) {
-                                // Parse each line for sender and content, similar to WebSocket onMessage
                                 String[] parts = msg.split(": ", 2);
                                 if (parts.length == 2) {
                                     messageList.add(new ChatMessage(parts[0], parts[1]));
                                 } else if (!msg.trim().isEmpty()){
-                                    // Fallback for messages without a specific sender (e.g., system messages).
                                     messageList.add(new ChatMessage("System", msg));
                                 }
                             }
@@ -182,7 +167,6 @@ public class IndividualJamActivity extends AppCompatActivity {
                     }
                 },
                 error -> {
-                    // Log and display error if chat history fails to load.
                     String errorMessage = "Error loading chat history";
                     if (error.networkResponse != null && error.networkResponse.data != null) {
                         try {
@@ -199,15 +183,10 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         requestQueue.add(jsonArrayRequest);
     }
-
-    /**
-     * Checks if a playlist for this jam exists and enables the "Suggest Song" button accordingly.
-     */
     private void fetchPlaylistsAndSetupSuggestionsButton() {
         String url = URL_STRING_REQ + "owner/" + jamAdmin;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
-                    // Check if the response contains a playlist with the same name as the jam.
                     if (response.toString().contains(jamName)) {
                         jamHasPlaylist = true;
                         suggestSongButton.setEnabled(true);
@@ -225,9 +204,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
-    /**
-     * Creates and connects the WebSocket client for real-time communication.
-     */
     private void createWebSocketClient() {
         URI uri;
         try {
@@ -247,28 +223,52 @@ public class IndividualJamActivity extends AppCompatActivity {
             public void onMessage(String message) {
                 Log.d("IndividualJamActivity", "Received message: " + message);
 
-                // Check if the message is a JSON object (for special messages like song suggestions).
                 if (message.trim().startsWith("{")) {
                     try {
                         JSONObject messageJson = new JSONObject(message);
                         String type = messageJson.optString("type", "chat");
 
-                        // Handle song suggestion messages.
-                        if ("song_suggestion".equals(type)) {
-                            if (currentUsername.equals(jamAdmin)) {
+                        switch(type) {
+                            case "song_suggestion": // Manager approval
+                                if (currentUsername.equals(jamAdmin)) {
+                                    String song = messageJson.getString("song");
+                                    String artist = messageJson.getString("artist");
+                                    String suggester = messageJson.getString("suggester");
+                                    runOnUiThread(() -> showApprovalDialog(song, artist, suggester));
+                                }
+                                break;
+                            case "song_vote_request": // Voting approval: show voting dialog to everyone
                                 String song = messageJson.getString("song");
                                 String artist = messageJson.getString("artist");
                                 String suggester = messageJson.getString("suggester");
-                                runOnUiThread(() -> showApprovalDialog(song, artist, suggester));
-                            }
-                            return;
+                                String songId = messageJson.getString("songId");
+                                runOnUiThread(() -> showVoteDialog(song, songId, artist, suggester));
+                                break;
+                            case "vote_result": // Final result of a vote
+                                String resultSong = messageJson.getString("song");
+                                String result = messageJson.getString("result");
+                                String resultMessage = result.equals("approved")
+                                        ? "Vote passed! '" + resultSong + "' was added to the playlist."
+                                        : "Vote for '" + resultSong + "' did not pass.";
+                                runOnUiThread(() -> {
+                                    messageList.add(new ChatMessage("System", resultMessage));
+                                    chatAdapter.notifyItemInserted(messageList.size() - 1);
+                                    chatRecyclerView.scrollToPosition(messageList.size() - 1);
+                                });
+                                break;
+                            default:
+                                // Could be a different JSON message, log it
+                                Log.w("WebSocket", "Unknown JSON message type: " + type);
+                                break;
                         }
+                        return; // Stop processing after handling JSON
+
                     } catch (JSONException e) {
                         Log.e("IndividualJamActivity", "Error parsing JSON message", e);
                     }
                 }
 
-                // Handle plain text chat messages.
+                // Handle plain text chat messages
                 runOnUiThread(() -> {
                     String[] parts = message.split(": ", 2);
                     if (parts.length == 2) {
@@ -294,9 +294,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         webSocketClient.connect();
     }
 
-    /**
-     * Gets text from the input field and sends it as a chat message.
-     */
     private void sendMessage() {
         String content = messageInput.getText().toString().trim();
         if (content.isEmpty()) {
@@ -306,14 +303,8 @@ public class IndividualJamActivity extends AppCompatActivity {
         sendMessageToBackend(new ChatMessage(currentUsername, content), jamName);
     }
 
-    /**
-     * Sends a chat message object to the backend via WebSocket.
-     * @param message The ChatMessage to send.
-     * @param jamName The name of the jam (context).
-     */
     private void sendMessageToBackend(ChatMessage message, String jamName) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
-            // Send plain text content for chat messages.
             webSocketClient.send(message.getContent());
             Log.d(message.getSender(), message.getContent());
         } else {
@@ -321,9 +312,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Shows a dialog for users to search for and suggest a song.
-     */
+
     private void showSuggestSongDialog() {
         if (!jamHasPlaylist) {
             Toast.makeText(this, "Admin has not created a playlist for this jam yet.", Toast.LENGTH_LONG).show();
@@ -332,7 +321,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Suggest a Song");
 
-        // Create a custom layout for the dialog.
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(50, 50, 50, 50);
@@ -359,7 +347,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         TableRow headerRow = new TableRow(this);
         headerRow.addView(createTextViewForDialog("Song"));
         headerRow.addView(createTextViewForDialog("Artist"));
-        headerRow.addView(createTextViewForDialog("")); // Placeholder for button column
+        headerRow.addView(createTextViewForDialog("")); // for button
         resultsTable.addView(headerRow);
 
         scrollView.addView(resultsTable);
@@ -372,7 +360,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         searchButton.setOnClickListener(v -> {
             String query = searchInput.getText().toString().trim();
             if (!query.isEmpty()) {
-                searchSongsForSuggestion(query, resultsTable);
+                searchSongsForSuggestion(query, resultsTable, dialog);
             } else {
                 Toast.makeText(this, "Please enter a song to search", Toast.LENGTH_SHORT).show();
             }
@@ -381,18 +369,13 @@ public class IndividualJamActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /**
-     * Searches for songs to be suggested and populates the results in the dialog's table.
-     * @param query The search query.
-     * @param resultsTable The table to populate with search results.
-     */
-    private void searchSongsForSuggestion(String query, TableLayout resultsTable) {
+    private void searchSongsForSuggestion(String query, TableLayout resultsTable, AlertDialog dialog) {
         String url = SONGS_SEARCH_URL + "/" + query;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
-                        populateSuggestionSearchTable(response, resultsTable);
+                        populateSuggestionSearchTable(response, resultsTable, dialog);
                     } catch (JSONException e) {
                         Log.e("IndividualJamActivity", "JSON parsing error in search", e);
                         Toast.makeText(this, "Error parsing search results", Toast.LENGTH_SHORT).show();
@@ -402,7 +385,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                     Log.e("Volley Error", "Error searching songs: " + error.toString());
                     Toast.makeText(getApplicationContext(), "Song not found", Toast.LENGTH_SHORT).show();
                     int childCount = resultsTable.getChildCount();
-                    if (childCount > 1) { // Keep header
+                    if (childCount > 1) { 
                         resultsTable.removeViews(1, childCount - 1);
                     }
                 });
@@ -410,15 +393,10 @@ public class IndividualJamActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
-    /**
-     * Populates the search table within the suggestion dialog.
-     * @param songs The JSONArray of songs found.
-     * @param table The table to populate.
-     * @throws JSONException If JSON parsing fails.
-     */
-    private void populateSuggestionSearchTable(JSONArray songs, TableLayout table) throws JSONException {
+
+    private void populateSuggestionSearchTable(JSONArray songs, TableLayout table, AlertDialog dialog) throws JSONException {
         int childCount = table.getChildCount();
-        if (childCount > 1) { // Clear previous results, keep header
+        if (childCount > 1) {
             table.removeViews(1, childCount - 1);
         }
 
@@ -426,19 +404,110 @@ public class IndividualJamActivity extends AppCompatActivity {
             JSONObject song = songs.getJSONObject(i);
             String songName = song.optString("songName", "N/A");
             String artist = song.optString("artist", "N/A");
+            String songId = song.optString("songId", "N/A");
+
 
             TableRow tableRow = new TableRow(this);
             tableRow.addView(createTextViewForDialog(songName));
             tableRow.addView(createTextViewForDialog(artist));
-            tableRow.addView(createSuggestButton(songName, artist));
+            tableRow.addView(createSuggestButton(songId, songName, artist, dialog));
 
             table.addView(tableRow);
         }
     }
+    
+    // New method for "Open" approval mode
+    private void showOpenAddSongDialog() {
+        if (!jamHasPlaylist) {
+            Toast.makeText(this, "Admin has not created a playlist for this jam yet.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add a Song");
 
-    /**
-     * Helper to create a TextView for the dialog table.
-     */
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 50, 50, 50);
+
+        LinearLayout searchLayout = new LinearLayout(this);
+        searchLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        final EditText searchInput = new EditText(this);
+        searchInput.setHint("Enter song name");
+        LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+        searchInput.setLayoutParams(editTextParams);
+        searchLayout.addView(searchInput);
+
+        Button searchButton = new Button(this);
+        searchButton.setText("Search");
+        searchLayout.addView(searchButton);
+
+        layout.addView(searchLayout);
+
+        ScrollView scrollView = new ScrollView(this);
+        TableLayout resultsTable = new TableLayout(this);
+        resultsTable.setStretchAllColumns(true);
+
+        TableRow headerRow = new TableRow(this);
+        headerRow.addView(createTextViewForDialog("Song"));
+        headerRow.addView(createTextViewForDialog("Artist"));
+        headerRow.addView(createTextViewForDialog(""));
+        resultsTable.addView(headerRow);
+
+        scrollView.addView(resultsTable);
+        layout.addView(scrollView);
+
+        AlertDialog dialog = builder.setView(layout)
+                .setNegativeButton("Close", (d, which) -> d.cancel())
+                .create();
+
+        searchButton.setOnClickListener(v -> {
+            String query = searchInput.getText().toString().trim();
+            if (!query.isEmpty()) {
+                searchSongsForOpenAdd(query, resultsTable, dialog);
+            } else {
+                Toast.makeText(this, "Please enter a song to search", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void searchSongsForOpenAdd(String query, TableLayout resultsTable, AlertDialog dialog) {
+        String url = SONGS_SEARCH_URL + "/" + query;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        // Clear previous results
+                        int childCount = resultsTable.getChildCount();
+                        if (childCount > 1) { resultsTable.removeViews(1, childCount - 1); }
+
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject song = response.getJSONObject(i);
+                            String songName = song.optString("songName", "N/A");
+                            String artist = song.optString("artist", "N/A");
+
+                            TableRow tableRow = new TableRow(this);
+                            tableRow.addView(createTextViewForDialog(songName));
+                            tableRow.addView(createTextViewForDialog(artist));
+
+                            Button addButton = new Button(this);
+                            addButton.setText("Add");
+                            addButton.setOnClickListener(v -> {
+                                addSongToPlaylist(songName, artist); // Add directly
+                                dialog.dismiss();
+                            });
+                            tableRow.addView(addButton);
+                            resultsTable.addView(tableRow);
+                        }
+                    } catch (JSONException e) {
+                        Log.e("IndividualJamActivity", "JSON parsing error in open search", e);
+                    }
+                },
+                error -> Log.e("Volley Error", "Error searching songs: " + error.toString()));
+        requestQueue.add(jsonArrayRequest);
+    }
+
     private TextView createTextViewForDialog(String text) {
         TextView textView = new TextView(this);
         textView.setText(text);
@@ -447,24 +516,21 @@ public class IndividualJamActivity extends AppCompatActivity {
         return textView;
     }
 
-    /**
-     * Creates a "Suggest" button for a song in the search results.
-     * @param songName The name of the song.
-     * @param artist The artist of the song.
-     * @return The created Button.
-     */
-    private Button createSuggestButton(final String songName, final String artist) {
+    private Button createSuggestButton(final String songID, final String songName, final String artist, final AlertDialog dialog) {
         Button button = new Button(this);
         button.setText("Suggest");
-        button.setOnClickListener(v -> sendSongSuggestion(songName, artist));
+        button.setOnClickListener(v -> {
+            if ("Voting".equals(approvalType)) {
+                startSongVote(songName, songID, artist); // Initiate a vote
+            } else { // Default to Manager approval
+                sendSongSuggestion(songName, artist);
+            }
+            dialog.dismiss();
+        });
         return button;
     }
-
-    /**
-     * Sends a song suggestion to the jam admin via WebSocket.
-     * @param songName The name of the suggested song.
-     * @param artist The artist of the suggested song.
-     */
+    
+    // Send a suggestion for Manager-led approval
     private void sendSongSuggestion(String songName, String artist) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject suggestionJson = new JSONObject();
@@ -473,14 +539,8 @@ public class IndividualJamActivity extends AppCompatActivity {
                 suggestionJson.put("song", songName);
                 suggestionJson.put("artist", artist);
                 suggestionJson.put("suggester", currentUsername);
-                suggestionJson.put("receiver", jamAdmin);
                 webSocketClient.send(suggestionJson.toString());
-                Log.d("Song Suggestion", suggestionJson.toString());
-                Toast.makeText(this, "Song suggested!", Toast.LENGTH_SHORT).show();
-                // Also send a plain text message to the chat about the suggestion.
-                if (webSocketClient != null && webSocketClient.isOpen()) {
-                    webSocketClient.send(currentUsername + " suggested adding '" + songName + "'");
-                }
+                Toast.makeText(this, "Song suggested to the Jam Manager!", Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -489,9 +549,55 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Displays the admin menu with options for the jam.
-     */
+    // Start a vote for Voting-based approval
+    private void startSongVote(String songName, String songID, String artist) {
+        if (webSocketClient != null && webSocketClient.isOpen()) {
+            JSONObject voteRequestJson = new JSONObject();
+            try {
+                voteRequestJson.put("type", "song_vote_request");
+                voteRequestJson.put("song", songName);
+                voteRequestJson.put("songId", songID);
+                voteRequestJson.put("artist", artist);
+                voteRequestJson.put("suggester", currentUsername);
+                webSocketClient.send(voteRequestJson.toString());
+                Toast.makeText(this, "Vote initiated for " + songName, Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Toast.makeText(this, "Not connected to WebSocket", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showVoteDialog(String song, String songId, String artist, String suggester) {
+        new AlertDialog.Builder(this)
+                .setTitle("Vote for a Song")
+                .setMessage(suggester + " wants to add \"" + song + "\" by " + artist + ".")
+                .setPositiveButton("Yes", (dialog, which) -> sendVote(song, artist, songId,"yes"))
+                .setNegativeButton("No", (dialog, which) -> sendVote(song, artist, songId, "no"))
+                .show();
+    }
+
+    private void sendVote(String songName, String songId, String artist, String vote) {
+        if (webSocketClient != null && webSocketClient.isOpen()) {
+            JSONObject voteJson = new JSONObject();
+            try {
+                voteJson.put("type", "song_vote");
+                voteJson.put("song", songName);
+                voteJson.put("artist", artist);
+                voteJson.put("voter", currentUsername);
+                voteJson.put("vote", vote);
+                voteJson.put("songId", songId);
+                webSocketClient.send(voteJson.toString());
+                Toast.makeText(this, "You voted " + vote, Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Toast.makeText(this, "Not connected to WebSocket", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void showAdminMenu() {
         final CharSequence[] options = {"Create Jam Playlist", "Cancel"};
 
@@ -507,11 +613,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         builder.show();
     }
 
-    /**
-     * Sends a request to the server to create a new playlist for the jam.
-     * @param user The username of the admin creating the playlist.
-     * @param playlistName The name of the playlist, which is the same as the jam name.
-     */
     private void createPlaylistRequest(final String user, final String playlistName) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
@@ -522,7 +623,7 @@ public class IndividualJamActivity extends AppCompatActivity {
                     if (webSocketClient != null && webSocketClient.isOpen()) {
                         webSocketClient.send("Admin " + jamAdmin + " created a playlist for this jam");
                     }
-                    fetchPlaylistsAndSetupSuggestionsButton(); // Re-check to enable suggestion button.
+                    fetchPlaylistsAndSetupSuggestionsButton();
                 },
                 error -> {
                     Log.e("Volley Error", error.toString());
@@ -540,12 +641,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    /**
-     * Shows a dialog to the jam admin to approve or reject a song suggestion.
-     * @param song The name of the song.
-     * @param artist The artist of the song.
-     * @param suggester The user who suggested the song.
-     */
     private void showApprovalDialog(String song, String artist, String suggester) {
         new AlertDialog.Builder(this)
                 .setTitle("Song Suggestion")
@@ -562,20 +657,18 @@ public class IndividualJamActivity extends AppCompatActivity {
                 .show();
     }
 
-    /**
-     * Adds an approved song to the jam's playlist.
-     * @param songName The name of the song.
-     * @param artist The artist of the song.
-     */
     private void addSongToPlaylist(final String songName, final String artist) {
-        String url = URL_STRING_REQ + currentUsername + "/" + jamName + "/add";
+        String url = URL_STRING_REQ + jamAdmin + "/" + jamName + "/add";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
                     Log.d("Volley Response", "Add song: " + response);
                     Toast.makeText(getApplicationContext(), "Song added", Toast.LENGTH_SHORT).show();
                     if (webSocketClient != null && webSocketClient.isOpen()) {
-                        webSocketClient.send("Suggestion for '" + songName + "' was approved by the admin");
+                        String notification = "Manager".equals(approvalType)
+                            ? "Suggestion for '" + songName + "' was approved by the admin"
+                            : "'" + songName + "' was added to the playlist by " + currentUsername;
+                        webSocketClient.send(notification);
                     }
                 },
                 error -> {
@@ -595,9 +688,6 @@ public class IndividualJamActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    /**
-     * Called when the activity is being destroyed. Ensures the WebSocket client is closed.
-     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
