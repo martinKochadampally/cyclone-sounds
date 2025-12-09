@@ -26,6 +26,9 @@ public class JamController {
     private JamRepository jamRepository;
 
     @Autowired
+    private JamMessageRepository jamMessageRepository;
+
+    @Autowired
     private CredentialRepository credentialRepository;
 
     /**
@@ -90,6 +93,14 @@ public class JamController {
     public ResponseEntity<Jam> getJam(@PathVariable String name) {
         Optional<Jam> jamOpt = jamRepository.findById(name);
         return jamOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/chatHistory/{jamName}")
+    public List<JamMessageDTO> getChatHistory(@PathVariable String jamName) {
+        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
+        return messages.stream()
+                .map(msg -> new JamMessageDTO(msg.getUserName() + ": " + msg.getContent()))
+                .toList();
     }
 
     /**
