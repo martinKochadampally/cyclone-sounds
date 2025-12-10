@@ -225,6 +225,7 @@ public class SearchActivity extends AppCompatActivity {
             intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
             intent.putExtra("SONG_NAME", clickedSong.getName());
             intent.putExtra("ARTIST_NAME", clickedSong.getArtist());
+            intent.putExtra("SONG_ID", clickedSong.getSongId());
             startActivity(intent);
         });
 
