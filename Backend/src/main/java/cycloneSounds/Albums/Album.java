@@ -86,6 +86,5 @@ public class Album {
     }
     public void addSong(Song song) {
         this.songs.add(song);
-        //song.setAlbum(this);
     }
 }

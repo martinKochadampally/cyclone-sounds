@@ -1,12 +1,15 @@
 package cycloneSounds.Spotify.SpotifyDTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SpotifyAlbum {
 
     private String name;
     private String id;
+    private List<SpotifyImage> images;
+
     public String getName() {
         return name;
     }
@@ -21,5 +24,13 @@ public class SpotifyAlbum {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public List<SpotifyImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<SpotifyImage> images) {
+        this.images = images;
     }
 }
