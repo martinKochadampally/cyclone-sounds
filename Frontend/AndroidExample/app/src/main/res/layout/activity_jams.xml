@@ -46,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:stretchColumns="0,1,3">
+            android:stretchColumns="0,1">
 
             <TableRow
                 android:layout_width="match_parent"
@@ -56,7 +56,6 @@
                 <TextView android:text="Jam Name" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="Participants" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="Admin" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
-                <TextView android:text="Approval" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
                 <TextView android:text="" android:textStyle="bold" android:layout_marginEnd="4dp" android:textSize="18dp"/>
             </TableRow>
 

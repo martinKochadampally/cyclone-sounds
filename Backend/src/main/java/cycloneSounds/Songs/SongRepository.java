@@ -16,7 +16,17 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     List<Song> findTop15ByArtistContainingOrSongNameContainingOrderBySearchesDesc(String artist, String songName);
 
-    Optional<Song> findBySongId(int songId);
+//    @Query(value = """
+//        SELECT * FROM song s
+//        WHERE s.id NOT IN (
+//            SELECT r.song_id
+//            FROM review r
+//            WHERE r.reviewer = :reviewer
+//        )
+//        ORDER BY RAND()
+//        LIMIT 1
+//        """, nativeQuery = true)
+//    Optional<Song> findRandomSongNotReviewedBy(@Param("reviewer") String reviewer);
 
 //    List<Song> findBySongNameContainingIgnoreCase(String name);
 }
