@@ -151,7 +151,7 @@ public class JamSocket {
                     voteRepository.save(vote);
 
                     int voteId = vote.getVoteId();
-                    voteService.recordVoteAsync(voteId, suggester, "yes");
+                    //voteService.recordVoteAsync(voteId, suggester, "yes");
 
                     JSONObject broadcastJson = new JSONObject();
                     broadcastJson.put("type", "song_vote_request");
@@ -185,15 +185,6 @@ public class JamSocket {
                         voteService.recordVoteAsync(voteId, voter, userVote);
                     }
 
-//                    JSONObject broadcastJson = new JSONObject();
-//                    broadcastJson.put("type", "song_vote_request");
-//                    broadcastJson.put("voteId", voteId);
-//                    broadcastJson.put("songId", songId);
-//                    broadcastJson.put("song", song.getSongName());
-//                    broadcastJson.put("artist", song.getArtist());
-//                    broadcastJson.put("suggester", suggester);
-
-//                    broadcastToJam(jamName, broadcastJson.toString());
                     checkVoteResult(jamName, songId, currentVotes);
                 }
             }
