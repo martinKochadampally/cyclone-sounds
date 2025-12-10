@@ -8,74 +8,54 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-/*
-
-1. To run this project, open the directory "Android Example", otherwise it may not recognize the file structure properly
-
-2. Ensure you are using a compatible version of gradle, to do so you need to check 2 files.
-
-    AndroidExample/Gradle Scripts/build.gradle
-    Here, you will have this block of code. Ensure it is set to a compatible version,
-    in this case 8.12.2 should be sufficient:
-        plugins {
-            id 'com.android.application' version '8.12.2' apply false
-        }
-
-    Gradle Scripts/gradle-wrapper.properties
-
-3. This file is what actually determines the Gradle version used, 8.13 should be sufficient.
-    "distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip" ---Edit the version if needed
-
-4. You might be instructed by the plugin manager to upgrade plugins, accept it and you may execute the default selected options.
-
-5. Press "Sync project with gradle files" located at the top right of Android Studio,
-   once this is complete you will be able to run the app
-
-   This version is compatible with both JDK 17 and 21. The Java version you want to use can be
-   altered in Android Studio->Settings->Build, Execution, Deployment->Build Tools->Gradle
-
+/**
+ * The main entry point of the application. This activity serves as the initial screen,
+ * presenting the user with options to either log in or sign up.
  */
-
-
 public class MainActivity extends AppCompatActivity {
 
-    private TextView messageText;   // define message textview variable
-    private Button loginButton;     // define login button variable
-    private Button signupButton;    // define signup button variable
+    // UI elements
+    private TextView messageText;   // Displays the application name or a welcome message.
+    private Button loginButton;     // Button to navigate to the Login screen.
+    private Button signupButton;    // Button to navigate to the Signup screen.
 
+    /**
+     * Called when the activity is first created. This is where you should do all of your normal
+     * static set up: create views, bind data to lists, etc. This method also provides you with
+     * a Bundle containing the activity's previously frozen state, if there was one.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);             // link to Main activity XML
+        setContentView(R.layout.activity_main); // Set the layout for this activity.
 
         /* initialize UI elements */
-        messageText = findViewById(R.id.main_msg_txt);      // link to message textview in the Main activity XML
-        loginButton = findViewById(R.id.main_login_btn);    // link to login button in the Main activity XML
-        signupButton = findViewById(R.id.main_signup_btn);  // link to signup button in the Main activity XML
+        messageText = findViewById(R.id.main_msg_txt);      // Link to the TextView in the layout.
+        loginButton = findViewById(R.id.main_login_btn);    // Link to the login button in the layout.
+        signupButton = findViewById(R.id.main_signup_btn);  // Link to the signup button in the layout.
 
-
+        // Set the main title of the application.
         messageText.setText("Cyclone Sounds");
 
-
-        /* click listener on login button pressed */
+        /* Set a click listener for the login button. */
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                /* when login button is pressed, use intent to switch to Login Activity */
+                /* When the login button is pressed, create an Intent to switch to the LoginActivity. */
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
 
-        /* click listener on signup button pressed */
+        /* Set a click listener for the signup button. */
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                /* when signup button is pressed, use intent to switch to Signup Activity */
+                /* When the signup button is pressed, create an Intent to switch to the SignupActivity. */
                 Intent intent = new Intent(MainActivity.this, SignupActivity.class);
                 startActivity(intent);
             }

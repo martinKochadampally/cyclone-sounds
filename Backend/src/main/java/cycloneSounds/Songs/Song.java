@@ -1,6 +1,8 @@
 package cycloneSounds.Songs;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import cycloneSounds.Albums.Album;
 
 /**
  * Song table that is updated from spotify API. Songs can be manually added through a post method through artist or song name
@@ -11,7 +13,7 @@ public class Song {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int songId;
+    private Integer songId;
 
     private String songName;
     private String artist;
@@ -19,6 +21,12 @@ public class Song {
 
     @Column(name = "spotifyId")
     private String spotifyId;
+
+    @ManyToOne
+    @JoinColumn(name = "album_id")
+    @JsonIgnore
+    private Album album;
+
 
     public Song() {}
 
@@ -28,11 +36,11 @@ public class Song {
         this.searches = 0;
     }
 
-    public int getSongId() {
+    public Integer getSongId() {
         return songId;
     }
 
-    public void setSongId(int songId) {
+    public void setSongId(Integer songId) {
         this.songId = songId;
     }
 
@@ -69,4 +77,12 @@ public class Song {
     public void setSpotifyId(String spotifyId) {
         this.spotifyId = spotifyId;
     }
+
+    public Album getAlbum() {
+        return album;
+    }
+    public void setAlbum(Album album) {
+        this.album = album;
+    }
+
 }

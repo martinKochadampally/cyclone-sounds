@@ -26,6 +26,9 @@ public class JamController {
     private JamRepository jamRepository;
 
     @Autowired
+    private JamMessageRepository jamMessageRepository;
+
+    @Autowired
     private CredentialRepository credentialRepository;
 
     /**
@@ -43,8 +46,8 @@ public class JamController {
             @ApiResponse(responseCode = "400", description = "Jam name already exists"),
             @ApiResponse(responseCode = "403", description = "User not authorized to create Jam")
     })
-    @PostMapping("/{username}/{jamName}")
-    public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName) {
+    @PostMapping("/{username}/{jamName}/{approvalType}")
+    public ResponseEntity<Jam> createJam(@PathVariable String username, @PathVariable String jamName, @PathVariable String approvalType) {
         Credentials creds = credentialRepository.findById(username).orElse(null);
         if (creds == null || (!creds.getAccountType().equals("jamManager") && !creds.getAccountType().equals("admin"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -54,6 +57,7 @@ public class JamController {
         }
         Jam jam = new Jam();
         jam.setName(jamName);
+        jam.setApprovalType(approvalType);
         jam.setManager(username);
         jam.setMembers(List.of(username));
         Jam savedJam = jamRepository.save(jam);
@@ -89,6 +93,14 @@ public class JamController {
     public ResponseEntity<Jam> getJam(@PathVariable String name) {
         Optional<Jam> jamOpt = jamRepository.findById(name);
         return jamOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/chatHistory/{jamName}")
+    public List<JamMessageDTO> getChatHistory(@PathVariable String jamName) {
+        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
+        return messages.stream()
+                .map(msg -> new JamMessageDTO(msg.getUserName() + ": " + msg.getContent()))
+                .toList();
     }
 
     /**
