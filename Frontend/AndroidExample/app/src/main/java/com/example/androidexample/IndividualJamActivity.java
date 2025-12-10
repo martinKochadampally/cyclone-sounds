@@ -149,13 +149,22 @@ public class IndividualJamActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject messageJson = response.getJSONObject(i);
                             String content = messageJson.getString("content");
-                            String[] messages = content.split("\\r?\\n");
-                            for (String msg : messages) {
-                                String[] parts = msg.split(": ", 2);
-                                if (parts.length == 2) {
-                                    messageList.add(new ChatMessage(parts[0], parts[1]));
-                                } else if (!msg.trim().isEmpty()){
-                                    messageList.add(new ChatMessage("System", msg));
+
+                            try {
+                                JSONObject contentJson = new JSONObject(content);
+                                String formattedMessage = formatArchivedMessage(contentJson);
+                                if (formattedMessage != null) {
+                                    messageList.add(new ChatMessage("System", formattedMessage));
+                                }
+                            } catch (JSONException e) {
+                                String[] messages = content.split("\\r?\\n");
+                                for (String msg : messages) {
+                                    String[] parts = msg.split(": ", 2);
+                                    if (parts.length == 2) {
+                                        messageList.add(new ChatMessage(parts[0], parts[1]));
+                                    } else if (!msg.trim().isEmpty()){
+                                        messageList.add(new ChatMessage("System", msg));
+                                    }
                                 }
                             }
                         }
@@ -183,6 +192,31 @@ public class IndividualJamActivity extends AppCompatActivity {
 
         requestQueue.add(jsonArrayRequest);
     }
+
+    private String formatArchivedMessage(JSONObject messageJson) {
+        try {
+            String type = messageJson.optString("type");
+            switch (type) {
+                case "vote_result":
+                    String resultSong = messageJson.getString("song");
+                    String result = messageJson.getString("result");
+                    return result.equals("approved")
+                            ? "Vote passed! '" + resultSong + "' was added to the playlist."
+                            : "Vote for '" + resultSong + "' did not pass.";
+                case "song_suggestion":
+                    String song = messageJson.getString("song");
+                    String suggester = messageJson.getString("suggester");
+                    return "Suggestion sent for \"" + song + "\" by " + suggester + ".";
+                default:
+
+                    return null;
+            }
+        } catch (JSONException e) {
+            Log.e("formatArchivedMessage", "Error parsing archived message", e);
+            return null;
+        }
+    }
+
     private void fetchPlaylistsAndSetupSuggestionsButton() {
         String url = URL_STRING_REQ + "owner/" + jamAdmin;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -241,15 +275,19 @@ public class IndividualJamActivity extends AppCompatActivity {
                                 String song = messageJson.getString("song");
                                 String artist = messageJson.getString("artist");
                                 String suggester = messageJson.getString("suggester");
-                                String songId = messageJson.getString("songId");
+                                int songId = messageJson.getInt("songId");
                                 runOnUiThread(() -> showVoteDialog(song, songId, artist, suggester));
                                 break;
                             case "vote_result": // Final result of a vote
                                 String resultSong = messageJson.getString("song");
+                                String resultArtist = messageJson.getString("artist");
                                 String result = messageJson.getString("result");
                                 String resultMessage = result.equals("approved")
                                         ? "Vote passed! '" + resultSong + "' was added to the playlist."
                                         : "Vote for '" + resultSong + "' did not pass.";
+                                if (result.equals("approved")) {
+                                    addSongToPlaylist(resultSong, resultArtist);
+                                }
                                 runOnUiThread(() -> {
                                     messageList.add(new ChatMessage("System", resultMessage));
                                     chatAdapter.notifyItemInserted(messageList.size() - 1);
@@ -404,15 +442,15 @@ public class IndividualJamActivity extends AppCompatActivity {
             JSONObject song = songs.getJSONObject(i);
             String songName = song.optString("songName", "N/A");
             String artist = song.optString("artist", "N/A");
-            String songId = song.optString("songId", "N/A");
+            int songId = song.optInt("songId", -1);
 
-
-            TableRow tableRow = new TableRow(this);
-            tableRow.addView(createTextViewForDialog(songName));
-            tableRow.addView(createTextViewForDialog(artist));
-            tableRow.addView(createSuggestButton(songId, songName, artist, dialog));
-
-            table.addView(tableRow);
+            if (songId != -1) {
+                TableRow tableRow = new TableRow(this);
+                tableRow.addView(createTextViewForDialog(songName));
+                tableRow.addView(createTextViewForDialog(artist));
+                tableRow.addView(createSuggestButton(songId, songName, artist, dialog));
+                table.addView(tableRow);
+            }
         }
     }
     
@@ -516,7 +554,7 @@ public class IndividualJamActivity extends AppCompatActivity {
         return textView;
     }
 
-    private Button createSuggestButton(final String songID, final String songName, final String artist, final AlertDialog dialog) {
+    private Button createSuggestButton(final int songID, final String songName, final String artist, final AlertDialog dialog) {
         Button button = new Button(this);
         button.setText("Suggest");
         button.setOnClickListener(v -> {
@@ -550,7 +588,7 @@ public class IndividualJamActivity extends AppCompatActivity {
     }
 
     // Start a vote for Voting-based approval
-    private void startSongVote(String songName, String songID, String artist) {
+    private void startSongVote(String songName, int songID, String artist) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject voteRequestJson = new JSONObject();
             try {
@@ -569,16 +607,16 @@ public class IndividualJamActivity extends AppCompatActivity {
         }
     }
 
-    private void showVoteDialog(String song, String songId, String artist, String suggester) {
+    private void showVoteDialog(String song, int songId, String artist, String suggester) {
         new AlertDialog.Builder(this)
                 .setTitle("Vote for a Song")
                 .setMessage(suggester + " wants to add \"" + song + "\" by " + artist + ".")
-                .setPositiveButton("Yes", (dialog, which) -> sendVote(song, artist, songId,"yes"))
-                .setNegativeButton("No", (dialog, which) -> sendVote(song, artist, songId, "no"))
+                .setPositiveButton("Yes", (dialog, which) -> sendVote(song, songId, artist,"yes"))
+                .setNegativeButton("No", (dialog, which) -> sendVote(song, songId, artist, "no"))
                 .show();
     }
 
-    private void sendVote(String songName, String songId, String artist, String vote) {
+    private void sendVote(String songName, int songId, String artist, String vote) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             JSONObject voteJson = new JSONObject();
             try {
