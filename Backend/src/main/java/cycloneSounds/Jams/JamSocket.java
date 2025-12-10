@@ -253,13 +253,16 @@ public class JamSocket {
 
     private void checkVoteResult(String jamName, int songId, Map<String, String> votes) {
         int totalUsers = jamSessions.get(jamName).size();
+        Song song = songRepository.findBySongId(songId).orElse(null);
         long yesVotes = votes.values().stream().filter(v -> "yes".equals(v)).count();
         long noVotes = votes.values().stream().filter(v -> "no".equals(v)).count();
 
         JSONObject resultJson = new JSONObject();
         try {
             resultJson.put("type", "vote_result");
-            resultJson.put("song", songId);
+            resultJson.put("song", song.getSongName());
+            resultJson.put("artist", song.getArtist());
+
 
             if (yesVotes > totalUsers / 2.0) {
                 resultJson.put("result", "approved");
