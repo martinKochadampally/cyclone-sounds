@@ -27,6 +27,7 @@ public class AlbumController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping(path = "/search/{name}")
     public List<Album> searchAlbum(@PathVariable String name) {
         return albumRepository.findByTitleContainingIgnoreCase(name);
@@ -40,13 +41,19 @@ public class AlbumController {
     @GetMapping(path = "/database/{id}")
     public Album getAlbumById(@PathVariable int id) {
         Album album = albumRepository.findById(id).orElse(null);
-        if (album == null){
+
+        if (album == null) {
             return null;
         }
-        if(album.getSongs() == null || album.getSongs().isEmpty()){
+
+        boolean missingSongs = (album.getSongs() == null || album.getSongs().isEmpty());
+        boolean missingCover = (album.getAlbumCover() == null || album.getAlbumCover().isEmpty());
+
+        if (missingSongs || missingCover) {
             spotifyService.populateAlbumTracks(album);
             album = albumRepository.findById(id).orElse(null);
         }
+
         return album;
     }
 

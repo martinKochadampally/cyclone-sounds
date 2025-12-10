@@ -18,8 +18,12 @@ public class Review {
     private String reviewer;
 
     @ManyToOne
-    @JoinColumn(name = "song_id", nullable = false)
+    @JoinColumn(name = "song_id", nullable = true)
     private Song song;
+
+    @ManyToOne
+    @JoinColumn(name = "album_id", nullable = true)
+    private Album album;
 
     private double rating;
     private String body;
@@ -92,5 +96,13 @@ public class Review {
 
     public void incrementDownVotes() {
         this.downVotes++;
+    }
+
+    public Album getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(Album album) {
+        this.album = album;
     }
 }

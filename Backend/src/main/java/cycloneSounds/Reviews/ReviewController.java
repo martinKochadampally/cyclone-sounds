@@ -2,11 +2,14 @@ package cycloneSounds.Reviews;
 
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Albums.Album;
+import cycloneSounds.Albums.AlbumRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +22,9 @@ public class ReviewController {
 
     @Autowired
     SongRepository songRepository;
+
+    @Autowired
+    AlbumRepository albumRepository;
 
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
@@ -100,6 +106,33 @@ public class ReviewController {
         newReview.setRating(rating);
         newReview.setBody(description);
         newReview.setSong(song);
+
+        return reviewRepository.save(newReview);
+    }
+
+    @Operation(summary = "Create an album review",
+            description = "Creates a review specifically for an album by ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Album review successfully created"),
+            @ApiResponse(responseCode = "404", description = "Album not found")
+    })
+    @PostMapping(path = "/review/album")
+    public Review createAlbumReview(@RequestParam String reviewer,
+                                    @RequestParam int albumId,
+                                    @RequestParam double rating,
+                                    @RequestParam String description) {
+
+        Album album = albumRepository.findById(albumId).orElse(null);
+
+        if (album == null) {
+            return null;
+        }
+
+        Review newReview = new Review();
+        newReview.setReviewer(reviewer);
+        newReview.setRating(rating);
+        newReview.setBody(description);
+        newReview.setAlbum(album);
 
         return reviewRepository.save(newReview);
     }
