@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -54,9 +55,9 @@ public class BlindReviewController {
 
     // POST /blind-review/review
     @PostMapping("/review")
-    public ResponseEntity<Void> submitReview(@RequestBody BlindReview request) {
+    public ResponseEntity<Object> submitReview(@RequestBody BlindReview request) {
         submitBlindReview(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Collections.singletonMap("message", "success"));
     }
 
     public void submitBlindReview(BlindReview req) {
