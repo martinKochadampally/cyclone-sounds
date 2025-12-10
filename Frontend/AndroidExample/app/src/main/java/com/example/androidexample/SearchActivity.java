@@ -1,7 +1,6 @@
 package com.example.androidexample;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity {
 
-    // <<<<<< CHANGE 1: POINT TO LOCALHOST (MATCHES ALBUM ACTIVITY) >>>>>>
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
 
     private SearchView searchView;
@@ -50,21 +48,24 @@ public class SearchActivity extends AppCompatActivity {
     private String loggedInUsername;
     private String currentSearchType;
 
-    // ... (Song class remains the same) ...
+    // FIX 1: Updated Song class to include the Embed URL
     private static class Song {
         private final int songId;
         private final String songName;
         private final String artist;
+        private final String embedUrl; // Added this
 
-        public Song(int songId, String songName, String artist) {
+        public Song(int songId, String songName, String artist, String embedUrl) {
             this.songId = songId;
             this.songName = songName;
             this.artist = artist;
+            this.embedUrl = embedUrl;
         }
 
-        public int getSongId() {
-            return songId;
-        }
+        public int getSongId() { return songId; }
+        public String getEmbedUrl() { return embedUrl; } // Added getter
+        public String getName() { return songName; }
+        public String getArtist() { return artist; }
 
         @NonNull
         @Override
@@ -73,12 +74,11 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    // <<<<<< CHANGE 2: UPDATE ALBUM CLASS TO HOLD SPOTIFY ID >>>>>>
     private static class Album {
         private final int albumId;
         private final String title;
         private final String artist;
-        private final String spotifyId; // Added this field
+        private final String spotifyId;
 
         public Album(int albumId, String title, String artist, String spotifyId) {
             this.albumId = albumId;
@@ -87,17 +87,9 @@ public class SearchActivity extends AppCompatActivity {
             this.spotifyId = spotifyId;
         }
 
-        public int getAlbumId() {
-            return albumId;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getSpotifyId() {
-            return spotifyId;
-        } // Added getter
+        public int getAlbumId() { return albumId; }
+        public String getTitle() { return title; }
+        public String getSpotifyId() { return spotifyId; }
 
         @NonNull
         @Override
@@ -111,7 +103,6 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        // ... (Toolbar and View setup remains the same) ...
         Toolbar toolbar = findViewById(R.id.search_toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -120,6 +111,7 @@ public class SearchActivity extends AppCompatActivity {
         }
         loggedInUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
         requestQueue = Volley.newRequestQueue(this);
+
         searchView = findViewById(R.id.search_view);
         searchTypeSpinner = findViewById(R.id.search_type_spinner);
         searchSubmitButton = findViewById(R.id.search_submit_button);
@@ -128,28 +120,31 @@ public class SearchActivity extends AppCompatActivity {
         albumResultsList = findViewById(R.id.album_results_list);
         profilesHeader = findViewById(R.id.profiles_header);
         songsHeader = findViewById(R.id.songs_header);
+
         profileUsernames = new ArrayList<>();
         profileAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, profileUsernames);
         profileResultsList.setAdapter(profileAdapter);
+
         songList = new ArrayList<>();
         songAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, songList);
         songResultsList.setAdapter(songAdapter);
+
         albumList = new ArrayList<>();
         albumAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, albumList);
         albumResultsList.setAdapter(albumAdapter);
+
         setupSpinner();
         setupSearchView();
         setupButtonListener();
         setupClickListeners();
     }
 
-    // ... (setupSpinner, updateVisibleList, setupSearchView, setupButtonListener remain the same) ...
-
     private void setupSpinner() {
         String[] searchTypes = {"Profiles", "Songs", "Albums"};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, searchTypes);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         searchTypeSpinner.setAdapter(spinnerAdapter);
+
         searchTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -157,10 +152,8 @@ public class SearchActivity extends AppCompatActivity {
                 updateVisibleList();
                 searchView.setQuery("", false);
             }
-
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
         currentSearchType = searchTypes[0];
         updateVisibleList();
@@ -173,6 +166,7 @@ public class SearchActivity extends AppCompatActivity {
         songsHeader.setVisibility(View.GONE);
         songResultsList.setVisibility(View.GONE);
         albumResultsList.setVisibility(View.GONE);
+
         if (currentSearchType.equals("Profiles")) {
             profilesHeader.setVisibility(View.VISIBLE);
             profileResultsList.setVisibility(View.VISIBLE);
@@ -194,7 +188,6 @@ public class SearchActivity extends AppCompatActivity {
                 searchView.clearFocus();
                 return true;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
@@ -213,7 +206,6 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // ... (Profile and Song listeners remain the same) ...
         profileResultsList.setOnItemClickListener((parent, view, position, id) -> {
             String profileToView = profileUsernames.get(position);
             incrementProfileViews(profileToView);
@@ -222,13 +214,20 @@ public class SearchActivity extends AppCompatActivity {
             intent.putExtra("PROFILE_TO_VIEW", profileToView);
             startActivity(intent);
         });
+
+        // FIX 2: Replaced the "Toast" with the actual Player Intent
         songResultsList.setOnItemClickListener((parent, view, position, id) -> {
             Song clickedSong = songList.get(position);
             incrementSongSearches(clickedSong.getSongId());
-            Toast.makeText(this, "Clicked on: " + clickedSong.toString(), Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(SearchActivity.this, SpotifyPlayerActivity.class);
+            intent.putExtra("EMBED_URL", clickedSong.getEmbedUrl());
+            intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
+            intent.putExtra("SONG_NAME", clickedSong.getName());
+            intent.putExtra("ARTIST_NAME", clickedSong.getArtist());
+            startActivity(intent);
         });
 
-        // <<<<<< CHANGE 3: SEND SPOTIFY ID TO ALBUM ACTIVITY >>>>>>
         albumResultsList.setOnItemClickListener((parent, view, position, id) -> {
             Album clickedAlbum = albumList.get(position);
             String[] options = {"View Album", "Review Album"};
@@ -237,9 +236,7 @@ public class SearchActivity extends AppCompatActivity {
             builder.setItems(options, (dialog, which) -> {
                 if (which == 0) {
                     Intent viewIntent = new Intent(SearchActivity.this, AlbumActivity.class);
-                    // Pass Spotify ID (Preferred)
                     viewIntent.putExtra("SPOTIFY_ALBUM_ID", clickedAlbum.getSpotifyId());
-                    // Pass Local ID (Backup)
                     viewIntent.putExtra("ALBUM_ID", clickedAlbum.getAlbumId());
                     viewIntent.putExtra("ALBUM_NAME", clickedAlbum.getTitle());
                     viewIntent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
@@ -275,7 +272,6 @@ public class SearchActivity extends AppCompatActivity {
         albumAdapter.notifyDataSetChanged();
     }
 
-    // ... (searchProfiles and searchSongs remain the same) ...
     private void searchProfiles(String query) {
         String url = BASE_URL + "/search/profiles/" + query;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -306,7 +302,11 @@ public class SearchActivity extends AppCompatActivity {
                             int songId = songJson.getInt("songId");
                             String songName = songJson.getString("songName");
                             String artistName = songJson.has("artist") ? songJson.getString("artist") : "Unknown";
-                            songList.add(new Song(songId, songName, artistName));
+
+                            // FIX 3: Parse embedURL from JSON
+                            String embedUrl = songJson.optString("embedURL", "");
+
+                            songList.add(new Song(songId, songName, artistName, embedUrl));
                         }
                         songAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
@@ -318,7 +318,6 @@ public class SearchActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
-    // <<<<<< CHANGE 4: PARSE SPOTIFY ID FROM SEARCH RESULTS >>>>>>
     private void searchAlbums(String query) {
         String url = BASE_URL + "/albums/search/" + query;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -330,7 +329,7 @@ public class SearchActivity extends AppCompatActivity {
                             int albumId = albumJson.optInt("albumId", -1);
                             String title = albumJson.optString("title", "Unknown Album");
                             String artist = albumJson.optString("artist", "");
-                            String spotifyId = albumJson.optString("spotifyId", null); // Parse it here!
+                            String spotifyId = albumJson.optString("spotifyId", null);
 
                             albumList.add(new Album(albumId, title, artist, spotifyId));
                         }
