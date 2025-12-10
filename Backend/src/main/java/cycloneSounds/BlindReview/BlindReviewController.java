@@ -13,7 +13,7 @@ import cycloneSounds.Songs.SongDTO;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/blind-review")
+@RequestMapping("/blind-review")
 public class BlindReviewController {
     @Autowired
     private SongRepository songRepository;
@@ -21,7 +21,7 @@ public class BlindReviewController {
     @Autowired
     private ReviewRepository reviewRepository;
 
-    // GET /api/blind-review/next?username=martin
+    // GET /blind-review/next?username=martin
     @GetMapping("/next")
     public ResponseEntity<SongDTO> getNextBlindSong(@RequestParam String username) {
         return getRandomUnseenSong(username)
@@ -29,7 +29,7 @@ public class BlindReviewController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    // POST /api/blind-review/review
+    // POST /blind-review/review
     @PostMapping("/review")
     public ResponseEntity<Void> submitReview(@RequestBody BlindReview request) {
         submitBlindReview(request);
