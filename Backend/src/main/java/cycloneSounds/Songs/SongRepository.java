@@ -23,7 +23,7 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
             FROM review r
             WHERE r.reviewer = :reviewer
         )
-        ORDER BY RANDOM()
+        ORDER BY RAND()
         LIMIT 1
         """, nativeQuery = true)
     Optional<Song> findRandomSongNotReviewedBy(@Param("reviewer") String reviewer);
