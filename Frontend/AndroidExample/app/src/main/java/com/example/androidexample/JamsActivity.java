@@ -187,7 +187,8 @@ public class JamsActivity extends AppCompatActivity {
                             String jamName = jamObject.optString("name", "N/A");
                             String numParticipants = jamObject.optString("membersSize");
                             String admin = jamObject.optString("manager", "N/A");
-                            addJam(jamName, numParticipants, admin, username);
+                            String approvalType = jamObject.optString("approvalType", "Manager"); // Default to manager
+                            addJam(jamName, numParticipants, admin, username, approvalType);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
@@ -200,15 +201,7 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
-    /**
-     * Adds a single jam to the table layout as a new row.
-     *
-     * @param name The name of the jam.
-     * @param numParticipants The number of participants in the jam.
-     * @param admin The admin/manager of the jam.
-     * @param username The current user's username, for context and actions.
-     */
-    private void addJam(String name, String numParticipants, String admin, String username) {
+    private void addJam(String name, String numParticipants, String admin, String username, String approvalType) {
         TableRow newRow = new TableRow(this);
 
         TextView nameView = new TextView(this);
@@ -222,6 +215,7 @@ public class JamsActivity extends AppCompatActivity {
             intent.putExtra("LOGGED_IN_USERNAME", username);
             intent.putExtra("JAM_NAME", name);
             intent.putExtra("JAM_ADMIN", admin);
+            intent.putExtra("APPROVAL_TYPE", approvalType);
             startActivity(intent);
         });
 
@@ -235,9 +229,15 @@ public class JamsActivity extends AppCompatActivity {
         adminView.setPadding(8, 8, 8, 8);
         adminView.setGravity(Gravity.START);
 
+        TextView approvalView = new TextView(this);
+        approvalView.setText(approvalType);
+        approvalView.setPadding(8, 8, 8, 8);
+        approvalView.setGravity(Gravity.START);
+
         newRow.addView(nameView);
         newRow.addView(participantsView);
         newRow.addView(adminView);
+        newRow.addView(approvalView);
 
         // Add a delete button if the current user is the jam's admin or a site-wide admin.
         if (admin.equals(username) || (this.accountType != null && this.accountType.equals("admin"))) {
