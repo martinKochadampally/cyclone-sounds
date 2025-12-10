@@ -1,0 +1,54 @@
+package cycloneSounds.BlindReview;
+
+import cycloneSounds.Reviews.Review;
+import cycloneSounds.Reviews.ReviewRepository;
+import cycloneSounds.Songs.Song;
+import cycloneSounds.Songs.SongRepository;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+
+import cycloneSounds.Songs.SongDTO;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/blind-review")
+public class BlindReviewController {
+    @Autowired
+    private SongRepository songRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    // GET /api/blind-review/next?username=martin
+    @GetMapping("/next")
+    public ResponseEntity<SongDTO> getNextBlindSong(@RequestParam String username) {
+        return getRandomUnseenSong(username)
+                .map(song -> ResponseEntity.ok(new SongDTO(song)))
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    // POST /api/blind-review/review
+    @PostMapping("/review")
+    public ResponseEntity<Void> submitReview(@RequestBody BlindReview request) {
+        submitBlindReview(request);
+        return ResponseEntity.ok().build();
+    }
+
+    public Optional<Song> getRandomUnseenSong(String username) {
+        //return songRepository.findRandomUnseenForUser(username);
+        //TODO
+        return null;
+    }
+
+    public void submitBlindReview(BlindReview req) {
+        String username = req.getUsername();
+        Song song = songRepository.findById(req.getSongId()).orElseThrow(() -> new IllegalArgumentException("Song not found"));
+
+        Review review = new Review(username, req.getRating(), req.getReviewText());
+        review.setSong(song);
+
+        reviewRepository.save(review);
+    }
+}
