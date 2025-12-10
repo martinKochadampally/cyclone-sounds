@@ -11,21 +11,21 @@ public class AlbumReview {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String reviewer;
+    private String albumReviewer;
 
     @ManyToOne
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
 
-    private float rating;
+    private int rating;
     private String reviewText;
     private String bestSong;
     private String worstSong;
 
     public AlbumReview() {}
 
-    public AlbumReview(String reviewer, Album album, float rating, String reviewText, String bestSong, String worstSong) {
-        this.reviewer = reviewer;
+    public AlbumReview(String albumReviewer, Album album, int rating, String reviewText, String bestSong, String worstSong) {
+        this.albumReviewer = albumReviewer;
         this.album = album;
         this.rating = rating;
         this.reviewText = reviewText;
@@ -36,14 +36,14 @@ public class AlbumReview {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public String getReviewer() { return reviewer; }
-    public void setReviewer(String reviewer) { this.reviewer = reviewer; }
+    public String getAlbumReviewer() { return albumReviewer; }
+    public void setAlbumReviewer(String albumReviewer) { this.albumReviewer = albumReviewer; }
 
     public Album getAlbum() { return album; }
-    public void setAlbum(Album album) { this.album = album; }
+    public void setReviewingAnAlbum(Album album) { this.album = album; }
 
-    public float getAlbumReviewRating() { return rating; }
-    public void setAlbumRating(float rating) { this.rating = rating; }
+    public int getAlbumReviewRating() { return rating; }
+    public void setAlbumRating(int rating) { this.rating = rating; }
 
     public String getAlbumReviewReviewText() { return reviewText; }
     public void setAlbumReviewText(String reviewText) { this.reviewText = reviewText; }
