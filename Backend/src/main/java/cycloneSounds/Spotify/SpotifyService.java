@@ -2,10 +2,13 @@ package cycloneSounds.Spotify;
 
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Spotify.SpotifyDTO.SpotifyAlbum;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifyArtist;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifySearchResponse;
 import cycloneSounds.Spotify.SpotifyDTO.SpotifyTrack;
-import cycloneSounds.Spotify.SpotifyTokenResponse;
+import cycloneSounds.Spotify.SpotifyDTO.SpotifyTracksResponse;
+import cycloneSounds.Albums.Album;
+import cycloneSounds.Albums.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,11 +16,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
+
 import java.util.Base64;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
-
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class for interacting with the Spotify API.
@@ -32,6 +35,9 @@ public class SpotifyService {
 
     @Autowired
     private SongRepository songRepository;
+
+    @Autowired
+    private AlbumRepository albumRepository;
 
     /**
      * Constructor initializes Spotify service with credentials.
@@ -68,6 +74,39 @@ public class SpotifyService {
     }
 
     /**
+     * MAIN METHOD FOR FRONTEND:
+     * Checks if album exists, creates it if missing, populates songs, and returns the full entity.
+     * @param spotifyAlbumId
+     * @return Album
+     */
+    public Album syncAlbumBySpotifyId(String spotifyAlbumId) {
+        Album album = albumRepository.findBySpotifyId(spotifyAlbumId);
+
+        if (album == null) {
+            album = getAccessToken().flatMap(token -> {
+                return webClient.get()
+                        .uri("/albums/" + spotifyAlbumId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .bodyToMono(SpotifyAlbum.class)
+                        .map(spotifyAlbumDto -> {
+                            Album newAlbum = new Album();
+                            newAlbum.setTitle(spotifyAlbumDto.getName());
+                            newAlbum.setSpotifyId(spotifyAlbumDto.getId());
+                            newAlbum.setArtist("Unknown Artist");
+                            if (spotifyAlbumDto.getImages() != null && !spotifyAlbumDto.getImages().isEmpty()) {
+                                newAlbum.setAlbumCover(spotifyAlbumDto.getImages().get(0).getUrl());
+                            }
+                            return albumRepository.save(newAlbum);
+                        });
+            }).block();
+        }
+
+        populateAlbumTracks(album);
+        return albumRepository.findBySpotifyId(spotifyAlbumId);
+    }
+
+    /**
      * Searches for tracks on Spotify using a query and saves new tracks to the database
      * @param query
      * @return
@@ -93,37 +132,183 @@ public class SpotifyService {
     }
 
     /**
+     * Fetches tracks for an existing Album entity and saves them to the DB.
+     * This blocks (waits) until the operation is done so the Controller can return the full list immediately.
+     */
+    @Transactional
+    public void populateAlbumTracks(Album album) {
+        String spotifyAlbumId = album.getSpotifyId();
+
+        if (spotifyAlbumId == null || spotifyAlbumId.isEmpty()) {
+            return;
+        }
+
+        getAccessToken().flatMap(token -> {
+            return webClient.get()
+                    .uri("/albums/" + album.getSpotifyId() + "/tracks?limit=50")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .bodyToMono(SpotifyTracksResponse.class)
+                    .doOnNext(response -> {
+                        if (response != null && response.getItems() != null) {
+                            List<SpotifyTrack> tracks = response.getItems();
+
+                            if ("Unknown Artist".equals(album.getArtist()) && !tracks.isEmpty() && !tracks.get(0).getArtists().isEmpty()) {
+                                album.setArtist(tracks.get(0).getArtists().get(0).getName());
+                                albumRepository.save(album);
+                            }
+
+                            for (SpotifyTrack track : tracks) {
+                                try {
+                                    Song song = songRepository.findBySpotifyId(track.getId()).orElse(new Song());
+                                    song.setSongName(track.getName());
+                                    song.setSpotifyId(track.getId());
+
+                                    if (track.getArtists() != null && !track.getArtists().isEmpty()) {
+                                        song.setArtist(track.getArtists().get(0).getName());
+                                    } else {
+                                        song.setArtist(album.getArtist());
+                                    }
+                                    song.setAlbum(album);
+                                    songRepository.save(song);
+
+                                } catch (Exception e) {
+                                    System.err.println("Error saving track: " + track.getName());
+                                }
+                            }
+                        }
+                    });
+        }).block();
+    }
+
+    /**
      * Saves new tracks from Spotify to the local database.
      * Ensures no duplicate entries exist by checking Spotify ID.
      * @param spotifyTracks
      */
     private void saveTracksToDatabase(List<SpotifyTrack> spotifyTracks) {
-        if (spotifyTracks == null) {
-            return;
-        }
-
-        List<Song> songsToSave = new ArrayList<>();
+        if (spotifyTracks == null) return;
 
         for (SpotifyTrack track : spotifyTracks) {
-            if (songRepository.findBySpotifyId(track.getId()).isEmpty()) {
-                Song newSong = new Song();
-                newSong.setSongName(track.getName());
-                newSong.setSpotifyId(track.getId());
+            try {
+                String artistNames = track.getArtists().stream()
+                        .map(SpotifyArtist::getName)
+                        .collect(Collectors.joining(", "));
+                if (artistNames.isEmpty()) artistNames = "Unknown Artist";
 
-                String artistNames = track.getArtists().stream().map(SpotifyArtist::getName).collect(Collectors.joining(", "));
+                Album album = null;
+                if (track.getAlbum() != null) {
+                    String albumId = track.getAlbum().getId();
+                    album = albumRepository.findBySpotifyId(albumId);
 
-                if (artistNames.isEmpty()) {
-                    artistNames = "Unknown Artist";
+                    if (album == null) {
+                        album = new Album();
+                        album.setTitle(track.getAlbum().getName());
+                        album.setArtist(artistNames);
+                        album.setSpotifyId(albumId);
+                        album = albumRepository.save(album);
+                    }
                 }
-                newSong.setArtist(artistNames);
-                newSong.setSearches(0);
 
-                songsToSave.add(newSong);
+                Song song = songRepository.findBySpotifyId(track.getId()).orElse(null);
+
+                if (song == null) {
+                    song = new Song();
+                    song.setSongName(track.getName());
+                    song.setSpotifyId(track.getId());
+                    song.setArtist(artistNames);
+                    song.setSearches(0);
+                }
+
+                if (song.getAlbum() == null && album != null) {
+                    song.setAlbum(album);
+                    songRepository.save(song);
+                }
+
+            } catch (Exception e) {
+                System.err.println("Error saving track " + track.getName() + ": " + e.getMessage());
             }
         }
+    }
 
-        if (!songsToSave.isEmpty()) {
-            songRepository.saveAll(songsToSave);
+    /**
+     * Searches for an Album by name, then fetches its tracks.
+     */
+    public Mono<Album> searchAndSaveAlbum(String albumName) {
+        return getAccessToken().flatMap(token -> {
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/search")
+                            .queryParam("q", albumName)
+                            .queryParam("type", "album")
+                            .queryParam("limit", 1)
+                            .build())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .bodyToMono(SpotifySearchResponse.class)
+                    .flatMap(response -> {
+
+                        if (response == null || response.getAlbums() == null || response.getAlbums().getItems().isEmpty()) {
+                            return Mono.empty();
+                        }
+
+                        var spotifyAlbum = response.getAlbums().getItems().get(0);
+                        return getAlbumTracks(spotifyAlbum.getId(), token, spotifyAlbum);
+                    });
+        });
+    }
+
+    /**
+     * Fetches the list of tracks for a specific Album ID.
+     */
+    private Mono<Album> getAlbumTracks(String spotifyAlbumId, String token, SpotifyAlbum spotifyAlbumData) {
+        return webClient.get()
+                .uri("/albums/" + spotifyAlbumId + "/tracks?limit=50")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToMono(SpotifyTracksResponse.class)
+                .map(trackResponse -> {
+                    return saveFullAlbumToDatabase(spotifyAlbumData, trackResponse.getItems());
+                });
+    }
+
+    /**
+     * Saves the Album and links all its tracks.
+     */
+    private Album saveFullAlbumToDatabase(SpotifyAlbum spotifyAlbumDTO, List<SpotifyTrack> tracks) {
+        Album album = albumRepository.findBySpotifyId(spotifyAlbumDTO.getId());
+
+        if (album == null) {
+            album = new Album();
+            album.setTitle(spotifyAlbumDTO.getName());
+            album.setSpotifyId(spotifyAlbumDTO.getId());
+
+            if (tracks != null && !tracks.isEmpty() && !tracks.get(0).getArtists().isEmpty()) {
+                album.setArtist(tracks.get(0).getArtists().get(0).getName());
+            } else {
+                album.setArtist("Unknown Artist");
+            }
+            album = albumRepository.save(album);
         }
+
+        if (tracks != null) {
+            for (SpotifyTrack track : tracks) {
+                Song song = songRepository.findBySpotifyId(track.getId()).orElse(new Song());
+
+                song.setSongName(track.getName());
+                song.setSpotifyId(track.getId());
+
+
+                if (!track.getArtists().isEmpty()) {
+                    song.setArtist(track.getArtists().get(0).getName());
+                } else {
+                    song.setArtist(album.getArtist());
+                }
+
+                song.setAlbum(album);
+                songRepository.save(song);
+            }
+        }
+        return album;
     }
 }

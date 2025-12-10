@@ -15,36 +15,50 @@ import com.android.volley.toolbox.StringRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Activity to display and edit a user's profile. It can be in a read-only mode when
+ * viewing another user's profile, or in an editable mode when a user is viewing their own.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
+    // UI elements for profile data and actions.
     private EditText nameEditText, songEditText, genreEditText, artistEditText, bioEditText;
     private Button updateButton, deleteButton, logoutButton;
     private Button homeButton, musicButton, createButton, jamsButton, profileButton;
-    private TextView profileTitleTextView; // TextView declaration
+    private TextView profileTitleTextView; // Displays the title of the profile page.
 
+    // Usernames for the logged-in user and the user whose profile is being viewed.
     private String profileToViewUsername;
     private String loggedInUsername;
 
+    // Base URL for the profiles API endpoint.
     private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/profiles/";
 
+    /**
+     * Called when the activity is first created. Initializes UI components, determines if the
+     * profile is the user's own or another's, and fetches the profile data.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        // Enable the back button in the action bar.
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        // Initialize all UI components.
         nameEditText = findViewById(R.id.profile_name_edt);
         songEditText = findViewById(R.id.profile_song_edt);
         genreEditText = findViewById(R.id.profile_genre_edt);
         artistEditText = findViewById(R.id.profile_artist_edt);
         bioEditText = findViewById(R.id.profile_bio_edt);
-
-        // Initialize the title TextView
         profileTitleTextView = findViewById(R.id.profile_title_txt);
-
         updateButton = findViewById(R.id.profile_update_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
         logoutButton = findViewById(R.id.profile_logout_btn);
@@ -54,35 +68,38 @@ public class ProfileActivity extends AppCompatActivity {
         jamsButton = findViewById(R.id.jams_button_btn);
         profileButton = findViewById(R.id.profile_button_btn);
 
+        // Get usernames from the intent.
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("LOGGED_IN_USERNAME") && intent.hasExtra("PROFILE_TO_VIEW")) {
             loggedInUsername = intent.getStringExtra("LOGGED_IN_USERNAME");
             profileToViewUsername = intent.getStringExtra("PROFILE_TO_VIEW");
 
-            // Dynamic Title Logic: Set the text for the on-screen TextView
+            // Set the profile title dynamically.
             if (loggedInUsername.equals(profileToViewUsername)) {
                 profileTitleTextView.setText("Edit Your Profile");
             } else {
                 profileTitleTextView.setText(profileToViewUsername + "\'s Profile");
             }
 
+            // Set the action bar title.
             if(getSupportActionBar() != null) {
-                // This still sets the title for the ActionBar/Toolbar
                 getSupportActionBar().setTitle(profileToViewUsername + "\'s Profile");
             }
 
             fetchUserData();
             setupNavigation();
 
+            // If viewing another user's profile, make it read-only.
             if (!loggedInUsername.equals(profileToViewUsername)) {
                 makeProfileReadOnly();
             }
 
         } else {
             Toast.makeText(this, "Error: No user profile found.", Toast.LENGTH_LONG).show();
-            finish();
+            finish(); // End the activity if no user data is provided.
         }
 
+        // Set listeners for update, delete, and logout buttons.
         updateButton.setOnClickListener(v -> updateUserData());
         deleteButton.setOnClickListener(v -> deleteUserAccount());
         logoutButton.setOnClickListener(v -> {
@@ -93,12 +110,19 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the action bar's up button. Finishes the current activity.
+     * @return True if the action was handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
 
+    /**
+     * Disables editing fields and hides action buttons for a read-only view of a profile.
+     */
     private void makeProfileReadOnly() {
         nameEditText.setEnabled(false);
         songEditText.setEnabled(false);
@@ -110,6 +134,7 @@ public class ProfileActivity extends AppCompatActivity {
         deleteButton.setVisibility(View.GONE);
         logoutButton.setVisibility(View.GONE);
 
+        // Ensure navigation buttons are still visible.
         homeButton.setVisibility(View.VISIBLE);
         musicButton.setVisibility(View.VISIBLE);
         createButton.setVisibility(View.VISIBLE);
@@ -117,6 +142,9 @@ public class ProfileActivity extends AppCompatActivity {
         profileButton.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Fetches the profile data for the user from the server.
+     */
     private void fetchUserData() {
         String url = BASE_URL + profileToViewUsername;
         Log.d("ProfileFetch", "Fetching data from URL: " + url);
@@ -124,6 +152,7 @@ public class ProfileActivity extends AppCompatActivity {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
+                        // Populate the EditText fields with the fetched data.
                         nameEditText.setText(response.optString("name"));
                         songEditText.setText(response.optString("favSong"));
                         genreEditText.setText(response.optString("favGenre"));
@@ -141,10 +170,14 @@ public class ProfileActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
+    /**
+     * Sends a PUT request to the server to update the user's profile data.
+     */
     private void updateUserData() {
         String url = BASE_URL + profileToViewUsername;
         JSONObject profileData = new JSONObject();
         try {
+            // Create a JSON object with the updated profile information.
             profileData.put("name", nameEditText.getText().toString());
             profileData.put("favSong", songEditText.getText().toString());
             profileData.put("favGenre", genreEditText.getText().toString());
@@ -166,12 +199,16 @@ public class ProfileActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
+    /**
+     * Sends a DELETE request to the server to delete the user's account.
+     */
     private void deleteUserAccount() {
         String url = BASE_URL + profileToViewUsername;
 
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
                 response -> {
                     Toast.makeText(this, "Account Deleted Successfully", Toast.LENGTH_LONG).show();
+                    // Redirect to login screen after account deletion.
                     Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -184,6 +221,9 @@ public class ProfileActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
+    /**
+     * Sets up the navigation buttons at the bottom of the screen.
+     */
     private void setupNavigation() {
         homeButton.setOnClickListener(view -> navigateTo(HomeActivity.class));
         musicButton.setOnClickListener(view -> navigateTo(MusicActivity.class));
@@ -191,6 +231,7 @@ public class ProfileActivity extends AppCompatActivity {
         jamsButton.setOnClickListener(view -> navigateTo(JamsActivity.class));
 
         profileButton.setOnClickListener(view -> {
+            // If already on own profile, do nothing. Otherwise, navigate to own profile.
             if (loggedInUsername.equals(profileToViewUsername)) {
                 return;
             }
@@ -201,6 +242,10 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Helper method to navigate to another activity, passing the logged-in username.
+     * @param activityClass The class of the activity to navigate to.
+     */
     private void navigateTo(Class<?> activityClass) {
         Intent intent = new Intent(ProfileActivity.this, activityClass);
         intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);

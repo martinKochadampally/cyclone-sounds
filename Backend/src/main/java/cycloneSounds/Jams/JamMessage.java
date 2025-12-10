@@ -2,6 +2,7 @@ package cycloneSounds.Jams;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.Data;
@@ -19,6 +20,7 @@ public class JamMessage {
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "jam_name", nullable = false)
+    @JsonIgnore
     private Jam jam;
 
     @Lob
@@ -29,9 +31,9 @@ public class JamMessage {
     @Column(name = "sent", nullable = false)
     private Date sent;
 
-    // Optional: message type for possible message/command distinction
+
     @Column(nullable = false)
-    private String messageType = "CHAT";  // default "CHAT", can be "PLAYLIST_CMD", "SYSTEM", etc.
+    private String messageType = "CHAT";
 
     public JamMessage() {
         this.sent = new Date();

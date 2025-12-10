@@ -26,71 +26,115 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the Direct Messaging (DM) screen of the application.
+ * This activity allows two users to exchange private messages in real-time.
+ * It fetches chat history and uses WebSockets for live communication.
+ */
 public class DMActivity extends AppCompatActivity {
 
+    // Base URL for HTTP requests to the backend server.
     private static final String HTTP_BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080/api";
+    // WebSocket URL for real-time chat.
     private String WEB_SOCKET_URL;
 
+    // Volley request queue for network requests.
     private RequestQueue requestQueue;
+    // Username of the currently logged-in user.
     private String currentUsername;
+    // Username of the friend the user is messaging.
     private String friendUsername;
 
+    // UI elements
     private RecyclerView chatRecyclerView;
     private EditText messageInput;
     private Button sendButton;
 
+    // Adapter and list for managing chat messages in the RecyclerView.
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messageList;
 
+    // WebSocket client for real-time messaging.
     private WebSocketClient webSocketClient;
 
+    /**
+     * Called when the activity is first created. Initializes the UI, sets up
+     * the WebSocket connection, and fetches the chat history.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dm);
 
+        // Set up the toolbar.
         Toolbar toolbar = findViewById(R.id.dm_toolbar);
         setSupportActionBar(toolbar);
 
+        // Get usernames from the intent that started this activity.
         currentUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
         friendUsername = getIntent().getStringExtra("FRIEND_USERNAME");
 
+        // Construct the WebSocket URL with the current user's username.
         WEB_SOCKET_URL = "ws://coms-3090-008.class.las.iastate.edu:8080/websocket/chat/" + currentUsername;
 
+        // Initialize the Volley request queue.
         requestQueue = Volley.newRequestQueue(this);
 
+        // Configure the action bar.
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("DM with " + friendUsername);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        // Initialize UI components.
         chatRecyclerView = findViewById(R.id.chat_recycler_view);
         messageInput = findViewById(R.id.message_input);
         sendButton = findViewById(R.id.send_button);
 
+        // Initialize the message list and adapter.
         messageList = new ArrayList<>();
         chatAdapter = new ChatAdapter(messageList, currentUsername);
 
+        // Configure the RecyclerView.
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         chatRecyclerView.setLayoutManager(layoutManager);
         chatRecyclerView.setAdapter(chatAdapter);
 
+        // Set a click listener for the send button.
         sendButton.setOnClickListener(view -> sendMessage());
 
+        // Fetch chat history if usernames are available.
         if (currentUsername != null && friendUsername != null) {
             fetchChatHistory(currentUsername, friendUsername);
         }
 
+        // Establish the WebSocket connection.
         createWebSocketClient();
     }
 
+    /**
+     * Handles the "up" navigation action from the toolbar. Finishes the current
+     * activity, returning the user to the previous screen.
+     *
+     * @return true if navigation was handled successfully.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
 
+    /**
+     * Fetches the chat history between two users from the backend server.
+     *
+     * @param user1 The username of the first user.
+     * @param user2 The username of the second user.
+     */
     private void fetchChatHistory(String user1, String user2) {
         String url = HTTP_BASE_URL + "/chat/history/" + user1 + "/" + user2;
 
@@ -130,6 +174,9 @@ public class DMActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
+    /**
+     * Creates and connects the WebSocket client.
+     */
     private void createWebSocketClient() {
         URI uri;
         try {
@@ -181,6 +228,10 @@ public class DMActivity extends AppCompatActivity {
         webSocketClient.connect();
     }
 
+    /**
+     * Sends a message from the input field. The message is added to the UI
+     * and sent to the backend via WebSocket.
+     */
     private void sendMessage() {
         String content = messageInput.getText().toString().trim();
         if (content.isEmpty()) {
@@ -197,6 +248,11 @@ public class DMActivity extends AppCompatActivity {
         sendMessageToBackend(message);
     }
 
+    /**
+     * Sends a chat message to the backend server via WebSocket.
+     *
+     * @param message The ChatMessage object to send.
+     */
     private void sendMessageToBackend(ChatMessage message) {
         JSONObject requestBody = new JSONObject();
         try {
@@ -215,6 +271,10 @@ public class DMActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Called when the activity is being destroyed. Closes the WebSocket connection
+     * to release resources.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
