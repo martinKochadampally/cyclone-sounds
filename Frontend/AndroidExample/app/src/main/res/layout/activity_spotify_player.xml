@@ -5,38 +5,13 @@
     android:layout_height="match_parent"
     tools:context=".SpotifyPlayerActivity">
 
-
-    <WebView
-        android:id="@+id/spotify_web_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="65dp"
-        android:layout_marginBottom="350dp"/>
-
-    <TextView
-        android:id="@+id/history_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/history_list_view"
-        android:layout_centerHorizontal="true"
-        android:textSize="20dp"
-        android:layout_marginBottom="5dp"
-        android:text="Song Play History" />
-
-    <ListView
-        android:id="@+id/history_list_view"
-        android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="10dp"/>
-
-
     <LinearLayout
-        android:id="@+id/bottom_button_layout"
+        android:id="@+id/top_button_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_alignParentTop="true">
 
         <Button
             android:layout_width="wrap_content"
@@ -55,5 +30,29 @@
             android:text="Review Song" />
 
     </LinearLayout>
+
+    <WebView
+        android:id="@+id/spotify_web_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_button_layout"
+        android:layout_marginBottom="350dp"/>
+
+    <TextView
+        android:id="@+id/history_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/history_list_view"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp"
+        android:layout_marginBottom="5dp"
+        android:text="Song Play History" />
+
+    <ListView
+        android:id="@+id/history_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"/>
 
 </RelativeLayout>
