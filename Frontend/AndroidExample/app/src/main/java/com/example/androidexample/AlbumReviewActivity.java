@@ -1,6 +1,7 @@
 package com.example.androidexample;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -82,22 +83,20 @@ public class AlbumReviewActivity extends AppCompatActivity {
     }
 
     private void submitAlbumReview() {
-        String url = BASE_URL + "/album-reviews/submit";
+        int ratingInt = (int) ratingBar.getRating();
 
-        JSONObject reviewJson = new JSONObject();
-        try {
-            reviewJson.put("username", loggedInUsername);
-            reviewJson.put("albumId", albumId);
-            reviewJson.put("rating", ratingBar.getRating());
-            reviewJson.put("reviewText", reviewInput.getText().toString());
-            reviewJson.put("bestSong", bestSongInput.getText().toString());
-            reviewJson.put("worstSong", worstSongInput.getText().toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
+        String url = Uri.parse(BASE_URL + "/review/album")
+                .buildUpon()
+                .appendQueryParameter("reviewer", loggedInUsername)
+                .appendQueryParameter("albumId", String.valueOf(albumId))
+                .appendQueryParameter("rating", String.valueOf(ratingInt))
+                .appendQueryParameter("reviewText", reviewInput.getText().toString())
+                .appendQueryParameter("bestSong", bestSongInput.getText().toString())
+                .appendQueryParameter("worstSong", worstSongInput.getText().toString())
+                .build()
+                .toString();
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, reviewJson,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, null,
                 response -> {
                     Toast.makeText(AlbumReviewActivity.this, "Review Submitted Successfully!", Toast.LENGTH_SHORT).show();
                     finish();
