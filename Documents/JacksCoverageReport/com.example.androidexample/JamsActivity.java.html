@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JamsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">JamsActivity.java</span></div><h1>JamsActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="nc" id="L24">public class JamsActivity extends AppCompatActivity {</span>
+
+    private Button profileButton;
+    private Button homeButton;
+    private Button musicButton;
+    private Button createButton;
+    private Button createJamButton;
+    private TableLayout jamsTable;
+
+<span class="nc" id="L33">    private final String server = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api/jams&quot;;</span>
+<span class="nc" id="L34">    private final String URL_GET_ACCOUNT_TYPE = &quot;http://coms-3090-008.class.las.iastate.edu:8080/credentials/&quot;;</span>
+    private static final String PLAYLISTS_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/&quot;;
+
+    interface AccountTypeCallback {
+        void onResult(String accountType);
+    }
+    private Button friendsButton;
+
+    private String currentUsername;
+    private String accountType;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L47">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L48">        setContentView(R.layout.activity_jams);</span>
+
+<span class="nc" id="L50">        homeButton = findViewById(R.id.home_button_btn);</span>
+<span class="nc" id="L51">        profileButton = findViewById(R.id.profile_button_btn);</span>
+<span class="nc" id="L52">        musicButton = findViewById(R.id.music_button_btn);</span>
+<span class="nc" id="L53">        createButton = findViewById(R.id.create_button_btn);</span>
+<span class="nc" id="L54">        createJamButton = findViewById(R.id.create_jam_btn);</span>
+<span class="nc" id="L55">        jamsTable = findViewById(R.id.jams_table);</span>
+
+<span class="nc" id="L57">        Bundle extras = getIntent().getExtras();</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (extras != null) {</span>
+<span class="nc" id="L59">            currentUsername = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            if (currentUsername != null) {</span>
+<span class="nc" id="L62">                getAccountType(currentUsername);</span>
+<span class="nc" id="L63">                getJams(currentUsername);</span>
+            } else {
+<span class="nc" id="L65">                handleNoUsername();</span>
+            }
+        } else {
+<span class="nc" id="L68">            handleNoUsername();</span>
+        }
+
+<span class="nc" id="L71">        homeButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L72">            Intent intent = new Intent(JamsActivity.this, HomeActivity.class);</span>
+<span class="nc" id="L73">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L74">            startActivity(intent);</span>
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        profileButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L78">            Intent intent = new Intent(JamsActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L79">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L80">            intent.putExtra(&quot;PROFILE_TO_VIEW&quot;, currentUsername);</span>
+<span class="nc" id="L81">            startActivity(intent);</span>
+<span class="nc" id="L82">        });</span>
+
+<span class="nc" id="L84">        musicButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L85">            Intent intent = new Intent(JamsActivity.this, MusicActivity.class);</span>
+<span class="nc" id="L86">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L87">            startActivity(intent);</span>
+<span class="nc" id="L88">        });</span>
+
+<span class="nc" id="L90">        createButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L91">            Intent intent = new Intent(JamsActivity.this, CreateActivity.class);</span>
+<span class="nc" id="L92">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L93">            startActivity(intent);</span>
+<span class="nc" id="L94">        });</span>
+<span class="nc" id="L95">    }</span>
+
+    private void handleNoUsername() {
+<span class="nc" id="L98">        Toast.makeText(this, &quot;User not found, returning to login.&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L99">        Intent intent = new Intent(JamsActivity.this, LoginActivity.class);</span>
+<span class="nc" id="L100">        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);</span>
+<span class="nc" id="L101">        startActivity(intent);</span>
+<span class="nc" id="L102">        finish();</span>
+<span class="nc" id="L103">    }</span>
+
+
+
+    private void getAccountType(final String username) {
+<span class="nc" id="L108">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(</span>
+                Request.Method.GET,
+                URL_GET_ACCOUNT_TYPE + username,
+                null,
+                response -&gt; {
+                    try {
+<span class="nc" id="L114">                        String accountType = response.getString(&quot;accountType&quot;);</span>
+<span class="nc" id="L115">                        Log.d(&quot;JamsActivity&quot;, &quot;Account Type: &quot; + accountType);</span>
+<span class="nc" id="L116">                        this.accountType = accountType;</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">                        if (accountType.equals(&quot;jamManager&quot;) || accountType.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L118">                            createJamButton.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L119">                            createJamButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L120">                                Intent intent = new Intent(JamsActivity.this, CreateJamActivity.class);</span>
+<span class="nc" id="L121">                                intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L122">                                startActivity(intent);</span>
+<span class="nc" id="L123">                            });</span>
+                        } else {
+<span class="nc" id="L125">                            createJamButton.setVisibility(View.GONE);</span>
+                        }
+<span class="nc" id="L127">                    } catch (JSONException e) {</span>
+<span class="nc" id="L128">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L129">                    }</span>
+<span class="nc" id="L130">                },</span>
+                error -&gt; {
+<span class="nc" id="L132">                    Log.e(&quot;JamsActivity&quot;, &quot;Error: &quot; + error.getMessage());</span>
+<span class="nc" id="L133">                    Toast.makeText(getApplicationContext(), &quot;Could not load account type&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L134">                }</span>
+        );
+<span class="nc" id="L136">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);</span>
+<span class="nc" id="L137">    }</span>
+
+    private void getJams(final String username) {
+<span class="nc" id="L140">        clearTable();</span>
+
+<span class="nc" id="L142">        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(</span>
+                Request.Method.GET,
+                server,
+                null,
+                response -&gt; {
+                    try {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                        for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L149">                            JSONObject jamObject = response.getJSONObject(i);</span>
+<span class="nc" id="L150">                            String jamName = jamObject.optString(&quot;name&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L151">                            String numParticipants = jamObject.optString(&quot;membersSize&quot;);</span>
+<span class="nc" id="L152">                            String admin = jamObject.optString(&quot;manager&quot;, &quot;N/A&quot;);</span>
+<span class="nc" id="L153">                            addJam(jamName, numParticipants, admin, username);</span>
+                        }
+<span class="nc" id="L155">                    } catch (JSONException e) {</span>
+<span class="nc" id="L156">                        Toast.makeText(getApplicationContext(), &quot;Parsing Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L157">                    }</span>
+<span class="nc" id="L158">                },</span>
+                error -&gt; {
+<span class="nc" id="L160">                    Toast.makeText(getApplicationContext(), &quot;Could not load jams&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L161">                }</span>
+        );
+<span class="nc" id="L163">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);</span>
+<span class="nc" id="L164">    }</span>
+
+    private void addJam(String name, String numParticipants, String admin, String username) {
+<span class="nc" id="L167">        TableRow newRow = new TableRow(this);</span>
+
+<span class="nc" id="L169">        TextView nameView = new TextView(this);</span>
+<span class="nc" id="L170">        nameView.setText(name);</span>
+<span class="nc" id="L171">        nameView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L172">        nameView.setGravity(Gravity.START);</span>
+<span class="nc" id="L173">        nameView.setClickable(true);</span>
+<span class="nc" id="L174">        nameView.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L175">            Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);</span>
+<span class="nc" id="L176">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, username);</span>
+<span class="nc" id="L177">            intent.putExtra(&quot;JAM_NAME&quot;, name);</span>
+<span class="nc" id="L178">            intent.putExtra(&quot;JAM_ADMIN&quot;, admin);</span>
+<span class="nc" id="L179">            startActivity(intent);</span>
+<span class="nc" id="L180">        });</span>
+
+<span class="nc" id="L182">        TextView participantsView = new TextView(this);</span>
+<span class="nc" id="L183">        participantsView.setText(numParticipants);</span>
+<span class="nc" id="L184">        participantsView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L185">        participantsView.setGravity(Gravity.START);</span>
+
+<span class="nc" id="L187">        TextView adminView = new TextView(this);</span>
+<span class="nc" id="L188">        adminView.setText(admin);</span>
+<span class="nc" id="L189">        adminView.setPadding(8, 8, 8, 8);</span>
+<span class="nc" id="L190">        adminView.setGravity(Gravity.START);</span>
+
+<span class="nc" id="L192">        newRow.addView(nameView);</span>
+<span class="nc" id="L193">        newRow.addView(participantsView);</span>
+<span class="nc" id="L194">        newRow.addView(adminView);</span>
+
+<span class="nc bnc" id="L196" title="All 4 branches missed.">        if (admin.equals(username) || accountType.equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L197">            Button deleteButton = new Button(this);</span>
+<span class="nc" id="L198">            deleteButton.setText(&quot;Delete&quot;);</span>
+<span class="nc" id="L199">            deleteButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L200">                deleteJam(name);</span>
+<span class="nc" id="L201">            });</span>
+<span class="nc" id="L202">            newRow.addView(deleteButton);</span>
+        }
+
+<span class="nc" id="L205">        jamsTable.addView(newRow);</span>
+<span class="nc" id="L206">    }</span>
+
+
+    private void deleteJam(String jamName) {
+<span class="nc" id="L210">        StringRequest stringRequest = new StringRequest(</span>
+                Request.Method.DELETE, server + &quot;/&quot; + jamName,
+                response -&gt; {
+<span class="nc" id="L213">                    Toast.makeText(JamsActivity.this, &quot;Jam deleted&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L214">                    getJams(currentUsername); // Refresh the list</span>
+<span class="nc" id="L215">                },</span>
+                error -&gt; {
+<span class="nc" id="L217">                    Log.e(&quot;JamsActivity&quot;, &quot;Deletion Error: &quot; + error.toString());</span>
+<span class="nc" id="L218">                    Toast.makeText(getApplicationContext(), &quot;Failed to delete jam&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L219">                }</span>
+        );
+<span class="nc" id="L221">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+
+<span class="nc" id="L223">        String url = PLAYLISTS_URL + currentUsername + &quot;/&quot; + jamName;</span>
+
+<span class="nc" id="L225">        StringRequest stringRequestPlaylist = new StringRequest(Request.Method.DELETE, url,</span>
+                response -&gt; {
+<span class="nc" id="L227">                    Log.d(&quot;Delete Response&quot;, response);</span>
+<span class="nc" id="L228">                    Toast.makeText(JamsActivity.this, &quot;Playlist associated deleted&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L229">                },</span>
+                error -&gt; {
+<span class="nc" id="L231">                    Log.e(&quot;Delete Error&quot;, error.toString());</span>
+<span class="nc" id="L232">                    Toast.makeText(JamsActivity.this, &quot;Delete failed&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L233">                });</span>
+<span class="nc" id="L234">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequestPlaylist);</span>
+<span class="nc" id="L235">    }</span>
+    private void clearTable() {
+<span class="nc" id="L237">        int childCount = jamsTable.getChildCount();</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if (childCount &gt; 1) {</span>
+<span class="nc" id="L239">            jamsTable.removeViews(1, childCount - 1);</span>
+        }
+<span class="nc" id="L241">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

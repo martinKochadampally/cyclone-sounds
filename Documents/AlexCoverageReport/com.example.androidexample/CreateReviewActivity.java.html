@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreateReviewActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">CreateReviewActivity.java</span></div><h1>CreateReviewActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="nc" id="L18">public class CreateReviewActivity extends AppCompatActivity {</span>
+
+    private Button backButton;
+    private EditText songName;
+    private EditText artistName;
+    private EditText rating;
+    private EditText description;
+    private Button submitButton;
+    private String currentUsername;
+
+    private static final String URL_STRING_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/review&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L32">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L33">        setContentView(R.layout.activity_create_review);</span>
+
+<span class="nc" id="L35">        backButton = findViewById(R.id.back_btn);</span>
+<span class="nc" id="L36">        songName = findViewById(R.id.song_name_edt);</span>
+<span class="nc" id="L37">        artistName = findViewById(R.id.arist_name_edt);</span>
+<span class="nc" id="L38">        rating = findViewById(R.id.rating_edt);</span>
+<span class="nc" id="L39">        description = findViewById(R.id.description_edt);</span>
+<span class="nc" id="L40">        submitButton = findViewById(R.id.submit_btn);</span>
+
+<span class="nc" id="L42">        Bundle extras = getIntent().getExtras();</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (extras != null) {</span>
+<span class="nc" id="L44">            currentUsername = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+        }
+
+<span class="nc" id="L47">        backButton.setOnClickListener(view -&gt; navigateTo(CreateActivity.class));</span>
+
+
+
+<span class="nc" id="L51">        submitButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L52">            String song = songName.getText().toString().trim();</span>
+<span class="nc" id="L53">            String artist = artistName.getText().toString().trim();</span>
+<span class="nc" id="L54">            String rate = rating.getText().toString().trim();</span>
+<span class="nc" id="L55">            String desc = description.getText().toString().trim();</span>
+
+<span class="nc bnc" id="L57" title="All 6 branches missed.">            if (song.isEmpty() || artist.isEmpty() || rate.isEmpty()) {</span>
+<span class="nc" id="L58">                Toast.makeText(getApplicationContext(), &quot;Please fill in all required fields&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L59">                return;</span>
+            }
+            try {
+<span class="nc" id="L62">                double ratingValue = Double.parseDouble(rate);</span>
+<span class="nc bnc" id="L63" title="All 4 branches missed.">                if (ratingValue &gt; 5 || ratingValue &lt; 0) {</span>
+<span class="nc" id="L64">                    Toast.makeText(getApplicationContext(), &quot;Rating must be between 0 and 5&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L65">                    return;</span>
+                }
+<span class="nc" id="L67">                makePostRequest(currentUsername, song, artist, rate, desc);</span>
+<span class="nc" id="L68">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L69">                Toast.makeText(getApplicationContext(), &quot;Please enter a valid number for rating&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L70">            }</span>
+<span class="nc" id="L71">        });</span>
+<span class="nc" id="L72">    }</span>
+
+    private void makePostRequest(final String user, final String songName, final String artistName, final String rating, final String description) {
+<span class="nc" id="L75">        StringRequest stringRequest = new StringRequest(</span>
+                Request.Method.POST,
+                URL_STRING_REQ,
+                response -&gt; {
+<span class="nc" id="L79">                    Log.d(&quot;Volley Response&quot;, response);</span>
+<span class="nc" id="L80">                    Toast.makeText(getApplicationContext(), &quot;Review Submitted Successfully!&quot;, Toast.LENGTH_LONG).show();</span>
+
+<span class="nc" id="L82">                    Intent intent = new Intent(CreateReviewActivity.this, MusicActivity.class);</span>
+<span class="nc" id="L83">                    intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, user);</span>
+<span class="nc" id="L84">                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);</span>
+<span class="nc" id="L85">                    startActivity(intent);</span>
+<span class="nc" id="L86">                    finish();</span>
+<span class="nc" id="L87">                },</span>
+                error -&gt; {
+<span class="nc" id="L89">                    Log.e(&quot;Volley Error&quot;, error.toString());</span>
+<span class="nc" id="L90">                    Toast.makeText(getApplicationContext(), &quot;Submission Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L91">                }</span>
+<span class="nc" id="L92">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L95">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L96">                params.put(&quot;reviewer&quot;, user);</span>
+<span class="nc" id="L97">                params.put(&quot;songName&quot;, songName);</span>
+<span class="nc" id="L98">                params.put(&quot;artistName&quot;, artistName);</span>
+<span class="nc" id="L99">                params.put(&quot;rating&quot;, rating);</span>
+<span class="nc" id="L100">                params.put(&quot;description&quot;, description); // Backend expects 'description'</span>
+<span class="nc" id="L101">                return params;</span>
+            }
+        };
+<span class="nc" id="L104">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L105">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass) {
+<span class="nc" id="L108">        Intent intent = new Intent(CreateReviewActivity.this, activityClass);</span>
+<span class="nc" id="L109">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L110">        startActivity(intent);</span>
+<span class="nc" id="L111">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

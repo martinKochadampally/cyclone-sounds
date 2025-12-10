@@ -81,7 +81,6 @@ public class ProfileController {
 
         Profile profileToUpdate = profileOptional.get();
 
-        // Update all fields EXCEPT the primary key (username)
         profileToUpdate.setName(request.getName());
         profileToUpdate.setFavSong(request.getFavSong());
         profileToUpdate.setFavArtist(request.getFavArtist());
@@ -101,7 +100,6 @@ public class ProfileController {
     @Transactional
     @DeleteMapping(path = "/profiles/{username}")
     public String deleteProfile(@PathVariable String username) {
-        // Check if the profile exists before deleting
         if (profileRepository.existsById(username)) {
             profileRepository.deleteById(username);
             return success;

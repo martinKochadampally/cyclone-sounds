@@ -1,5 +1,6 @@
 package cycloneSounds.Songs;
 
+import cycloneSounds.Songs.Song;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
     Optional<Song> findBySongNameAndArtist(String songName, String artist);
 
     List<Song> findTop15ByArtistContainingOrSongNameContainingOrderBySearchesDesc(String artist, String songName);
+
+    List<Song> findBySongNameContainingIgnoreCase(String name);
 }

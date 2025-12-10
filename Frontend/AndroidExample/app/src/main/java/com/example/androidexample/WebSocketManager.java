@@ -16,10 +16,22 @@ import java.net.URI;
  */
 public class WebSocketManager {
 
+    /**
+     * The singleton instance of the WebSocketManager.
+     */
     private static WebSocketManager instance;
+    /**
+     * The WebSocket client used for the connection.
+     */
     private MyWebSocketClient webSocketClient;
+    /**
+     * The listener for WebSocket events.
+     */
     private WebSocketListener webSocketListener;
 
+    /**
+     * Private constructor to prevent direct instantiation.
+     */
     private WebSocketManager() {}
 
     /**
@@ -62,8 +74,11 @@ public class WebSocketManager {
      */
     public void connectWebSocket(String serverUrl) {
         try {
+            // Create a URI for the WebSocket server.
             URI serverUri = URI.create(serverUrl);
+            // Initialize the WebSocket client.
             webSocketClient = new MyWebSocketClient(serverUri);
+            // Connect to the WebSocket server.
             webSocketClient.connect();
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,6 +117,10 @@ public class WebSocketManager {
      */
     private class MyWebSocketClient extends WebSocketClient {
 
+        /**
+         * Constructs a MyWebSocketClient instance.
+         * @param serverUri The server URI to connect to.
+         */
         private MyWebSocketClient(URI serverUri) {
             super(serverUri);
         }

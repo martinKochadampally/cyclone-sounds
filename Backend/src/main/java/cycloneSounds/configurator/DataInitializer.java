@@ -1,4 +1,4 @@
-package cycloneSounds.configurator;
+/**package cycloneSounds.configurator;
 
 import cycloneSounds.Spotify.SpotifyService;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class DataInitializer implements CommandLineRunner {
         try {
             // This code will run ONCE, every time the application starts.
             // We are searching for specific artists to get real songs.
-
+            /
             logger.info("Fetching 'Drake'...");
             spotifyService.searchAndSaveTracks("Drake").block();
 
@@ -40,3 +40,4 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 }
+ **/

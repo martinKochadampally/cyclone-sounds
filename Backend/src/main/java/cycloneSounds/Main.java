@@ -9,12 +9,14 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
 import cycloneSounds.Reviews.ReviewRepository;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * @author Vivek Bengre
  */
 @SpringBootApplication
 @EnableJpaRepositories
+@EnableAsync
 public class Main {
 
     public static void main(String[] args) {
@@ -28,8 +30,8 @@ public class Main {
      * @param reviewRepository The repository for the Profile entity.
      * @return A CommandLineRunner that creates and saves three sample profiles.
      */
-    @Bean
+    /**@Bean
     CommandLineRunner initProfiles(ReviewRepository reviewRepository, SongRepository songRepository) {
             return null;
-        }
+        }**/
 }

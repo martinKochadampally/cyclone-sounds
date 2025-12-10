@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfileActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">ProfileActivity.java</span></div><h1>ProfileActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="fc" id="L18">public class ProfileActivity extends AppCompatActivity {</span>
+
+    private EditText nameEditText, songEditText, genreEditText, artistEditText, bioEditText;
+    private Button updateButton, deleteButton, logoutButton;
+    private Button homeButton, musicButton, createButton, jamsButton, profileButton;
+    private TextView profileTitleTextView; // TextView declaration
+
+    private String profileToViewUsername;
+    private String loggedInUsername;
+
+    private static final String BASE_URL = &quot;http://coms-3090-008.class.las.iastate.edu:8080/profiles/&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="fc" id="L32">        super.onCreate(savedInstanceState);</span>
+<span class="fc" id="L33">        setContentView(R.layout.activity_profile);</span>
+
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if (getSupportActionBar() != null) {</span>
+<span class="nc" id="L36">            getSupportActionBar().setDisplayHomeAsUpEnabled(true);</span>
+        }
+
+<span class="fc" id="L39">        nameEditText = findViewById(R.id.profile_name_edt);</span>
+<span class="fc" id="L40">        songEditText = findViewById(R.id.profile_song_edt);</span>
+<span class="fc" id="L41">        genreEditText = findViewById(R.id.profile_genre_edt);</span>
+<span class="fc" id="L42">        artistEditText = findViewById(R.id.profile_artist_edt);</span>
+<span class="fc" id="L43">        bioEditText = findViewById(R.id.profile_bio_edt);</span>
+
+        // Initialize the title TextView
+<span class="fc" id="L46">        profileTitleTextView = findViewById(R.id.profile_title_txt);</span>
+
+<span class="fc" id="L48">        updateButton = findViewById(R.id.profile_update_btn);</span>
+<span class="fc" id="L49">        deleteButton = findViewById(R.id.profile_delete_btn);</span>
+<span class="fc" id="L50">        logoutButton = findViewById(R.id.profile_logout_btn);</span>
+<span class="fc" id="L51">        homeButton = findViewById(R.id.home_button_btn);</span>
+<span class="fc" id="L52">        musicButton = findViewById(R.id.music_button_btn);</span>
+<span class="fc" id="L53">        createButton = findViewById(R.id.create_button_btn);</span>
+<span class="fc" id="L54">        jamsButton = findViewById(R.id.jams_button_btn);</span>
+<span class="fc" id="L55">        profileButton = findViewById(R.id.profile_button_btn);</span>
+
+<span class="fc" id="L57">        Intent intent = getIntent();</span>
+<span class="pc bpc" id="L58" title="3 of 6 branches missed.">        if (intent != null &amp;&amp; intent.hasExtra(&quot;LOGGED_IN_USERNAME&quot;) &amp;&amp; intent.hasExtra(&quot;PROFILE_TO_VIEW&quot;)) {</span>
+<span class="fc" id="L59">            loggedInUsername = intent.getStringExtra(&quot;LOGGED_IN_USERNAME&quot;);</span>
+<span class="fc" id="L60">            profileToViewUsername = intent.getStringExtra(&quot;PROFILE_TO_VIEW&quot;);</span>
+
+            // Dynamic Title Logic: Set the text for the on-screen TextView
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if (loggedInUsername.equals(profileToViewUsername)) {</span>
+<span class="fc" id="L64">                profileTitleTextView.setText(&quot;Edit Your Profile&quot;);</span>
+            } else {
+<span class="fc" id="L66">                profileTitleTextView.setText(profileToViewUsername + &quot;\'s Profile&quot;);</span>
+            }
+
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">            if(getSupportActionBar() != null) {</span>
+                // This still sets the title for the ActionBar/Toolbar
+<span class="nc" id="L71">                getSupportActionBar().setTitle(profileToViewUsername + &quot;\'s Profile&quot;);</span>
+            }
+
+<span class="fc" id="L74">            fetchUserData();</span>
+<span class="fc" id="L75">            setupNavigation();</span>
+
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            if (!loggedInUsername.equals(profileToViewUsername)) {</span>
+<span class="fc" id="L78">                makeProfileReadOnly();</span>
+            }
+
+        } else {
+<span class="nc" id="L82">            Toast.makeText(this, &quot;Error: No user profile found.&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L83">            finish();</span>
+        }
+
+<span class="fc" id="L86">        updateButton.setOnClickListener(v -&gt; updateUserData());</span>
+<span class="pc" id="L87">        deleteButton.setOnClickListener(v -&gt; deleteUserAccount());</span>
+<span class="fc" id="L88">        logoutButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L89">            Intent logoutIntent = new Intent(ProfileActivity.this, LoginActivity.class);</span>
+<span class="nc" id="L90">            logoutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);</span>
+<span class="nc" id="L91">            startActivity(logoutIntent);</span>
+<span class="nc" id="L92">            finish();</span>
+<span class="nc" id="L93">        });</span>
+<span class="fc" id="L94">    }</span>
+
+    @Override
+    public boolean onSupportNavigateUp() {
+<span class="nc" id="L98">        finish();</span>
+<span class="nc" id="L99">        return true;</span>
+    }
+
+    private void makeProfileReadOnly() {
+<span class="fc" id="L103">        nameEditText.setEnabled(false);</span>
+<span class="fc" id="L104">        songEditText.setEnabled(false);</span>
+<span class="fc" id="L105">        genreEditText.setEnabled(false);</span>
+<span class="fc" id="L106">        artistEditText.setEnabled(false);</span>
+<span class="fc" id="L107">        bioEditText.setEnabled(false);</span>
+
+<span class="fc" id="L109">        updateButton.setVisibility(View.GONE);</span>
+<span class="fc" id="L110">        deleteButton.setVisibility(View.GONE);</span>
+<span class="fc" id="L111">        logoutButton.setVisibility(View.GONE);</span>
+
+<span class="fc" id="L113">        homeButton.setVisibility(View.VISIBLE);</span>
+<span class="fc" id="L114">        musicButton.setVisibility(View.VISIBLE);</span>
+<span class="fc" id="L115">        createButton.setVisibility(View.VISIBLE);</span>
+<span class="fc" id="L116">        jamsButton.setVisibility(View.VISIBLE);</span>
+<span class="fc" id="L117">        profileButton.setVisibility(View.VISIBLE);</span>
+<span class="fc" id="L118">    }</span>
+
+    private void fetchUserData() {
+<span class="fc" id="L121">        String url = BASE_URL + profileToViewUsername;</span>
+<span class="fc" id="L122">        Log.d(&quot;ProfileFetch&quot;, &quot;Fetching data from URL: &quot; + url);</span>
+
+<span class="fc" id="L124">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L127">                        nameEditText.setText(response.optString(&quot;name&quot;));</span>
+<span class="nc" id="L128">                        songEditText.setText(response.optString(&quot;favSong&quot;));</span>
+<span class="nc" id="L129">                        genreEditText.setText(response.optString(&quot;favGenre&quot;));</span>
+<span class="nc" id="L130">                        artistEditText.setText(response.optString(&quot;favArtist&quot;));</span>
+<span class="nc" id="L131">                        bioEditText.setText(response.optString(&quot;biography&quot;));</span>
+<span class="nc" id="L132">                    } catch (Exception e) {</span>
+<span class="nc" id="L133">                        Log.e(&quot;JSON_FETCH_ERROR&quot;, &quot;Error parsing user data&quot;, e);</span>
+<span class="nc" id="L134">                    }</span>
+<span class="nc" id="L135">                },</span>
+                error -&gt; {
+<span class="fc" id="L137">                    Log.e(&quot;VOLLEY_FETCH_ERROR&quot;, &quot;Could not fetch user data&quot;, error);</span>
+<span class="fc" id="L138">                    Toast.makeText(this, &quot;Could not load profile data.&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="fc" id="L139">                });</span>
+
+<span class="fc" id="L141">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);</span>
+<span class="fc" id="L142">    }</span>
+
+    private void updateUserData() {
+<span class="fc" id="L145">        String url = BASE_URL + profileToViewUsername;</span>
+<span class="fc" id="L146">        JSONObject profileData = new JSONObject();</span>
+        try {
+<span class="fc" id="L148">            profileData.put(&quot;name&quot;, nameEditText.getText().toString());</span>
+<span class="fc" id="L149">            profileData.put(&quot;favSong&quot;, songEditText.getText().toString());</span>
+<span class="fc" id="L150">            profileData.put(&quot;favGenre&quot;, genreEditText.getText().toString());</span>
+<span class="fc" id="L151">            profileData.put(&quot;favArtist&quot;, artistEditText.getText().toString());</span>
+<span class="fc" id="L152">            profileData.put(&quot;biography&quot;, bioEditText.getText().toString());</span>
+<span class="fc" id="L153">            profileData.put(&quot;username&quot;, profileToViewUsername);</span>
+
+<span class="nc" id="L155">        } catch (JSONException e) {</span>
+<span class="nc" id="L156">            e.printStackTrace();</span>
+<span class="fc" id="L157">        }</span>
+
+<span class="fc" id="L159">        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT, url, profileData,</span>
+<span class="nc" id="L160">                response -&gt; Toast.makeText(this, &quot;Profile Updated Successfully!&quot;, Toast.LENGTH_SHORT).show(),</span>
+                error -&gt; {
+<span class="fc" id="L162">                    Log.e(&quot;VOLLEY_UPDATE_ERROR&quot;, &quot;Could not update user data&quot;, error);</span>
+<span class="fc" id="L163">                    Toast.makeText(this, &quot;Update Failed&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="fc" id="L164">                });</span>
+
+<span class="fc" id="L166">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);</span>
+<span class="fc" id="L167">    }</span>
+
+    private void deleteUserAccount() {
+<span class="nc" id="L170">        String url = BASE_URL + profileToViewUsername;</span>
+
+<span class="nc" id="L172">        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,</span>
+                response -&gt; {
+<span class="nc" id="L174">                    Toast.makeText(this, &quot;Account Deleted Successfully&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L175">                    Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);</span>
+<span class="nc" id="L176">                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);</span>
+<span class="nc" id="L177">                    startActivity(intent);</span>
+<span class="nc" id="L178">                    finish();</span>
+<span class="nc" id="L179">                },</span>
+                error -&gt; {
+<span class="nc" id="L181">                    Log.e(&quot;VOLLEY_DELETE_ERROR&quot;, &quot;Could not delete account&quot;, error);</span>
+<span class="nc" id="L182">                    Toast.makeText(this, &quot;Deletion Failed&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L183">                });</span>
+<span class="nc" id="L184">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L185">    }</span>
+
+    private void setupNavigation() {
+<span class="pc" id="L188">        homeButton.setOnClickListener(view -&gt; navigateTo(HomeActivity.class));</span>
+<span class="fc" id="L189">        musicButton.setOnClickListener(view -&gt; navigateTo(MusicActivity.class));</span>
+<span class="pc" id="L190">        createButton.setOnClickListener(view -&gt; navigateTo(CreateActivity.class));</span>
+<span class="pc" id="L191">        jamsButton.setOnClickListener(view -&gt; navigateTo(JamsActivity.class));</span>
+
+<span class="fc" id="L193">        profileButton.setOnClickListener(view -&gt; {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            if (loggedInUsername.equals(profileToViewUsername)) {</span>
+<span class="nc" id="L195">                return;</span>
+            }
+<span class="nc" id="L197">            Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L198">            intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, loggedInUsername);</span>
+<span class="nc" id="L199">            intent.putExtra(&quot;PROFILE_TO_VIEW&quot;, loggedInUsername);</span>
+<span class="nc" id="L200">            startActivity(intent);</span>
+<span class="nc" id="L201">        });</span>
+<span class="fc" id="L202">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass) {
+<span class="fc" id="L205">        Intent intent = new Intent(ProfileActivity.this, activityClass);</span>
+<span class="fc" id="L206">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, loggedInUsername);</span>
+<span class="fc" id="L207">        startActivity(intent);</span>
+<span class="fc" id="L208">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreatePlaylistActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">CreatePlaylistActivity.java</span></div><h1>CreatePlaylistActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="nc" id="L18">public class CreatePlaylistActivity extends AppCompatActivity {</span>
+
+    private Button backButton;
+    private EditText playlistName;
+    private Button submitButton;
+    private String currentUsername;
+
+    private static final String URL_STRING_REQ = &quot;http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L29">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L30">        setContentView(R.layout.activity_create_playlist);</span>
+
+<span class="nc" id="L32">        backButton = findViewById(R.id.back_btn);</span>
+<span class="nc" id="L33">        playlistName = findViewById(R.id.playlist_name_edt);</span>
+<span class="nc" id="L34">        submitButton = findViewById(R.id.submit_btn);</span>
+
+<span class="nc" id="L36">        Bundle extras = getIntent().getExtras();</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (extras != null) {</span>
+<span class="nc" id="L38">            currentUsername = extras.getString(&quot;LOGGED_IN_USERNAME&quot;);</span>
+        }
+
+<span class="nc" id="L41">        backButton.setOnClickListener(view -&gt; navigateTo(CreateActivity.class));</span>
+
+
+
+<span class="nc" id="L45">        submitButton.setOnClickListener(view -&gt; {</span>
+<span class="nc" id="L46">            String playlist = playlistName.getText().toString().trim();</span>
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (playlist.isEmpty()) {</span>
+<span class="nc" id="L49">                Toast.makeText(getApplicationContext(), &quot;Name cannot be empty&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L50">                return;</span>
+            }
+            try {
+<span class="nc" id="L53">                createPlaylistRequest(currentUsername, playlist);</span>
+<span class="nc" id="L54">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L55">                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L56">            }</span>
+<span class="nc" id="L57">        });</span>
+<span class="nc" id="L58">    }</span>
+
+    private void createPlaylistRequest(final String user, final String playlistName) {
+<span class="nc" id="L61">        StringRequest stringRequest = new StringRequest(</span>
+                Request.Method.POST,
+                URL_STRING_REQ + &quot;create&quot;,
+                response -&gt; {
+<span class="nc" id="L65">                    Log.d(&quot;Volley Response&quot;, response);</span>
+<span class="nc" id="L66">                    Toast.makeText(this, &quot;Playlist Created&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L67">                    Intent intent = new Intent(CreatePlaylistActivity.this, AddSongsActivity.class);</span>
+<span class="nc" id="L68">                    intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, user);</span>
+<span class="nc" id="L69">                    intent.putExtra(&quot;PLAYLIST_NAME&quot;, playlistName);</span>
+<span class="nc" id="L70">                    intent.putExtra(&quot;PREVIOUS_PAGE&quot;, &quot;CREATE&quot;);</span>
+<span class="nc" id="L71">                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);</span>
+<span class="nc" id="L72">                    startActivity(intent);</span>
+<span class="nc" id="L73">                    finish();</span>
+<span class="nc" id="L74">                },</span>
+                error -&gt; {
+<span class="nc" id="L76">                    Log.e(&quot;Volley Error&quot;, error.toString());</span>
+<span class="nc" id="L77">                    Toast.makeText(getApplicationContext(), &quot;Submission Error&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L78">                }</span>
+<span class="nc" id="L79">        ) {</span>
+            @Override
+            protected Map&lt;String, String&gt; getParams() {
+<span class="nc" id="L82">                Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L83">                params.put(&quot;playlistName&quot;, playlistName);</span>
+<span class="nc" id="L84">                params.put(&quot;username&quot;, user);</span>
+<span class="nc" id="L85">                return params;</span>
+            }
+        };
+<span class="nc" id="L88">        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);</span>
+<span class="nc" id="L89">    }</span>
+
+    private void navigateTo(Class&lt;?&gt; activityClass) {
+<span class="nc" id="L92">        Intent intent = new Intent(CreatePlaylistActivity.this, activityClass);</span>
+<span class="nc" id="L93">        intent.putExtra(&quot;LOGGED_IN_USERNAME&quot;, currentUsername);</span>
+<span class="nc" id="L94">        startActivity(intent);</span>
+<span class="nc" id="L95">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span>Generated by the Android Gradle plugin 8.12.3</div></body></html>
