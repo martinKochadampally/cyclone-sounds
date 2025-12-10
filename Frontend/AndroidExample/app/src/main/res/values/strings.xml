@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AndroidExample</string>
+    <string-array name="approval_types">
+        <item>Manager</item>
+        <item>Voting</item>
+        <item>Open</item>
+    </string-array>
 </resources>
