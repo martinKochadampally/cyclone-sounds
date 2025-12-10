@@ -20,6 +20,13 @@ public class SongDTO {
 
     }
 
+    public SongDTO(Song song) {
+        this.songId = song.getSongId();
+        this.songName = song.getSongName();
+        this.artist = song.getArtist();
+        this.spotifyId = song.getSpotifyId();
+    }
+
     public Integer getSongId() { return songId; }
     public String getSongName() { return songName; }
     public String getArtist() { return artist; }

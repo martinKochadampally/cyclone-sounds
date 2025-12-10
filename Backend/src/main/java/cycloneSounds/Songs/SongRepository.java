@@ -2,6 +2,8 @@ package cycloneSounds.Songs;
 
 import cycloneSounds.Songs.Song;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,5 +16,17 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     List<Song> findTop15ByArtistContainingOrSongNameContainingOrderBySearchesDesc(String artist, String songName);
 
-    List<Song> findBySongNameContainingIgnoreCase(String name);
+    @Query(value = """
+        SELECT * FROM song s
+        WHERE s.id NOT IN (
+            SELECT r.song_id
+            FROM review r
+            WHERE r.reviewer = :reviewer
+        )
+        ORDER BY RANDOM()
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Song> findRandomSongNotReviewedBy(@Param("reviewer") String reviewer);
+
+//    List<Song> findBySongNameContainingIgnoreCase(String name);
 }
