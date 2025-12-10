@@ -62,15 +62,29 @@ public class SearchActivity extends AppCompatActivity {
         private final int songId;
         private final String songName;
         private final String artist;
+        private final String embedUrl;
 
-        public Song(int songId, String songName, String artist) {
+        public Song(int songId, String songName, String artist, String embedUrl) {
             this.songId = songId;
             this.songName = songName;
             this.artist = artist;
+            this.embedUrl = embedUrl;
         }
 
         public int getSongId() {
             return songId;
+        }
+
+        public String getEmbedUrl() {
+            return embedUrl;
+        }
+
+        public String getName() {
+            return songName;
+        }
+
+        public String getArtist() {
+            return artist;
         }
 
         @NonNull
@@ -189,7 +203,7 @@ public class SearchActivity extends AppCompatActivity {
         } else if (currentSearchType.equals("Songs")) {
             songsHeader.setVisibility(View.VISIBLE);
             songResultsList.setVisibility(View.VISIBLE);
-            searchView.setQueryHint("Search for songs...");
+            searchView.setQueryHint("Search for songs or artists...");
         } else if (currentSearchType.equals("Albums")) {
             albumResultsList.setVisibility(View.VISIBLE);
             searchView.setQueryHint("Search for albums...");
@@ -235,7 +249,13 @@ public class SearchActivity extends AppCompatActivity {
         songResultsList.setOnItemClickListener((parent, view, position, id) -> {
             Song clickedSong = songList.get(position);
             incrementSongSearches(clickedSong.getSongId());
-            Toast.makeText(this, "Clicked on: " + clickedSong.toString(), Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(SearchActivity.this, SpotifyPlayerActivity.class);
+            intent.putExtra("EMBED_URL", clickedSong.getEmbedUrl());
+            intent.putExtra("LOGGED_IN_USERNAME", loggedInUsername);
+            intent.putExtra("SONG_NAME", clickedSong.getName());
+            intent.putExtra("ARTIST_NAME", clickedSong.getArtist());
+            startActivity(intent);
         });
 
         albumResultsList.setOnItemClickListener((parent, view, position, id) -> {
@@ -317,7 +337,9 @@ public class SearchActivity extends AppCompatActivity {
                             int songId = songJson.getInt("songId");
                             String songName = songJson.getString("songName");
                             String artistName = songJson.has("artist") ? songJson.getString("artist") : "Unknown";
-                            songList.add(new Song(songId, songName, artistName));
+                            String embedUrl = songJson.has("embedURL") ? songJson.getString("embedURL") : "";
+
+                            songList.add(new Song(songId, songName, artistName, embedUrl));
                         }
                         songAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
@@ -357,7 +379,7 @@ public class SearchActivity extends AppCompatActivity {
     private void incrementProfileViews(String username) {
         String url = BASE_URL + "/search/profiles/" + username;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                response -> Log.d("SearchActivity", "Profile view incremented"),
+                response -> Log.d("SearchActivity", "Profile view incremented: " + username),
                 error -> Log.e("SearchActivity", "Failed to increment views")
         );
         requestQueue.add(putRequest);
@@ -366,8 +388,8 @@ public class SearchActivity extends AppCompatActivity {
     private void incrementSongSearches(int songId) {
         String url = BASE_URL + "/search/songs/" + songId;
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                response -> Log.d("SearchActivity", "Song search incremented"),
-                error -> Log.e("SearchActivity", "Failed to increment searches")
+                response -> Log.d("SearchActivity", "Song search incremented: " + songId),
+                error -> Log.e("SearchActivity", "Failed to increment searches: " + error.toString())
         );
         requestQueue.add(putRequest);
     }
