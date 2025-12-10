@@ -23,8 +23,6 @@ public class ReviewController {
     @Autowired
     SongRepository songRepository;
 
-    @Autowired
-    AlbumRepository albumRepository;
 
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
@@ -110,32 +108,6 @@ public class ReviewController {
         return reviewRepository.save(newReview);
     }
 
-    @Operation(summary = "Create an album review",
-            description = "Creates a review specifically for an album by ID.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Album review successfully created"),
-            @ApiResponse(responseCode = "404", description = "Album not found")
-    })
-    @PostMapping(path = "/review/album")
-    public Review createAlbumReview(@RequestParam String reviewer,
-                                    @RequestParam int albumId,
-                                    @RequestParam double rating,
-                                    @RequestParam String description) {
-
-        Album album = albumRepository.findById(albumId).orElse(null);
-
-        if (album == null) {
-            return null;
-        }
-
-        Review newReview = new Review();
-        newReview.setReviewer(reviewer);
-        newReview.setRating(rating);
-        newReview.setBody(description);
-        newReview.setAlbum(album);
-
-        return reviewRepository.save(newReview);
-    }
 
     /**
      * Upvotes the review identified by the songId.
