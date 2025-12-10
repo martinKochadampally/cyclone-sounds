@@ -1,7 +1,6 @@
 package com.example.androidexample;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,8 +20,15 @@ import com.android.volley.toolbox.StringRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Activity for displaying and managing "Jams".
+ * Jams are collaborative spaces, likely related to music or playlists.
+ * This screen shows a list of available jams and allows users with appropriate
+ * permissions to create new ones.
+ */
 public class JamsActivity extends AppCompatActivity {
 
+    // UI Elements
     private Button profileButton;
     private Button homeButton;
     private Button musicButton;
@@ -30,23 +36,36 @@ public class JamsActivity extends AppCompatActivity {
     private Button createJamButton;
     private TableLayout jamsTable;
 
+    // Server URLs for API endpoints.
     private final String server = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams";
     private final String URL_GET_ACCOUNT_TYPE = "http://coms-3090-008.class.las.iastate.edu:8080/credentials/";
     private static final String PLAYLISTS_URL = "http://coms-3090-008.class.las.iastate.edu:8080/api/playlists/";
 
+    /**
+     * (Unused) Callback interface for retrieving the account type.
+     */
     interface AccountTypeCallback {
         void onResult(String accountType);
     }
-    private Button friendsButton;
 
+    // User-specific data
     private String currentUsername;
     private String accountType;
 
+    /**
+     * Called when the activity is first created. Initializes UI, fetches user data,
+     * and populates the list of jams.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in onSaveInstanceState(Bundle). Otherwise it is null.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jams);
 
+        // Initialize UI components.
         homeButton = findViewById(R.id.home_button_btn);
         profileButton = findViewById(R.id.profile_button_btn);
         musicButton = findViewById(R.id.music_button_btn);
@@ -54,20 +73,24 @@ public class JamsActivity extends AppCompatActivity {
         createJamButton = findViewById(R.id.create_jam_btn);
         jamsTable = findViewById(R.id.jams_table);
 
+        // Retrieve the logged-in username from the intent.
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             currentUsername = extras.getString("LOGGED_IN_USERNAME");
 
             if (currentUsername != null) {
+                // Fetch user and jam data.
                 getAccountType(currentUsername);
                 getJams(currentUsername);
             } else {
+                // Handle cases where the username is not available.
                 handleNoUsername();
             }
         } else {
             handleNoUsername();
         }
 
+        // Setup navigation button listeners.
         homeButton.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, HomeActivity.class);
             intent.putExtra("LOGGED_IN_USERNAME", currentUsername);
@@ -94,6 +117,10 @@ public class JamsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the scenario where no username is provided to the activity.
+     * It shows a toast message and redirects the user to the LoginActivity.
+     */
     private void handleNoUsername() {
         Toast.makeText(this, "User not found, returning to login.", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(JamsActivity.this, LoginActivity.class);
@@ -102,8 +129,12 @@ public class JamsActivity extends AppCompatActivity {
         finish();
     }
 
-
-
+    /**
+     * Fetches the account type for the given user from the server.
+     * Based on the account type, it determines whether to show the "Create Jam" button.
+     *
+     * @param username The username of the current user.
+     */
     private void getAccountType(final String username) {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
@@ -114,6 +145,7 @@ public class JamsActivity extends AppCompatActivity {
                         String accountType = response.getString("accountType");
                         Log.d("JamsActivity", "Account Type: " + accountType);
                         this.accountType = accountType;
+                        // Show "Create Jam" button only for jam managers and admins.
                         if (accountType.equals("jamManager") || accountType.equals("admin")) {
                             createJamButton.setVisibility(View.VISIBLE);
                             createJamButton.setOnClickListener(view -> {
@@ -136,6 +168,11 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
 
+    /**
+     * Fetches the list of all jams from the server and populates the table.
+     *
+     * @param username The username of the current user (used for context).
+     */
     private void getJams(final String username) {
         clearTable();
 
@@ -150,8 +187,7 @@ public class JamsActivity extends AppCompatActivity {
                             String jamName = jamObject.optString("name", "N/A");
                             String numParticipants = jamObject.optString("membersSize");
                             String admin = jamObject.optString("manager", "N/A");
-                            String approvalType = jamObject.optString("approvalType", "Manager"); // Default to manager
-                            addJam(jamName, numParticipants, admin, username, approvalType);
+                            addJam(jamName, numParticipants, admin, username);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
@@ -164,7 +200,15 @@ public class JamsActivity extends AppCompatActivity {
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayRequest);
     }
 
-    private void addJam(String name, String numParticipants, String admin, String username, String approvalType) {
+    /**
+     * Adds a single jam to the table layout as a new row.
+     *
+     * @param name The name of the jam.
+     * @param numParticipants The number of participants in the jam.
+     * @param admin The admin/manager of the jam.
+     * @param username The current user's username, for context and actions.
+     */
+    private void addJam(String name, String numParticipants, String admin, String username) {
         TableRow newRow = new TableRow(this);
 
         TextView nameView = new TextView(this);
@@ -172,12 +216,12 @@ public class JamsActivity extends AppCompatActivity {
         nameView.setPadding(8, 8, 8, 8);
         nameView.setGravity(Gravity.START);
         nameView.setClickable(true);
+        // Clicking on a jam name navigates to its individual page.
         nameView.setOnClickListener(view -> {
             Intent intent = new Intent(JamsActivity.this, IndividualJamActivity.class);
             intent.putExtra("LOGGED_IN_USERNAME", username);
             intent.putExtra("JAM_NAME", name);
             intent.putExtra("JAM_ADMIN", admin);
-            intent.putExtra("APPROVAL_TYPE", approvalType);
             startActivity(intent);
         });
 
@@ -191,17 +235,12 @@ public class JamsActivity extends AppCompatActivity {
         adminView.setPadding(8, 8, 8, 8);
         adminView.setGravity(Gravity.START);
 
-        TextView approvalView = new TextView(this);
-        approvalView.setText(approvalType);
-        approvalView.setPadding(8, 8, 8, 8);
-        approvalView.setGravity(Gravity.START);
-
         newRow.addView(nameView);
         newRow.addView(participantsView);
         newRow.addView(adminView);
-        newRow.addView(approvalView);
 
-        if (admin.equals(username) || accountType.equals("admin")) {
+        // Add a delete button if the current user is the jam's admin or a site-wide admin.
+        if (admin.equals(username) || (this.accountType != null && this.accountType.equals("admin"))) {
             Button deleteButton = new Button(this);
             deleteButton.setText("Delete");
             deleteButton.setOnClickListener(view -> {
@@ -214,12 +253,18 @@ public class JamsActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Deletes a jam from the server.
+     *
+     * @param jamName The name of the jam to be deleted.
+     */
     private void deleteJam(String jamName) {
+        // Request to delete the jam itself.
         StringRequest stringRequest = new StringRequest(
                 Request.Method.DELETE, server + "/" + jamName,
                 response -> {
                     Toast.makeText(JamsActivity.this, "Jam deleted", Toast.LENGTH_SHORT).show();
-                    getJams(currentUsername); // Refresh the list
+                    getJams(currentUsername); // Refresh the list of jams.
                 },
                 error -> {
                     Log.e("JamsActivity", "Deletion Error: " + error.toString());
@@ -228,6 +273,7 @@ public class JamsActivity extends AppCompatActivity {
         );
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
 
+        // Request to delete the playlist associated with the jam.
         String url = PLAYLISTS_URL + currentUsername + "/" + jamName;
 
         StringRequest stringRequestPlaylist = new StringRequest(Request.Method.DELETE, url,
@@ -241,6 +287,10 @@ public class JamsActivity extends AppCompatActivity {
                 });
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequestPlaylist);
     }
+
+    /**
+     * Clears all jam entries from the table, except for the header row.
+     */
     private void clearTable() {
         int childCount = jamsTable.getChildCount();
         if (childCount > 1) {
