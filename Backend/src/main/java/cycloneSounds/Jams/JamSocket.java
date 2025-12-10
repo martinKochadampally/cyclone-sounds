@@ -95,10 +95,10 @@ public class JamSocket {
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             addMemberToJam(jamRepository, jamName, username);
 
-            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
-            String history = getChatHistory(jamMessageRepository, jamName);
-            logger.info("Sending chat history (" + history.length() + " characters)");
-            sendMessageToUser(session, history);
+//            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+//            String history = getChatHistory(jamMessageRepository, jamName);
+//            logger.info("Sending chat history (" + history.length() + " characters)");
+//            sendMessageToUser(session, history);
 
             logger.info("Broadcasting join message...");
             broadcastToJam(jamName, username + " has joined the jam!");
