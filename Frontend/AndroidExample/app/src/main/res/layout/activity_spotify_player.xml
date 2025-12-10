@@ -11,9 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="65dp"
-        android:layout_marginBottom="300dp"/>
+        android:layout_marginBottom="350dp"/>
 
+    <TextView
+        android:id="@+id/history_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/history_list_view"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp"
+        android:layout_marginBottom="5dp"
+        android:text="Song Play History" />
 
+    <ListView
+        android:id="@+id/history_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"/>
 
 
     <LinearLayout
@@ -40,6 +55,5 @@
             android:text="Review Song" />
 
     </LinearLayout>
-
 
 </RelativeLayout>
