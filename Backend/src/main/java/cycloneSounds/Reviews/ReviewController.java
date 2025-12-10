@@ -2,11 +2,14 @@ package cycloneSounds.Reviews;
 
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Albums.Album;
+import cycloneSounds.Albums.AlbumRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +22,7 @@ public class ReviewController {
 
     @Autowired
     SongRepository songRepository;
+
 
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
@@ -103,6 +107,7 @@ public class ReviewController {
 
         return reviewRepository.save(newReview);
     }
+
 
     /**
      * Upvotes the review identified by the songId.

@@ -171,11 +171,4 @@ public class CredentialController {
         credentialRepository.deleteById(username);
         return success;
     }
-
-//    private boolean validateUsername(String username) {
-//        String regex = "^[A-Za-z][A-Za-z0-9_]{5,29}$";
-//        Pattern pattern = Pattern.compile(regex);
-//        Matcher matcher = pattern.matcher(username);
-//        return matcher.matches();
-//    }
 }

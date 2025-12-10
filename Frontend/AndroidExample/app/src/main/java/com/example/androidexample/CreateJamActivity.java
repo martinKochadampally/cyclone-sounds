@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,9 +29,8 @@ public class CreateJamActivity extends AppCompatActivity {
     private Button submitButton;
     private EditText jamName;
     private EditText genre;
-
-    // Data fields
-    private String currentUsername; // Holds the username of the logged-in user.
+    private Spinner approvalTypeSpinner;
+    private String currentUsername; // Variable to safely hold the username
     private String URL_STRING_REQ = "http://coms-3090-008.class.las.iastate.edu:8080/api/jams";
 
 
@@ -51,6 +52,12 @@ public class CreateJamActivity extends AppCompatActivity {
         jamName = findViewById(R.id.jam_name_edt);
         genre = findViewById(R.id.genre_edt); // Note: Genre is collected but not used in the createJamRequest.
         submitButton = findViewById(R.id.submit_btn);
+        approvalTypeSpinner = findViewById(R.id.approval_type_spinner);
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.approval_types, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        approvalTypeSpinner.setAdapter(adapter);
 
         // Retrieve the username from the intent that started this activity.
         Bundle extras = getIntent().getExtras();
@@ -76,23 +83,16 @@ public class CreateJamActivity extends AppCompatActivity {
                     jamName.setText(jamName.getText().toString().replace(" ", "_"));
                 }
                     String jamNameString = jamName.getText().toString();
-                    String genreString = genre.getText().toString(); // Genre is captured but not sent in the request.
-                    createJamRequest(currentUsername, jamNameString, genreString);
+                    String genreString = genre.getText().toString();
+                    String approvalType = approvalTypeSpinner.getSelectedItem().toString();
+                    createJamRequest(currentUsername, jamNameString, genreString, approvalType);
             }
         });
     }
-
-    /**
-     * Makes a POST request to the server to create a new Jam.
-     *
-     * @param user The username of the creator (manager).
-     * @param jamName The name for the new jam.
-     * @param genre The genre of the new jam (currently unused in the request itself).
-     */
-    private void createJamRequest(final String user, final String jamName, final String genre) {
+    private void createJamRequest(final String user, final String jamName, final String genre, final String approvalType) {
         StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
-                URL_STRING_REQ + "/" + currentUsername + "/" + jamName, // The manager and jam name are part of the URL.
+                URL_STRING_REQ + "/" + currentUsername + "/" + jamName + "/" + approvalType,
                 response -> {
                     Log.d("Volley Response", response);
                     Toast.makeText(getApplicationContext(), "Jam Created Successfully!", Toast.LENGTH_LONG).show();
@@ -102,6 +102,7 @@ public class CreateJamActivity extends AppCompatActivity {
                     intent.putExtra("LOGGED_IN_USERNAME", user);
                     intent.putExtra("JAM_NAME", jamName);
                     intent.putExtra("JAM_ADMIN", currentUsername);
+                    intent.putExtra("APPROVAL_TYPE", approvalType);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
@@ -117,6 +118,7 @@ public class CreateJamActivity extends AppCompatActivity {
                 Map<String, String> params = new HashMap<>();
                 params.put("username", currentUsername);
                 params.put("name", jamName);
+                params.put("approvalType", approvalType);
                 return params;
             }
         };
