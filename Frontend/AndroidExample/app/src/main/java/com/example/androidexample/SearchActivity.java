@@ -338,11 +338,11 @@ public class SearchActivity extends AppCompatActivity {
                         albumList.clear();
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject albumJson = response.getJSONObject(i);
-                            int id = albumJson.has("id") ? albumJson.getInt("id") : -1;
+                            int albumId = albumJson.has("albumId") ? albumJson.getInt("albumId") : -1;
                             String title = albumJson.has("title") ? albumJson.getString("title") : "Unknown Album";
                             String artist = albumJson.has("artist") ? albumJson.getString("artist") : "";
 
-                            albumList.add(new Album(id, title, artist));
+                            albumList.add(new Album(albumId, title, artist));
                         }
                         albumAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
