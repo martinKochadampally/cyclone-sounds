@@ -253,6 +253,7 @@ public class JamSocket {
 
     private void checkVoteResult(String jamName, int songId, Map<String, String> votes) {
         int totalUsers = jamSessions.get(jamName).size();
+        songRepository.findBySongId(songId);
         long yesVotes = votes.values().stream().filter(v -> "yes".equals(v)).count();
         long noVotes = votes.values().stream().filter(v -> "no".equals(v)).count();
 
