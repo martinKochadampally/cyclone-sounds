@@ -86,14 +86,6 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"/>
 
-            <ImageView
-                android:id="@+id/blind_cover_art"
-                android:layout_width="180dp"
-                android:layout_height="180dp"
-                android:src="@android:drawable/ic_menu_gallery"
-                android:scaleType="fitCenter"
-                android:layout_marginBottom="16dp"/>
-
             <TextView
                 android:id="@+id/blind_song_name"
                 android:layout_width="wrap_content"

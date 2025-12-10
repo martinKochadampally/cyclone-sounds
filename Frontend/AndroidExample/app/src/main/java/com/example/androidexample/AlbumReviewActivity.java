@@ -2,24 +2,37 @@ package com.example.androidexample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class AlbumReviewActivity extends AppCompatActivity {
 
+    private static final String BASE_URL = "http://coms-3090-008.class.las.iastate.edu:8080";
+
     private TextView headerText;
-    private ImageView albumCoverImage; // New variable
     private RatingBar ratingBar;
     private EditText bestSongInput;
     private EditText worstSongInput;
     private EditText reviewInput;
     private Button submitButton;
+
     private String loggedInUsername;
+    private int albumId = -1;
+
+    private RequestQueue requestQueue;
 
     private Button homeButton;
     private Button musicButton;
@@ -33,9 +46,12 @@ public class AlbumReviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_album_review);
 
         loggedInUsername = getIntent().getStringExtra("LOGGED_IN_USERNAME");
+        albumId = getIntent().getIntExtra("ALBUM_ID", -1);
+        String albumName = getIntent().getStringExtra("ALBUM_NAME");
+
+        requestQueue = Volley.newRequestQueue(this);
 
         headerText = findViewById(R.id.review_header);
-        albumCoverImage = findViewById(R.id.review_album_cover); // Initialize Image
         ratingBar = findViewById(R.id.album_rating_bar);
         bestSongInput = findViewById(R.id.best_song_input);
         worstSongInput = findViewById(R.id.worst_song_input);
@@ -50,20 +66,53 @@ public class AlbumReviewActivity extends AppCompatActivity {
 
         setupNavigation();
 
-        String albumName = getIntent().getStringExtra("ALBUM_NAME");
         if (albumName != null) {
             headerText.setText("Review: " + albumName);
+        } else {
+            headerText.setText("Review Album");
         }
 
         submitButton.setOnClickListener(v -> {
-            float rating = ratingBar.getRating();
-            String bestSong = bestSongInput.getText().toString();
-            String worstSong = worstSongInput.getText().toString();
-            String reviewText = reviewInput.getText().toString();
-
-            Toast.makeText(AlbumReviewActivity.this, "Rating: " + rating + "/5 Submitted!", Toast.LENGTH_SHORT).show();
-            finish();
+            if (albumId == -1) {
+                Toast.makeText(this, "Error: Album ID missing", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            submitAlbumReview();
         });
+    }
+
+    private void submitAlbumReview() {
+        String url = BASE_URL + "/album-reviews/submit";
+
+        JSONObject reviewJson = new JSONObject();
+        try {
+            reviewJson.put("username", loggedInUsername);
+            reviewJson.put("albumId", albumId);
+            reviewJson.put("rating", ratingBar.getRating());
+            reviewJson.put("reviewText", reviewInput.getText().toString());
+            reviewJson.put("bestSong", bestSongInput.getText().toString());
+            reviewJson.put("worstSong", worstSongInput.getText().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, reviewJson,
+                response -> {
+                    Toast.makeText(AlbumReviewActivity.this, "Review Submitted Successfully!", Toast.LENGTH_SHORT).show();
+                    finish();
+                },
+                error -> {
+                    String errorMsg = error.getMessage();
+                    if (error.networkResponse != null) {
+                        errorMsg = "Status Code: " + error.networkResponse.statusCode;
+                    }
+                    Log.e("AlbumReview", "Submit Error: " + error.toString());
+                    Toast.makeText(AlbumReviewActivity.this, "Failed to submit: " + errorMsg, Toast.LENGTH_LONG).show();
+                }
+        );
+
+        requestQueue.add(jsonObjectRequest);
     }
 
     private void setupNavigation() {
