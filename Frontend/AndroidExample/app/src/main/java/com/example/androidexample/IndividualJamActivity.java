@@ -150,29 +150,29 @@ public class IndividualJamActivity extends AppCompatActivity {
                             JSONObject messageJson = response.getJSONObject(i);
                             String content = messageJson.getString("content");
 
-                            try {
-                                JSONObject contentJson = new JSONObject(content);
-                                String formattedMessage = formatArchivedMessage(contentJson);
-                                if (formattedMessage != null) {
-                                    messageList.add(new ChatMessage("System", formattedMessage));
-                                }
-                            } catch (JSONException e) {
-                                String[] messages = content.split("\\r?\\n");
-                                for (String msg : messages) {
-                                    String[] parts = msg.split(": ", 2);
-                                    if (parts.length == 2) {
-                                        messageList.add(new ChatMessage(parts[0], parts[1]));
-                                    } else if (!msg.trim().isEmpty()){
-                                        messageList.add(new ChatMessage("System", msg));
+                            String[] parts = content.split(": ", 2);
+
+                            if (parts.length == 2) {
+                                String sender = parts[0];
+                                String messageBody = parts[1];
+                                try {
+                                    JSONObject contentJson = new JSONObject(messageBody);
+                                    String formattedMessage = formatArchivedMessage(contentJson);
+                                    if (formattedMessage != null) {
+                                        messageList.add(new ChatMessage("System", formattedMessage));
                                     }
+                                } catch (JSONException e) {
+                                    messageList.add(new ChatMessage(sender, messageBody));
                                 }
+                            } else if (!content.trim().isEmpty()) {
+                                messageList.add(new ChatMessage("System", content));
                             }
                         }
                         chatAdapter.notifyDataSetChanged();
                         chatRecyclerView.scrollToPosition(messageList.size() - 1);
 
                     } catch (JSONException e) {
-                        Log.e("IndividualJamActivity", "JSON parsing error", e);
+                        Log.e("IndividualJamActivity", "JSON parsing error in chat history", e);
                     }
                 },
                 error -> {
