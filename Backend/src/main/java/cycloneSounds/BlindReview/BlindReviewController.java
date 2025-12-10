@@ -4,13 +4,11 @@ import cycloneSounds.Reviews.Review;
 import cycloneSounds.Reviews.ReviewRepository;
 import cycloneSounds.Songs.Song;
 import cycloneSounds.Songs.SongRepository;
+import cycloneSounds.Songs.SongDTO;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-import cycloneSounds.Songs.SongDTO;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/blind-review")
@@ -24,7 +22,7 @@ public class BlindReviewController {
     // GET /blind-review/next?username=martin
     @GetMapping("/next")
     public ResponseEntity<SongDTO> getNextBlindSong(@RequestParam String username) {
-        return getRandomUnseenSong(username)
+        return songRepository.findRandomSongNotReviewedBy(username)
                 .map(song -> ResponseEntity.ok(new SongDTO(song)))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
@@ -34,12 +32,6 @@ public class BlindReviewController {
     public ResponseEntity<Void> submitReview(@RequestBody BlindReview request) {
         submitBlindReview(request);
         return ResponseEntity.ok().build();
-    }
-
-    public Optional<Song> getRandomUnseenSong(String username) {
-        //return songRepository.findRandomUnseenForUser(username);
-        //TODO
-        return null;
     }
 
     public void submitBlindReview(BlindReview req) {
