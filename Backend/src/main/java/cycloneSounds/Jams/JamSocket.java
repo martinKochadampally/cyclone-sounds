@@ -185,6 +185,15 @@ public class JamSocket {
                         voteService.recordVoteAsync(voteId, voter, userVote);
                     }
 
+//                    JSONObject broadcastJson = new JSONObject();
+//                    broadcastJson.put("type", "song_vote_request");
+//                    broadcastJson.put("voteId", voteId);
+//                    broadcastJson.put("songId", songId);
+//                    broadcastJson.put("song", song.getSongName());
+//                    broadcastJson.put("artist", song.getArtist());
+//                    broadcastJson.put("suggester", suggester);
+
+//                    broadcastToJam(jamName, broadcastJson.toString());
                     checkVoteResult(jamName, songId, currentVotes);
                 }
             }
@@ -345,16 +354,16 @@ public class JamSocket {
         });
     }
 
-    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
-        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
-        StringBuilder sb = new StringBuilder();
-        if (messages != null && !messages.isEmpty()) {
-            for (JamMessage message : messages) {
-                sb.append(message.getUserName()).append(": ").append(message.getContent()).append("\n");
-            }
-        }
-        return sb.toString();
-    }
+//    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
+//        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
+//        StringBuilder sb = new StringBuilder();
+//        if (messages != null && !messages.isEmpty()) {
+//            for (JamMessage message : messages) {
+//                sb.append(message.getUserName()).append(": ").append(message.getContent()).append("\n");
+//            }
+//        }
+//        return sb.toString();
+//    }
 
     private void broadcastToSpecificUser(String jamName, String targetUsername, String message) {
         Map<Session, String> users = jamSessions.get(jamName);
