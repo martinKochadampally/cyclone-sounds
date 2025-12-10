@@ -136,6 +136,7 @@ public class JamsActivity extends AppCompatActivity {
      * @param username The username of the current user.
      */
     private void getAccountType(final String username) {
+        EspressoIdlingResource.increment(); // App is busy
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
                 URL_GET_ACCOUNT_TYPE + username,
@@ -158,11 +159,14 @@ public class JamsActivity extends AppCompatActivity {
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getApplicationContext(), "Parsing Error", Toast.LENGTH_LONG).show();
+                    } finally {
+                        EspressoIdlingResource.decrement(); // App is idle
                     }
                 },
                 error -> {
                     Log.e("JamsActivity", "Error: " + error.getMessage());
                     Toast.makeText(getApplicationContext(), "Could not load account type", Toast.LENGTH_LONG).show();
+                    EspressoIdlingResource.decrement(); // App is idle
                 }
         );
         VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest);
