@@ -30,6 +30,7 @@ public class Playlist {
     private Set<Song> songs = new HashSet<>();
 
     @Getter
+    @Setter
     private int searches;
 
     public Playlist() {

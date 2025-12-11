@@ -3,6 +3,7 @@ package cycloneSounds.profilePage;
 import jakarta.persistence.*;
 
 import cycloneSounds.Credentials.Credentials;
+import lombok.Setter;
 
 
 /**
@@ -24,6 +25,7 @@ public class Profile {
     private String favArtist;
     private String favGenre;
     private String biography;
+    @Setter
     private int views;
 
     /*

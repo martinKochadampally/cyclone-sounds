@@ -17,6 +17,8 @@ public class Song {
 
     private String songName;
     private String artist;
+
+
     private int searches;
 
     @Column(name = "spotifyId")
