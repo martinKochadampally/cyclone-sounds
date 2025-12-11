@@ -8,7 +8,6 @@ public class SpotifyAlbum {
 
     private String name;
     private String id;
-    private List<SpotifyImage> images;
 
     public String getName() {
         return name;
@@ -26,11 +25,4 @@ public class SpotifyAlbum {
         this.id = id;
     }
 
-    public List<SpotifyImage> getImages() {
-        return images;
-    }
-
-    public void setImages(List<SpotifyImage> images) {
-        this.images = images;
-    }
 }

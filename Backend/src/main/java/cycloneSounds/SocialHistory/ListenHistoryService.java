@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class that deals with the logic of SocialHistory. Helps bridge the database and controller. Also does
+ * handling user verfication before recording the history and doing the timestamping.
+ */
 @Service
 public class ListenHistoryService {
 
@@ -19,6 +23,12 @@ public class ListenHistoryService {
     @Autowired
     private CredentialRepository credentialRepo;
 
+    /**
+     * Record a new listening event for a specific song and user. Tests the username first with the credential table
+     * and only cerates a listenHistory entity on validation.
+     * @param username
+     * @param songId
+     */
     public void recordListen(String username, String songId) {
         Credentials creds = credentialRepo.findById(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
@@ -28,6 +38,11 @@ public class ListenHistoryService {
     }
 
 
+    /**
+     * Grabs the 10 most recent listens of a song.
+     * @param songId
+     * @return list of HistoryResponse DTos
+     */
     public List<HistoryResponse> getHistoryForSong(String songId) {
         List<ListenHistory> rawHistory = historyRepo.findTop10BySongIdOrderByListenedAtDesc(songId);
 
@@ -36,7 +51,12 @@ public class ListenHistoryService {
                 )).collect(Collectors.toList());
     }
 
-
+    /**
+     * Helper method that does the math between a past timestamp and now. IT then converts these times
+     * to readable style that divides time depending on length.
+     * @param pastTime
+     * @return string of elapsed time
+     */
     private String calculateTime(LocalDateTime pastTime) {
         LocalDateTime now = LocalDateTime.now();
         Duration duration = Duration.between(pastTime, now);

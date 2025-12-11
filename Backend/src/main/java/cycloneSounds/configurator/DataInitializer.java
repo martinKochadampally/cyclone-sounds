@@ -1,4 +1,6 @@
-/**package cycloneSounds.configurator;
+/**
+ * ONLY USED TO REPOPULATE SONGS TABLE
+ * package cycloneSounds.configurator;
 
 import cycloneSounds.Spotify.SpotifyService;
 import org.slf4j.Logger;

@@ -74,7 +74,6 @@ public class SpotifyService {
     }
 
     /**
-     * MAIN METHOD FOR FRONTEND:
      * Checks if album exists, creates it if missing, populates songs, and returns the full entity.
      * @param spotifyAlbumId
      * @return Album
@@ -94,9 +93,6 @@ public class SpotifyService {
                             newAlbum.setTitle(spotifyAlbumDto.getName());
                             newAlbum.setSpotifyId(spotifyAlbumDto.getId());
                             newAlbum.setArtist("Unknown Artist");
-                            if (spotifyAlbumDto.getImages() != null && !spotifyAlbumDto.getImages().isEmpty()) {
-                                newAlbum.setAlbumCover(spotifyAlbumDto.getImages().get(0).getUrl());
-                            }
                             return albumRepository.save(newAlbum);
                         });
             }).block();

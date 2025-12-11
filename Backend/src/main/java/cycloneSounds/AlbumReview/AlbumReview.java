@@ -3,6 +3,11 @@ package cycloneSounds.AlbumReview;
 import cycloneSounds.Albums.Album;
 import jakarta.persistence.*;
 
+/**
+ * This java class is used to keep track of reviews created by users on albums.
+ * It is mapped to the album_review table in the database and is used as a data object
+ * to store the information for the variables below
+ */
 @Entity
 @Table(name = "album_review")
 public class AlbumReview {
