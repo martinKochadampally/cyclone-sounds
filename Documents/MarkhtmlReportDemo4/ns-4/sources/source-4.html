@@ -1,0 +1,380 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > JamSocket</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Jams</a>
+</div>
+
+<h1>Coverage Summary for Class: JamSocket (cycloneSounds.Jams)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JamSocket</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12.5%
+  </span>
+  <span class="absValue">
+    (2/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/52)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    4.2%
+  </span>
+  <span class="absValue">
+    (5/119)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Jams;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.Hashtable;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;import cycloneSounds.websocketChats.CustomSpringConfigurator;
+&nbsp;import jakarta.websocket.OnClose;
+&nbsp;import jakarta.websocket.OnError;
+&nbsp;import jakarta.websocket.OnMessage;
+&nbsp;import jakarta.websocket.OnOpen;
+&nbsp;import jakarta.websocket.Session;
+&nbsp;import jakarta.websocket.server.PathParam;
+&nbsp;import jakarta.websocket.server.ServerEndpoint;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;import org.json.JSONObject;
+&nbsp;import org.json.JSONException;
+&nbsp;
+&nbsp;
+&nbsp;@Component
+&nbsp;@ServerEndpoint(value = &quot;/websocket/jams/{jamName}/{username}&quot;, configurator = CustomSpringConfigurator.class)
+<b class="fc">&nbsp;public class JamSocket {</b>
+&nbsp;
+<b class="fc">&nbsp;    private static final Map&lt;Session, String&gt; sessionJamMap = new Hashtable&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final Map&lt;Session, String&gt; sessionUsernameMap = new Hashtable&lt;&gt;();</b>
+<b class="fc">&nbsp;    private static final Map&lt;String, Map&lt;Session, String&gt;&gt; jamSessions = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    private final Logger logger = LoggerFactory.getLogger(JamSocket.class);</b>
+&nbsp;
+&nbsp;    @OnOpen
+&nbsp;    public void onOpen(Session session, @PathParam(&quot;jamName&quot;) String jamName, @PathParam(&quot;username&quot;) String username) throws IOException {
+<b class="nc">&nbsp;        if (jamName == null || jamName.isEmpty() || username == null || username.isEmpty()) {</b>
+<b class="nc">&nbsp;            session.close(new jakarta.websocket.CloseReason(</b>
+&nbsp;                    jakarta.websocket.CloseReason.CloseCodes.VIOLATED_POLICY, &quot;Jam name and username are required&quot;));
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        logger.info(&quot;========== USER CONNECTING ==========&quot;);</b>
+<b class="nc">&nbsp;        logger.info(&quot;User: &quot; + username);</b>
+<b class="nc">&nbsp;        logger.info(&quot;Jam: &quot; + jamName);</b>
+<b class="nc">&nbsp;        logger.info(&quot;Session ID: &quot; + session.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;        sessionJamMap.put(session, jamName);</b>
+<b class="nc">&nbsp;        sessionUsernameMap.put(session, username);</b>
+&nbsp;
+<b class="nc">&nbsp;        jamSessions.putIfAbsent(jamName, new ConcurrentHashMap&lt;&gt;());</b>
+<b class="nc">&nbsp;        jamSessions.get(jamName).put(session, username);</b>
+&nbsp;
+<b class="nc">&nbsp;        logger.info(&quot;Total users in jam &#39;&quot; + jamName + &quot;&#39;: &quot; + jamSessions.get(jamName).size());</b>
+<b class="nc">&nbsp;        logger.info(&quot;All users in jam: &quot; + jamSessions.get(jamName).values());</b>
+&nbsp;
+&nbsp;        try {
+<b class="nc">&nbsp;            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);</b>
+<b class="nc">&nbsp;            addMemberToJam(jamRepository, jamName, username);</b>
+&nbsp;
+<b class="nc">&nbsp;            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);</b>
+<b class="nc">&nbsp;            String history = getChatHistory(jamMessageRepository, jamName);</b>
+<b class="nc">&nbsp;            logger.info(&quot;Sending chat history (&quot; + history.length() + &quot; characters)&quot;);</b>
+<b class="nc">&nbsp;            sendMessageToUser(session, history);</b>
+&nbsp;
+<b class="nc">&nbsp;            logger.info(&quot;Broadcasting join message...&quot;);</b>
+<b class="nc">&nbsp;            broadcastToJam(jamName, username + &quot; has joined the jam!&quot;);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            logger.error(&quot;Error on opening WebSocket for user &quot; + username, e);</b>
+<b class="nc">&nbsp;            session.close(new jakarta.websocket.CloseReason(jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, e.getMessage()));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        logger.info(&quot;========== USER CONNECTED SUCCESSFULLY ==========&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @OnMessage
+&nbsp;    public void onMessage(Session session, String message) throws IOException {
+<b class="nc">&nbsp;        logger.info(&quot;Received message: &quot; + message);</b>
+<b class="nc">&nbsp;        String jamName = sessionJamMap.get(session);</b>
+<b class="nc">&nbsp;        String username = sessionUsernameMap.get(session);</b>
+<b class="nc">&nbsp;        if (username == null || jamName == null) {</b>
+<b class="nc">&nbsp;            logger.warn(&quot;Received message from unknown session&quot;);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+&nbsp;        try {
+&nbsp;            // Check if message is JSON (for special message types like song suggestions)
+<b class="nc">&nbsp;            if (message.trim().startsWith(&quot;{&quot;)) {</b>
+<b class="nc">&nbsp;                JSONObject messageJson = new JSONObject(message);</b>
+<b class="nc">&nbsp;                String type = messageJson.optString(&quot;type&quot;, &quot;chat&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;                if (&quot;song_suggestion&quot;.equals(type)) {</b>
+&nbsp;                    // Handle song suggestion - broadcast JSON to admin
+<b class="nc">&nbsp;                    String adminUsername = messageJson.getString(&quot;receiver&quot;);</b>
+<b class="nc">&nbsp;                    broadcastToSpecificUser(jamName, adminUsername, message);</b>
+&nbsp;                    return;
+&nbsp;                }
+&nbsp;                // If it&#39;s a chat type JSON, extract content
+<b class="nc">&nbsp;                else if (&quot;chat&quot;.equals(type)) {</b>
+<b class="nc">&nbsp;                    message = messageJson.getString(&quot;content&quot;);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            // Handle regular chat message (plain text)
+<b class="nc">&nbsp;            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);</b>
+<b class="nc">&nbsp;            JamRepository jamRepository = SpringContext.getBean(JamRepository.class);</b>
+<b class="nc">&nbsp;            Optional&lt;Jam&gt; jamOpt = jamRepository.findById(jamName);</b>
+<b class="nc">&nbsp;            if (jamOpt.isEmpty()) {</b>
+<b class="nc">&nbsp;                logger.warn(&quot;Jam not found: &quot; + jamName);</b>
+&nbsp;                return;
+&nbsp;            }
+<b class="nc">&nbsp;            Jam jam = jamOpt.get();</b>
+&nbsp;
+&nbsp;            // Create and save message entity
+<b class="nc">&nbsp;            JamMessage jamMessage = new JamMessage(username, jam, message);</b>
+<b class="nc">&nbsp;            jamMessageRepository.save(jamMessage);</b>
+&nbsp;
+&nbsp;            // Broadcast message to all sessions in this jam
+<b class="nc">&nbsp;            broadcastToJam(jamName, username + &quot;: &quot; + message);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            logger.error(&quot;Failed to process message&quot;, e);</b>
+<b class="nc">&nbsp;            session.getBasicRemote().sendText(&quot;{\&quot;error\&quot;:\&quot;Failed to send message: &quot; + e.getMessage() + &quot;\&quot;}&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @OnClose
+&nbsp;    public void onClose(Session session) throws IOException {
+<b class="nc">&nbsp;        String username = sessionUsernameMap.get(session);</b>
+<b class="nc">&nbsp;        String jamName = sessionJamMap.get(session);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (username != null &amp;&amp; jamName != null) {</b>
+<b class="nc">&nbsp;            logger.info(&quot;User &quot; + username + &quot; disconnected from jam: &quot; + jamName);</b>
+&nbsp;
+&nbsp;            try {
+<b class="nc">&nbsp;                JamRepository jamRepository = SpringContext.getBean(JamRepository.class);</b>
+<b class="nc">&nbsp;                removeMemberFromJam(jamRepository, jamName, username);</b>
+&nbsp;
+<b class="nc">&nbsp;                broadcastToJam(jamName, username + &quot; has left the jam.&quot;);</b>
+&nbsp;            } catch (Exception e) {
+<b class="nc">&nbsp;                logger.error(&quot;Error during WebSocket close handling for user &quot; + username, e);</b>
+&nbsp;                // Allow disconnect to proceed despite error
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        sessionUsernameMap.remove(session);</b>
+<b class="nc">&nbsp;        sessionJamMap.remove(session);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (jamName != null) {</b>
+<b class="nc">&nbsp;            Map&lt;Session, String&gt; users = jamSessions.get(jamName);</b>
+<b class="nc">&nbsp;            if (users != null) {</b>
+<b class="nc">&nbsp;                users.remove(session);</b>
+<b class="nc">&nbsp;                if (users.isEmpty()) {</b>
+<b class="nc">&nbsp;                    jamSessions.remove(jamName);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @OnError
+&nbsp;    public void onError(Session session, Throwable throwable) {
+<b class="nc">&nbsp;        logger.error(&quot;WebSocket error for session &quot; + session.getId(), throwable);</b>
+&nbsp;        try {
+<b class="nc">&nbsp;            session.close(new jakarta.websocket.CloseReason(</b>
+<b class="nc">&nbsp;                    jakarta.websocket.CloseReason.CloseCodes.UNEXPECTED_CONDITION, throwable.getMessage()));</b>
+&nbsp;        } catch (IOException e) {
+<b class="nc">&nbsp;            logger.error(&quot;Failed to close session on error&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void broadcastToJam(String jamName, String message) {
+<b class="nc">&nbsp;        logger.info(&quot;========== BROADCAST START ==========&quot;);</b>
+<b class="nc">&nbsp;        logger.info(&quot;Jam name: &quot; + jamName);</b>
+<b class="nc">&nbsp;        logger.info(&quot;Message: &quot; + message);</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;Session, String&gt; users = jamSessions.get(jamName);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (users == null) {</b>
+<b class="nc">&nbsp;            logger.error(&quot;No user map found for jam: &quot; + jamName);</b>
+<b class="nc">&nbsp;            logger.info(&quot;Available jams: &quot; + jamSessions.keySet());</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        logger.info(&quot;Found &quot; + users.size() + &quot; users in jam&quot;);</b>
+<b class="nc">&nbsp;        logger.info(&quot;Users: &quot; + users.values());</b>
+&nbsp;
+<b class="nc">&nbsp;        users.forEach((session, username) -&gt; {</b>
+&nbsp;            try {
+<b class="nc">&nbsp;                logger.info(&quot;Attempting to send to user: &quot; + username + &quot; (session open: &quot; + session.isOpen() + &quot;)&quot;);</b>
+<b class="nc">&nbsp;                if (session.isOpen()) {</b>
+<b class="nc">&nbsp;                    session.getBasicRemote().sendText(message);</b>
+<b class="nc">&nbsp;                    logger.info(&quot;Successfully sent to: &quot; + username);</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    logger.warn(&quot;Session closed for user: &quot; + username);</b>
+&nbsp;                }
+&nbsp;            } catch (IOException e) {
+<b class="nc">&nbsp;                logger.error(&quot;Error sending message to &quot; + username, e);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;
+<b class="nc">&nbsp;        logger.info(&quot;========== BROADCAST END ==========&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void sendMessageToUser(Session session, String message) {
+&nbsp;        try {
+<b class="nc">&nbsp;            if (session.isOpen()) {</b>
+<b class="nc">&nbsp;                session.getBasicRemote().sendText(message);</b>
+&nbsp;            }
+&nbsp;        } catch (IOException e) {
+<b class="nc">&nbsp;            logger.error(&quot;Error sending private message&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private void addMemberToJam(JamRepository jamRepository, String jamName, String username) {
+<b class="nc">&nbsp;        var jamOpt = jamRepository.findByIdWithMembers(jamName);</b>
+<b class="nc">&nbsp;        jamOpt.ifPresent(jam -&gt; {</b>
+<b class="nc">&nbsp;            var members = jam.getMembers();</b>
+<b class="nc">&nbsp;            if (!members.contains(username)) {</b>
+<b class="nc">&nbsp;                members.add(username);</b>
+<b class="nc">&nbsp;                jam.setMembers(members);</b>
+<b class="nc">&nbsp;                jamRepository.save(jam);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private void removeMemberFromJam(JamRepository jamRepository, String jamName, String username) {
+<b class="nc">&nbsp;        var jamOpt = jamRepository.findByIdWithMembers(jamName);</b>
+<b class="nc">&nbsp;        jamOpt.ifPresent(jam -&gt; {</b>
+<b class="nc">&nbsp;            var members = jam.getMembers();</b>
+<b class="nc">&nbsp;            if (members.contains(username)) {</b>
+<b class="nc">&nbsp;                members.remove(username);</b>
+<b class="nc">&nbsp;                jam.setMembers(members);</b>
+<b class="nc">&nbsp;                jamRepository.save(jam);</b>
+&nbsp;            }
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
+<b class="nc">&nbsp;        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);</b>
+<b class="nc">&nbsp;        StringBuilder sb = new StringBuilder();</b>
+<b class="nc">&nbsp;        if (messages != null &amp;&amp; !messages.isEmpty()) {</b>
+<b class="nc">&nbsp;            for (JamMessage message : messages) {</b>
+<b class="nc">&nbsp;                sb.append(message.getUserName()).append(&quot;: &quot;).append(message.getContent()).append(&quot;\n&quot;);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return sb.toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void broadcastToSpecificUser(String jamName, String targetUsername, String message) {
+<b class="nc">&nbsp;        Map&lt;Session, String&gt; users = jamSessions.get(jamName);</b>
+<b class="nc">&nbsp;        if (users != null) {</b>
+<b class="nc">&nbsp;            users.forEach((session, username) -&gt; {</b>
+<b class="nc">&nbsp;                if (username.equals(targetUsername)) {</b>
+&nbsp;                    try {
+<b class="nc">&nbsp;                        if (session.isOpen()) {</b>
+<b class="nc">&nbsp;                            session.getBasicRemote().sendText(message);</b>
+&nbsp;                        }
+&nbsp;                    } catch (IOException e) {
+<b class="nc">&nbsp;                        logger.error(&quot;Error sending message to specific user&quot;, e);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            });
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-02 21:29</div>
+</div>
+</body>
+</html>

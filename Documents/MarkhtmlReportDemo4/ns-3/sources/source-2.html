@@ -1,0 +1,180 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AlbumController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Albums</a>
+</div>
+
+<h1>Coverage Summary for Class: AlbumController (cycloneSounds.Albums)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AlbumController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66.7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23.5%
+  </span>
+  <span class="absValue">
+    (4/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Albums;
+&nbsp;
+&nbsp;import cycloneSounds.Spotify.SpotifyService;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@RequestMapping(&quot;/albums&quot;)
+&nbsp;@RestController
+<b class="fc">&nbsp;public class AlbumController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private AlbumRepository albumRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private SpotifyService spotifyService;
+&nbsp;
+&nbsp;    @GetMapping(&quot;/{spotifyAlbumId}&quot;)
+&nbsp;    public ResponseEntity&lt;Album&gt; getAlbumAndSongs(@PathVariable String spotifyAlbumId) {
+<b class="nc">&nbsp;        Album album = spotifyService.syncAlbumBySpotifyId(spotifyAlbumId);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (album != null) {</b>
+<b class="nc">&nbsp;            return ResponseEntity.ok(album);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(path = &quot;/search/{name}&quot;)
+&nbsp;    public List&lt;Album&gt; searchAlbum(@PathVariable String name) {
+<b class="fc">&nbsp;        return albumRepository.findByTitleContainingIgnoreCase(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(path = &quot;/&quot;)
+&nbsp;    public List&lt;Album&gt; getAllAlbums() {
+<b class="fc">&nbsp;        return albumRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(path = &quot;/database/{id}&quot;)
+&nbsp;    public Album getAlbumById(@PathVariable int id) {
+<b class="nc">&nbsp;        Album album = albumRepository.findById(id).orElse(null);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (album == null) {</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        boolean missingSongs = (album.getSongs() == null || album.getSongs().isEmpty());</b>
+<b class="nc">&nbsp;        boolean missingCover = (album.getAlbumCover() == null || album.getAlbumCover().isEmpty());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (missingSongs || missingCover) {</b>
+<b class="nc">&nbsp;            spotifyService.populateAlbumTracks(album);</b>
+<b class="nc">&nbsp;            album = albumRepository.findById(id).orElse(null);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return album;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/spotify/{spotifyId}&quot;)
+&nbsp;    public Album getAlbumBySpotifyId(@PathVariable String spotifyId) {
+<b class="fc">&nbsp;        return albumRepository.findBySpotifyId(spotifyId);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-10 23:47</div>
+</div>
+</body>
+</html>
