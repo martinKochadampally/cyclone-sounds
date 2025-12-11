@@ -5,6 +5,11 @@ import jakarta.persistence.*;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * This class represents an album within cycloneSOunds. This class is the container for song objects
+ * OnetoMany relationship --> An album contains many songs
+ * @author Mark Seard
+ */
 @Entity
 public class Album {
 
@@ -14,13 +19,16 @@ public class Album {
 
     private String title;
     private String artist;
-    private String albumCover;
 
     @OneToMany(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Song> songs = new ArrayList<>();
 
     private String spotifyId;
 
+    /**
+     * runs before the Album entity is deleted. Iterates through the album songs and nulls the relationship
+     * to the album which avoids key constraint problems or cascade deletes.
+     */
     @PreRemove
     private void preRemove() {
         if (songs != null) {
@@ -32,10 +40,9 @@ public class Album {
 
     public Album() {}
 
-    public Album(String title, String artist, String albumCover) {
+    public Album(String title, String artist) {
         this.title = title;
         this.artist = artist;
-        this.albumCover = albumCover;
     }
 
     public int getAlbumId() {
@@ -78,12 +85,6 @@ public class Album {
         this.songs = songs;
     }
 
-    public String getAlbumCover() {
-        return albumCover;
-    }
-    public void setAlbumCover(String albumCover){
-        this.albumCover = albumCover;
-    }
     public void addSong(Song song) {
         this.songs.add(song);
     }
