@@ -25,13 +25,14 @@ public class BlindReviewController {
     @Autowired
     private ReviewRepository reviewRepository;
 
-    // GET /blind-review/next?username=martin
+
     @GetMapping("/next")
     public ResponseEntity<SongDTO> getNextBlindSong(@RequestParam String username) {
         List<Song> allSongs = songRepository.findAll();
 
         List<Review> userReviews = reviewRepository.findByReviewer(username);
         Set<Integer> reviewedSongIds = userReviews.stream()
+                .filter(r -> r.getSong() != null)
                 .map(r -> r.getSong().getSongId())
                 .collect(Collectors.toSet());
 
@@ -48,12 +49,9 @@ public class BlindReviewController {
         Song chosen = unreviewed.get(index);
 
         return ResponseEntity.ok(new SongDTO(chosen));
-//        return songRepository.findRandomSongNotReviewedBy(username)
-//                .map(song -> ResponseEntity.ok(new SongDTO(song)))
-//                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    // POST /blind-review/review
+
     @PostMapping("/review")
     public ResponseEntity<Object> submitReview(@RequestBody BlindReview request) {
         submitBlindReview(request);

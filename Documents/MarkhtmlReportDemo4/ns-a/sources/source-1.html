@@ -1,0 +1,230 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SearchController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Search</a>
+</div>
+
+<h1>Coverage Summary for Class: SearchController (cycloneSounds.Search)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SearchController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (1/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5.3%
+  </span>
+  <span class="absValue">
+    (1/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Search;
+&nbsp;
+&nbsp;import cycloneSounds.Playlists.*;
+&nbsp;import cycloneSounds.Songs.Song;
+&nbsp;import cycloneSounds.Songs.SongDTO;
+&nbsp;import cycloneSounds.Songs.SongRepository;
+&nbsp;import cycloneSounds.profilePage.Profile;
+&nbsp;import cycloneSounds.profilePage.ProfileRepository;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+&nbsp;import org.springframework.web.bind.annotation.PathVariable;
+&nbsp;import org.springframework.web.bind.annotation.PutMapping;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+&nbsp;/**
+&nbsp; * A REST controller for handling HTTP requests related to Searching.
+&nbsp; *
+&nbsp; * @author Martin Kochadampally
+&nbsp; *
+&nbsp; */
+&nbsp;@RestController
+<b class="fc">&nbsp;public class SearchController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    ProfileRepository profileRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    SongRepository songRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    PlaylistRepository playlistRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Searches for user profiles where the username contains the search key,
+&nbsp;     * returning top 10 results ordered by views descending.
+&nbsp;     *
+&nbsp;     * @param searchKey The substring to search for in usernames
+&nbsp;     * @return List of matching usernames
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Search user profiles by username&quot;,
+&nbsp;            description = &quot;Returns up to 10 usernames containing the search key, ordered by views.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;List of matching usernames&quot;)
+&nbsp;    @GetMapping(&quot;/search/profiles/{searchKey}&quot;)
+&nbsp;    public List&lt;String&gt; getProfileByName(@PathVariable String searchKey) {
+<b class="nc">&nbsp;            return profileRepository.findTop10ByUsernameContainingOrderByViewsDesc(searchKey)</b>
+<b class="nc">&nbsp;            .stream()</b>
+<b class="nc">&nbsp;            .map(Profile::getUsername) // extract just the username string</b>
+<b class="nc">&nbsp;            .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Increments the view count of a profile identified by username,
+&nbsp;     * then returns the updated Profile object.
+&nbsp;     *
+&nbsp;     * @param username Username of the profile to update
+&nbsp;     * @return Updated Profile object or null if not found
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Increment profile view count by username&quot;,
+&nbsp;            description = &quot;Increments view count for specified user profile and returns updated profile.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Updated profile returned&quot;)
+&nbsp;    @PutMapping(path = &quot;search/profiles/{username}&quot;)
+&nbsp;    public Profile updateProfileViewsbyUsername(@PathVariable String username) {
+<b class="nc">&nbsp;        Profile res = profileRepository.findById(username).orElse(null);</b>
+<b class="nc">&nbsp;        if (res != null) {</b>
+<b class="nc">&nbsp;            res.incrementViews();</b>
+<b class="nc">&nbsp;            profileRepository.save(res);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return res;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Searches for playlists by username or playlist name containing the search key,
+&nbsp;     * returning up to 10 results ordered by searches descending.
+&nbsp;     *
+&nbsp;     * @param searchKey Substring to search in usernames or playlist names
+&nbsp;     * @return List of PlaylistDTO objects containing playlist name and username of creator
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Search playlists by username or playlist name&quot;,
+&nbsp;            description = &quot;Returns up to 10 playlists matching search key, ordered by number of searches.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;List of matching playlist data transfer objects&quot;)
+&nbsp;    @GetMapping(&quot;/search/playlist/{searchKey}&quot;)
+&nbsp;    public List&lt;PlaylistDTO&gt; getPlaylistByName(@PathVariable String searchKey) {
+<b class="nc">&nbsp;        return playlistRepository.findTop10ByUsernameContainingOrPlaylistNameContainingOrderBySearchesDesc(searchKey, searchKey)</b>
+<b class="nc">&nbsp;                .stream()</b>
+<b class="nc">&nbsp;                .map(playlist -&gt; new PlaylistDTO(playlist.getPlaylistName(), playlist.getUsername()))</b>
+<b class="nc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Increments the search count of a playlist identified by playlistName,
+&nbsp;     * then returns the updated Playlist object.
+&nbsp;     *
+&nbsp;     * @param playlistName Name of the playlist to update searches
+&nbsp;     * @return Updated Playlist object or null if not found
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Increment playlist search count by playlist name&quot;,
+&nbsp;            description = &quot;Increments search count for specified playlist and returns updated playlist.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Updated playlist returned&quot;)
+&nbsp;    @PutMapping(path = &quot;search/playlist/{playlistName}&quot;)
+&nbsp;    public Playlist updatePlaylistSearchesByPlaylistName(@PathVariable String playlistName) {
+<b class="nc">&nbsp;        Playlist res = playlistRepository.findById(playlistName).orElse(null);</b>
+<b class="nc">&nbsp;        if (res != null) {</b>
+<b class="nc">&nbsp;            res.incrementSearches();</b>
+<b class="nc">&nbsp;            playlistRepository.save(res);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return res;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-10 23:47</div>
+</div>
+</body>
+</html>

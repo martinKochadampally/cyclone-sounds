@@ -95,10 +95,10 @@ public class JamSocket {
             JamRepository jamRepository = SpringContext.getBean(JamRepository.class);
             addMemberToJam(jamRepository, jamName, username);
 
-            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
-            String history = getChatHistory(jamMessageRepository, jamName);
-            logger.info("Sending chat history (" + history.length() + " characters)");
-            sendMessageToUser(session, history);
+//            JamMessageRepository jamMessageRepository = SpringContext.getBean(JamMessageRepository.class);
+//            String history = getChatHistory(jamMessageRepository, jamName);
+//            logger.info("Sending chat history (" + history.length() + " characters)");
+//            sendMessageToUser(session, history);
 
             logger.info("Broadcasting join message...");
             broadcastToJam(jamName, username + " has joined the jam!");
@@ -151,7 +151,7 @@ public class JamSocket {
                     voteRepository.save(vote);
 
                     int voteId = vote.getVoteId();
-                    voteService.recordVoteAsync(voteId, suggester, "yes");
+                    //voteService.recordVoteAsync(voteId, suggester, "yes");
 
                     JSONObject broadcastJson = new JSONObject();
                     broadcastJson.put("type", "song_vote_request");
@@ -345,16 +345,16 @@ public class JamSocket {
         });
     }
 
-    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
-        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
-        StringBuilder sb = new StringBuilder();
-        if (messages != null && !messages.isEmpty()) {
-            for (JamMessage message : messages) {
-                sb.append(message.getUserName()).append(": ").append(message.getContent()).append("\n");
-            }
-        }
-        return sb.toString();
-    }
+//    private String getChatHistory(JamMessageRepository jamMessageRepository, String jamName) {
+//        var messages = jamMessageRepository.findByJam_NameOrderBySentAsc(jamName);
+//        StringBuilder sb = new StringBuilder();
+//        if (messages != null && !messages.isEmpty()) {
+//            for (JamMessage message : messages) {
+//                sb.append(message.getUserName()).append(": ").append(message.getContent()).append("\n");
+//            }
+//        }
+//        return sb.toString();
+//    }
 
     private void broadcastToSpecificUser(String jamName, String targetUsername, String message) {
         Map<Session, String> users = jamSessions.get(jamName);
