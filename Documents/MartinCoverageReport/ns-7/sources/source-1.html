@@ -1,0 +1,197 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Playlist</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Playlists</a>
+</div>
+
+<h1>Coverage Summary for Class: Playlist (cycloneSounds.Playlists)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Playlist</td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (9/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.8%
+  </span>
+  <span class="absValue">
+    (10/17)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Playlist$HibernateInstantiator$gWJ0RDk4</td>
+  </tr>
+  <tr>
+    <td class="name">Playlist$HibernateProxy$nWHqJErM</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    69.2%
+  </span>
+  <span class="absValue">
+    (9/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.8%
+  </span>
+  <span class="absValue">
+    (10/17)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Playlists;
+&nbsp;
+&nbsp;import cycloneSounds.Songs.Song;
+&nbsp;import jakarta.persistence.*;
+&nbsp;
+&nbsp;import cycloneSounds.profilePage.Profile;
+&nbsp;import lombok.Getter;
+&nbsp;import lombok.Setter;
+&nbsp;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;/**
+&nbsp; * Playlist class that makes the table in my SQL. Has owner and allows for a many to many relationship.
+&nbsp; * THis relationship allows there to many playlists and the same song to be in many playlists.
+&nbsp; */
+&nbsp;@Entity
+&nbsp;@Table(name = &quot;playlist&quot;)
+&nbsp;public class Playlist {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @Column(nullable = false, unique = true)
+&nbsp;    private String playlistName;
+&nbsp;
+&nbsp;    @JoinColumn(name = &quot;owner_id&quot;)
+&nbsp;    private String username;
+&nbsp;
+<b class="fc">&nbsp;    @ManyToMany(fetch = FetchType.LAZY)</b>
+&nbsp;    @JoinTable(name = &quot;playlist_songs&quot;, joinColumns = @JoinColumn(name = &quot;playlist_name&quot;), inverseJoinColumns = @JoinColumn(name = &quot;song_id&quot;))
+&nbsp;    private Set&lt;Song&gt; songs = new HashSet&lt;&gt;();
+&nbsp;
+<b class="fc">&nbsp;    @Getter</b>
+<b class="fc">&nbsp;    @Setter</b>
+&nbsp;    private int searches;
+&nbsp;
+<b class="fc">&nbsp;    public Playlist() {</b>
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    public Playlist(String playlistName, String username) {</b>
+<b class="nc">&nbsp;        this.playlistName = playlistName;</b>
+<b class="nc">&nbsp;        this.username = username;</b>
+<b class="nc">&nbsp;        this.searches = 0;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getPlaylistName() {
+<b class="fc">&nbsp;        return playlistName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPlaylistName(String playlistName) {
+<b class="fc">&nbsp;        this.playlistName = playlistName;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getUsername() {
+<b class="fc">&nbsp;        return username;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUsername(String username) {
+<b class="fc">&nbsp;        this.username = username;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Set&lt;Song&gt; getSongs() {
+<b class="fc">&nbsp;        return songs;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setSongs(Set&lt;Song&gt; songs) {
+<b class="nc">&nbsp;        this.songs = songs;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void addSong(Song song) {
+<b class="nc">&nbsp;        this.songs.add(song);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void removeSong(Song song) {
+<b class="nc">&nbsp;        this.songs.remove(song);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void incrementSearches() {
+<b class="fc">&nbsp;        this.searches++;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-11 17:31</div>
+</div>
+</body>
+</html>
