@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > Credentials</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Credentials</a>
+</div>
+
+<h1>Coverage Summary for Class: Credentials (cycloneSounds.Credentials)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Credentials</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Credentials$HibernateInstantiator$twuy1r5H</td>
+  </tr>
+  <tr>
+    <td class="name">Credentials$HibernateProxy$0TZCn2M2</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63.6%
+  </span>
+  <span class="absValue">
+    (7/11)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Credentials;
+&nbsp;
+&nbsp;import jakarta.persistence.*;
+&nbsp;
+&nbsp;import cycloneSounds.profilePage.Profile;
+&nbsp;import jakarta.validation.constraints.NotBlank;
+&nbsp;import jakarta.validation.constraints.Size;
+&nbsp;
+&nbsp;
+&nbsp;/**
+&nbsp; *
+&nbsp; * @author Martin Kochadampally
+&nbsp; *
+&nbsp; */
+&nbsp;@Entity
+&nbsp;public class Credentials {
+&nbsp;
+&nbsp;    @Id
+&nbsp;    @Column(unique = true)
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 6, max = 30)
+&nbsp;    private String username;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    @Size(min = 8, max = 64)
+&nbsp;    private String password;
+&nbsp;
+&nbsp;    @NotBlank
+&nbsp;    private String accountType;
+&nbsp;
+&nbsp;    @OneToOne(cascade = CascadeType.ALL)
+&nbsp;    @JoinColumn(name = &quot;username&quot;)
+&nbsp;    private Profile profile;
+&nbsp;
+<b class="nc">&nbsp;    public Credentials(String username, String password, String accountType) {</b>
+<b class="nc">&nbsp;        this.username = username;</b>
+<b class="nc">&nbsp;        this.password = password;</b>
+<b class="nc">&nbsp;        this.accountType = accountType;</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public Credentials() {}</b>
+&nbsp;
+&nbsp;    public String getUsername() {
+<b class="fc">&nbsp;        return username;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setUsername(String username) {
+<b class="fc">&nbsp;        this.username = username;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getPassword() {
+<b class="fc">&nbsp;        return password;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setPassword(String password) {
+<b class="fc">&nbsp;        this.password = password;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getAccountType() {
+<b class="fc">&nbsp;        return accountType;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setAccountType(String accountType) {
+<b class="fc">&nbsp;        this.accountType = accountType;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-11 17:31</div>
+</div>
+</body>
+</html>
