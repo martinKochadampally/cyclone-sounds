@@ -1,0 +1,253 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PlaylistController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Playlists</a>
+</div>
+
+<h1>Coverage Summary for Class: PlaylistController (cycloneSounds.Playlists)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PlaylistController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Playlists;
+&nbsp;
+&nbsp;import cycloneSounds.Songs.Song;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponses;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;
+&nbsp;/**
+&nbsp; * REST controller for managing user playlists.
+&nbsp; *
+&nbsp; * @author mark
+&nbsp; */
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/playlists&quot;)
+<b class="fc">&nbsp;public class PlaylistController {</b>
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private PlaylistService playlistService;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Creates a new playlist for a user.
+&nbsp;     *
+&nbsp;     * @param playlistName Name for the new playlist
+&nbsp;     * @param username Username of the playlist owner
+&nbsp;     * @return The created Playlist object
+&nbsp;     */
+&nbsp;    @Operation(
+&nbsp;            summary = &quot;Create a new playlist&quot;,
+&nbsp;            description = &quot;Creates a playlist for a given user and returns the created Playlist object.&quot;
+&nbsp;    )
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Playlist successfully created&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid input or playlist already exists&quot;)
+&nbsp;    })
+&nbsp;    @PostMapping(&quot;/create&quot;)
+&nbsp;    public ResponseEntity&lt;Playlist&gt; createPlaylist(@RequestParam String playlistName, @RequestParam String username) {
+<b class="fc">&nbsp;        Playlist playlist = playlistService.createPlaylist(playlistName, username);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(playlist);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Deletes an existing playlist for a user.
+&nbsp;     *
+&nbsp;     * @param username Username of the playlist owner
+&nbsp;     * @param playlistName Name of the playlist to be deleted
+&nbsp;     * @return String message on successful deletion
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Delete a playlist&quot;,
+&nbsp;            description = &quot;Deletes the specified playlist for the given user&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Playlist successfully deleted&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Playlist not found&quot;)
+&nbsp;    })
+&nbsp;    @DeleteMapping(&quot;/{username}/{playlistName}&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; deletePlaylist(@PathVariable String username, @PathVariable String playlistName) {
+<b class="fc">&nbsp;        playlistService.deletePlaylist(username, playlistName);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(&quot;Playlist deleted&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Adds a song to a user&#39;s playlist.
+&nbsp;     *
+&nbsp;     * @param username Username of the playlist owner
+&nbsp;     * @param playlistName Playlist to which the song is added
+&nbsp;     * @param songName Name of the song to add
+&nbsp;     * @param artist Artist of the song to add
+&nbsp;     * @return Playlist object after the song was added
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Add song to playlist&quot;,
+&nbsp;            description = &quot;Adds a specified song (by name and artist) to a given user&#39;s playlist&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Song successfully added to playlist&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Playlist not found or song not found&quot;)
+&nbsp;    })
+&nbsp;    @PostMapping(&quot;/{username}/{playlistName}/add&quot;)
+&nbsp;    public ResponseEntity&lt;Playlist&gt; addSongToPlaylist(@PathVariable String username, @PathVariable String playlistName, @RequestParam String songName, @RequestParam String artist) {
+&nbsp;        try {
+<b class="fc">&nbsp;            Playlist playlist = playlistService.addSongToPlaylist(username, playlistName, songName, artist);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(playlist);</b>
+&nbsp;        } catch (RuntimeException e) {
+<b class="fc">&nbsp;            return ResponseEntity.status(404).body(null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Removes a song from a user&#39;s playlist.
+&nbsp;     *
+&nbsp;     * @param username Username of playlist owner
+&nbsp;     * @param playlistName Playlist to remove from
+&nbsp;     * @param songName Name of the song to remove
+&nbsp;     * @param artist Artist of the song to remove
+&nbsp;     * @return Playlist object after the song was removed
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Remove song from playlist&quot;,
+&nbsp;            description = &quot;Removes a specified song (by name and artist) from a given user&#39;s playlist&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Song successfully removed from playlist&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Playlist or song not found&quot;)
+&nbsp;    })
+&nbsp;    @DeleteMapping(&quot;/{username}/{playlistName}/remove&quot;)
+&nbsp;    public ResponseEntity&lt;Playlist&gt; removeSongFromPlaylist(@PathVariable String username, @PathVariable String playlistName, @RequestParam String songName, @RequestParam String artist) {
+<b class="fc">&nbsp;        Playlist playlist = playlistService.removeSongFromPlaylist(username, playlistName, songName, artist);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(playlist);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Gets all playlists owned by a user.
+&nbsp;     *
+&nbsp;     * @param username Username whose playlists are retrieved
+&nbsp;     * @return List of all playlists belonging to the user
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get playlists by owner&quot;,
+&nbsp;            description = &quot;Retrieves all playlists belonging to the specified user&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Playlists successfully retrieved&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;No playlists found for user&quot;)
+&nbsp;    })
+&nbsp;    @GetMapping(&quot;/owner/{username}&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Playlist&gt;&gt; getPlaylistsByOwner(@PathVariable String username) {
+<b class="fc">&nbsp;        List&lt;Playlist&gt; playlists = playlistService.getPlaylistsByOwner(username);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(playlists);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Gets all songs from a user&#39;s specific playlist.
+&nbsp;     *
+&nbsp;     * @param username Username of playlist owner
+&nbsp;     * @param playlistName Playlist name for the song list
+&nbsp;     * @return Set of Song objects in the specified playlist
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get songs from playlist&quot;,
+&nbsp;            description = &quot;Retrieves all songs in a user&#39;s given playlist&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Songs successfully retrieved&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Playlist not found&quot;)
+&nbsp;    })
+&nbsp;    @GetMapping(&quot;/{username}/{playlistName}/songs&quot;)
+&nbsp;    public ResponseEntity&lt;Set&lt;Song&gt;&gt; getSongsFromPlaylist(@PathVariable String username, @PathVariable String playlistName) {
+<b class="fc">&nbsp;        Set&lt;Song&gt; songs = playlistService.getSongsFromPlaylist(username, playlistName);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(songs);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-12 13:46</div>
+</div>
+</body>
+</html>

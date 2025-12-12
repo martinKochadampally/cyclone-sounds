@@ -1,0 +1,444 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > SpotifyService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Spotify</a>
+</div>
+
+<h1>Coverage Summary for Class: SpotifyService (cycloneSounds.Spotify)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SpotifyService</td>
+<td class="coverageStat">
+  <span class="percent">
+    35%
+  </span>
+  <span class="absValue">
+    (7/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.1%
+  </span>
+  <span class="absValue">
+    (10/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.9%
+  </span>
+  <span class="absValue">
+    (46/144)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">SpotifyService$$SpringCGLIB$$0</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    35%
+  </span>
+  <span class="absValue">
+    (7/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    16.1%
+  </span>
+  <span class="absValue">
+    (10/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    31.9%
+  </span>
+  <span class="absValue">
+    (46/144)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Spotify;
+&nbsp;
+&nbsp;import cycloneSounds.Songs.Song;
+&nbsp;import cycloneSounds.Songs.SongRepository;
+&nbsp;import cycloneSounds.Spotify.SpotifyDTO.SpotifyAlbum;
+&nbsp;import cycloneSounds.Spotify.SpotifyDTO.SpotifyArtist;
+&nbsp;import cycloneSounds.Spotify.SpotifyDTO.SpotifySearchResponse;
+&nbsp;import cycloneSounds.Spotify.SpotifyDTO.SpotifyTrack;
+&nbsp;import cycloneSounds.Spotify.SpotifyDTO.SpotifyTracksResponse;
+&nbsp;import cycloneSounds.Albums.Album;
+&nbsp;import cycloneSounds.Albums.AlbumRepository;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.reactive.function.client.WebClient;
+&nbsp;import org.springframework.http.HttpHeaders;
+&nbsp;import org.springframework.http.MediaType;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;
+&nbsp;import java.util.Base64;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;/**
+&nbsp; * Service class for interacting with the Spotify API.
+&nbsp; * Handles token retrieval, track searching and database persistence.
+&nbsp; */
+&nbsp;@Service
+&nbsp;public class SpotifyService {
+&nbsp;
+&nbsp;    private final WebClient webClient;
+&nbsp;    private final String clientId;
+&nbsp;    private final String clientSecret;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private SongRepository songRepository;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    private AlbumRepository albumRepository;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Constructor initializes Spotify service with credentials.
+&nbsp;     * @param clientId
+&nbsp;     * @param clientSecret
+&nbsp;     */
+&nbsp;    public SpotifyService(@Value(&quot;${spotify.client.id}&quot;) String clientId,
+<b class="fc">&nbsp;                          @Value(&quot;${spotify.client.secret}&quot;) String clientSecret) {</b>
+<b class="fc">&nbsp;        this.clientId = clientId;</b>
+<b class="fc">&nbsp;        this.clientSecret = clientSecret;</b>
+<b class="fc">&nbsp;        this.webClient = WebClient.builder()</b>
+<b class="fc">&nbsp;                .baseUrl(&quot;https://api.spotify.com/v1&quot;)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves an access token from Spotify using client credentials.
+&nbsp;     * @return mono
+&nbsp;     */
+&nbsp;    public Mono&lt;String&gt; getAccessToken() {
+<b class="fc">&nbsp;        WebClient authClient = WebClient.builder()</b>
+<b class="fc">&nbsp;                .baseUrl(&quot;https://accounts.spotify.com/api/token&quot;)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        String credentials = Base64.getEncoder().encodeToString((clientId + &quot;:&quot; + clientSecret).getBytes());</b>
+&nbsp;
+<b class="fc">&nbsp;        return authClient.post()</b>
+<b class="fc">&nbsp;                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)</b>
+<b class="fc">&nbsp;                .header(HttpHeaders.AUTHORIZATION, &quot;Basic &quot; + credentials)</b>
+<b class="fc">&nbsp;                .bodyValue(&quot;grant_type=client_credentials&quot;)</b>
+<b class="fc">&nbsp;                .retrieve()</b>
+<b class="fc">&nbsp;                .bodyToMono(SpotifyTokenResponse.class)</b>
+<b class="fc">&nbsp;                .map(SpotifyTokenResponse::access_token);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Checks if album exists, creates it if missing, populates songs, and returns the full entity.
+&nbsp;     * @param spotifyAlbumId
+&nbsp;     * @return Album
+&nbsp;     */
+&nbsp;    public Album syncAlbumBySpotifyId(String spotifyAlbumId) {
+<b class="nc">&nbsp;        Album album = albumRepository.findBySpotifyId(spotifyAlbumId);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (album == null) {</b>
+<b class="nc">&nbsp;            album = getAccessToken().flatMap(token -&gt; {</b>
+<b class="nc">&nbsp;                return webClient.get()</b>
+<b class="nc">&nbsp;                        .uri(&quot;/albums/&quot; + spotifyAlbumId)</b>
+<b class="nc">&nbsp;                        .header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token)</b>
+<b class="nc">&nbsp;                        .retrieve()</b>
+<b class="nc">&nbsp;                        .bodyToMono(SpotifyAlbum.class)</b>
+<b class="nc">&nbsp;                        .map(spotifyAlbumDto -&gt; {</b>
+<b class="nc">&nbsp;                            Album newAlbum = new Album();</b>
+<b class="nc">&nbsp;                            newAlbum.setTitle(spotifyAlbumDto.getName());</b>
+<b class="nc">&nbsp;                            newAlbum.setSpotifyId(spotifyAlbumDto.getId());</b>
+<b class="nc">&nbsp;                            newAlbum.setArtist(&quot;Unknown Artist&quot;);</b>
+<b class="nc">&nbsp;                            return albumRepository.save(newAlbum);</b>
+&nbsp;                        });
+<b class="nc">&nbsp;            }).block();</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        populateAlbumTracks(album);</b>
+<b class="nc">&nbsp;        return albumRepository.findBySpotifyId(spotifyAlbumId);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Searches for tracks on Spotify using a query and saves new tracks to the database
+&nbsp;     * @param query
+&nbsp;     * @return
+&nbsp;     */
+&nbsp;    public Mono&lt;Void&gt; searchAndSaveTracks(String query) {
+<b class="fc">&nbsp;        return getAccessToken().flatMap(token -&gt; {</b>
+<b class="fc">&nbsp;            return webClient.get()</b>
+<b class="fc">&nbsp;                    .uri(uriBuilder -&gt; uriBuilder</b>
+<b class="fc">&nbsp;                            .path(&quot;/search&quot;)</b>
+<b class="fc">&nbsp;                            .queryParam(&quot;q&quot;, query)</b>
+<b class="fc">&nbsp;                            .queryParam(&quot;type&quot;, &quot;track&quot;)</b>
+<b class="fc">&nbsp;                            .queryParam(&quot;limit&quot;, 20)</b>
+<b class="fc">&nbsp;                            .build())</b>
+<b class="fc">&nbsp;                    .header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token)</b>
+<b class="fc">&nbsp;                    .retrieve()</b>
+<b class="fc">&nbsp;                    .bodyToMono(SpotifySearchResponse.class)</b>
+<b class="fc">&nbsp;                    .doOnNext(response -&gt; {</b>
+<b class="pc">&nbsp;                        if (response != null &amp;&amp; response.getTracks() != null) {</b>
+<b class="fc">&nbsp;                            saveTracksToDatabase(response.getTracks().getItems());</b>
+&nbsp;                        }
+&nbsp;                    });
+<b class="fc">&nbsp;        }).then();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Fetches tracks for an existing Album entity and saves them to the DB.
+&nbsp;     * This blocks (waits) until the operation is done so the Controller can return the full list immediately.
+&nbsp;     */
+&nbsp;    @Transactional
+&nbsp;    public void populateAlbumTracks(Album album) {
+<b class="nc">&nbsp;        String spotifyAlbumId = album.getSpotifyId();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (spotifyAlbumId == null || spotifyAlbumId.isEmpty()) {</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        getAccessToken().flatMap(token -&gt; {</b>
+<b class="nc">&nbsp;            return webClient.get()</b>
+<b class="nc">&nbsp;                    .uri(&quot;/albums/&quot; + album.getSpotifyId() + &quot;/tracks?limit=50&quot;)</b>
+<b class="nc">&nbsp;                    .header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token)</b>
+<b class="nc">&nbsp;                    .retrieve()</b>
+<b class="nc">&nbsp;                    .bodyToMono(SpotifyTracksResponse.class)</b>
+<b class="nc">&nbsp;                    .doOnNext(response -&gt; {</b>
+<b class="nc">&nbsp;                        if (response != null &amp;&amp; response.getItems() != null) {</b>
+<b class="nc">&nbsp;                            List&lt;SpotifyTrack&gt; tracks = response.getItems();</b>
+&nbsp;
+<b class="nc">&nbsp;                            if (&quot;Unknown Artist&quot;.equals(album.getArtist()) &amp;&amp; !tracks.isEmpty() &amp;&amp; !tracks.get(0).getArtists().isEmpty()) {</b>
+<b class="nc">&nbsp;                                album.setArtist(tracks.get(0).getArtists().get(0).getName());</b>
+<b class="nc">&nbsp;                                albumRepository.save(album);</b>
+&nbsp;                            }
+&nbsp;
+<b class="nc">&nbsp;                            for (SpotifyTrack track : tracks) {</b>
+&nbsp;                                try {
+<b class="nc">&nbsp;                                    Song song = songRepository.findBySpotifyId(track.getId()).orElse(new Song());</b>
+<b class="nc">&nbsp;                                    song.setSongName(track.getName());</b>
+<b class="nc">&nbsp;                                    song.setSpotifyId(track.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;                                    if (track.getArtists() != null &amp;&amp; !track.getArtists().isEmpty()) {</b>
+<b class="nc">&nbsp;                                        song.setArtist(track.getArtists().get(0).getName());</b>
+&nbsp;                                    } else {
+<b class="nc">&nbsp;                                        song.setArtist(album.getArtist());</b>
+&nbsp;                                    }
+<b class="nc">&nbsp;                                    song.setAlbum(album);</b>
+<b class="nc">&nbsp;                                    songRepository.save(song);</b>
+&nbsp;
+&nbsp;                                } catch (Exception e) {
+<b class="nc">&nbsp;                                    System.err.println(&quot;Error saving track: &quot; + track.getName());</b>
+&nbsp;                                }
+&nbsp;                            }
+&nbsp;                        }
+&nbsp;                    });
+<b class="nc">&nbsp;        }).block();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Saves new tracks from Spotify to the local database.
+&nbsp;     * Ensures no duplicate entries exist by checking Spotify ID.
+&nbsp;     * @param spotifyTracks
+&nbsp;     */
+&nbsp;    private void saveTracksToDatabase(List&lt;SpotifyTrack&gt; spotifyTracks) {
+<b class="pc">&nbsp;        if (spotifyTracks == null) return;</b>
+&nbsp;
+<b class="fc">&nbsp;        for (SpotifyTrack track : spotifyTracks) {</b>
+&nbsp;            try {
+<b class="fc">&nbsp;                String artistNames = track.getArtists().stream()</b>
+<b class="fc">&nbsp;                        .map(SpotifyArtist::getName)</b>
+<b class="fc">&nbsp;                        .collect(Collectors.joining(&quot;, &quot;));</b>
+<b class="pc">&nbsp;                if (artistNames.isEmpty()) artistNames = &quot;Unknown Artist&quot;;</b>
+&nbsp;
+<b class="fc">&nbsp;                Album album = null;</b>
+<b class="pc">&nbsp;                if (track.getAlbum() != null) {</b>
+<b class="fc">&nbsp;                    String albumId = track.getAlbum().getId();</b>
+<b class="fc">&nbsp;                    album = albumRepository.findBySpotifyId(albumId);</b>
+&nbsp;
+<b class="pc">&nbsp;                    if (album == null) {</b>
+<b class="nc">&nbsp;                        album = new Album();</b>
+<b class="nc">&nbsp;                        album.setTitle(track.getAlbum().getName());</b>
+<b class="nc">&nbsp;                        album.setArtist(artistNames);</b>
+<b class="nc">&nbsp;                        album.setSpotifyId(albumId);</b>
+<b class="nc">&nbsp;                        album = albumRepository.save(album);</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                Song song = songRepository.findBySpotifyId(track.getId()).orElse(null);</b>
+&nbsp;
+<b class="pc">&nbsp;                if (song == null) {</b>
+<b class="nc">&nbsp;                    song = new Song();</b>
+<b class="nc">&nbsp;                    song.setSongName(track.getName());</b>
+<b class="nc">&nbsp;                    song.setSpotifyId(track.getId());</b>
+<b class="nc">&nbsp;                    song.setArtist(artistNames);</b>
+<b class="nc">&nbsp;                    song.setSearches(0);</b>
+&nbsp;                }
+&nbsp;
+<b class="pc">&nbsp;                if (song.getAlbum() == null &amp;&amp; album != null) {</b>
+<b class="nc">&nbsp;                    song.setAlbum(album);</b>
+<b class="nc">&nbsp;                    songRepository.save(song);</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            } catch (Exception e) {
+<b class="nc">&nbsp;                System.err.println(&quot;Error saving track &quot; + track.getName() + &quot;: &quot; + e.getMessage());</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Searches for an Album by name, then fetches its tracks.
+&nbsp;     */
+&nbsp;    public Mono&lt;Album&gt; searchAndSaveAlbum(String albumName) {
+<b class="nc">&nbsp;        return getAccessToken().flatMap(token -&gt; {</b>
+<b class="nc">&nbsp;            return webClient.get()</b>
+<b class="nc">&nbsp;                    .uri(uriBuilder -&gt; uriBuilder</b>
+<b class="nc">&nbsp;                            .path(&quot;/search&quot;)</b>
+<b class="nc">&nbsp;                            .queryParam(&quot;q&quot;, albumName)</b>
+<b class="nc">&nbsp;                            .queryParam(&quot;type&quot;, &quot;album&quot;)</b>
+<b class="nc">&nbsp;                            .queryParam(&quot;limit&quot;, 1)</b>
+<b class="nc">&nbsp;                            .build())</b>
+<b class="nc">&nbsp;                    .header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token)</b>
+<b class="nc">&nbsp;                    .retrieve()</b>
+<b class="nc">&nbsp;                    .bodyToMono(SpotifySearchResponse.class)</b>
+<b class="nc">&nbsp;                    .flatMap(response -&gt; {</b>
+&nbsp;
+<b class="nc">&nbsp;                        if (response == null || response.getAlbums() == null || response.getAlbums().getItems().isEmpty()) {</b>
+<b class="nc">&nbsp;                            return Mono.empty();</b>
+&nbsp;                        }
+&nbsp;
+<b class="nc">&nbsp;                        var spotifyAlbum = response.getAlbums().getItems().get(0);</b>
+<b class="nc">&nbsp;                        return getAlbumTracks(spotifyAlbum.getId(), token, spotifyAlbum);</b>
+&nbsp;                    });
+&nbsp;        });
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Fetches the list of tracks for a specific Album ID.
+&nbsp;     */
+&nbsp;    private Mono&lt;Album&gt; getAlbumTracks(String spotifyAlbumId, String token, SpotifyAlbum spotifyAlbumData) {
+<b class="nc">&nbsp;        return webClient.get()</b>
+<b class="nc">&nbsp;                .uri(&quot;/albums/&quot; + spotifyAlbumId + &quot;/tracks?limit=50&quot;)</b>
+<b class="nc">&nbsp;                .header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token)</b>
+<b class="nc">&nbsp;                .retrieve()</b>
+<b class="nc">&nbsp;                .bodyToMono(SpotifyTracksResponse.class)</b>
+<b class="nc">&nbsp;                .map(trackResponse -&gt; {</b>
+<b class="nc">&nbsp;                    return saveFullAlbumToDatabase(spotifyAlbumData, trackResponse.getItems());</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Saves the Album and links all its tracks.
+&nbsp;     */
+&nbsp;    private Album saveFullAlbumToDatabase(SpotifyAlbum spotifyAlbumDTO, List&lt;SpotifyTrack&gt; tracks) {
+<b class="nc">&nbsp;        Album album = albumRepository.findBySpotifyId(spotifyAlbumDTO.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;        if (album == null) {</b>
+<b class="nc">&nbsp;            album = new Album();</b>
+<b class="nc">&nbsp;            album.setTitle(spotifyAlbumDTO.getName());</b>
+<b class="nc">&nbsp;            album.setSpotifyId(spotifyAlbumDTO.getId());</b>
+&nbsp;
+<b class="nc">&nbsp;            if (tracks != null &amp;&amp; !tracks.isEmpty() &amp;&amp; !tracks.get(0).getArtists().isEmpty()) {</b>
+<b class="nc">&nbsp;                album.setArtist(tracks.get(0).getArtists().get(0).getName());</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                album.setArtist(&quot;Unknown Artist&quot;);</b>
+&nbsp;            }
+<b class="nc">&nbsp;            album = albumRepository.save(album);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (tracks != null) {</b>
+<b class="nc">&nbsp;            for (SpotifyTrack track : tracks) {</b>
+<b class="nc">&nbsp;                Song song = songRepository.findBySpotifyId(track.getId()).orElse(new Song());</b>
+&nbsp;
+<b class="nc">&nbsp;                song.setSongName(track.getName());</b>
+<b class="nc">&nbsp;                song.setSpotifyId(track.getId());</b>
+&nbsp;
+&nbsp;
+<b class="nc">&nbsp;                if (!track.getArtists().isEmpty()) {</b>
+<b class="nc">&nbsp;                    song.setArtist(track.getArtists().get(0).getName());</b>
+&nbsp;                } else {
+<b class="nc">&nbsp;                    song.setArtist(album.getArtist());</b>
+&nbsp;                }
+&nbsp;
+<b class="nc">&nbsp;                song.setAlbum(album);</b>
+<b class="nc">&nbsp;                songRepository.save(song);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return album;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-12 13:46</div>
+</div>
+</body>
+</html>
