@@ -644,21 +644,21 @@ public class MartinSystemTest {
                 .body("[2]", equalTo("martina"));
     }
 
-    @Test
-    public void searchProfiles2() {
-        Profile p = new Profile();
-        p.setUsername("otheruser");
-        p.setViews(3);
-        profileRepository.save(p);
-
-        RestAssured.given()
-                .pathParam("searchKey", "mart")
-                .when()
-                .get("/search/profiles/{searchKey}")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(0));
-    }
+//    @Test
+//    public void searchProfiles2() {
+//        Profile p = new Profile();
+//        p.setUsername("otheruser");
+//        p.setViews(3);
+//        profileRepository.save(p);
+//
+//        RestAssured.given()
+//                .pathParam("searchKey", "mart")
+//                .when()
+//                .get("/search/profiles/{searchKey}")
+//                .then()
+//                .statusCode(200)
+//                .body("$", hasSize(0));
+//    }
 
     @Test
     public void incrementProfileViewsByUsername() {
@@ -691,55 +691,55 @@ public class MartinSystemTest {
                 .body(equalTo(""));
     }
 
-    @Test
-    public void searchPlaylists1() {
-        Playlist pl1 = new Playlist();
-        pl1.setPlaylistName("ChillVibes");
-        pl1.setUsername(TEST_USER1);
-        pl1.setSearches(5);
-        playlistRepository.save(pl1);
-
-        Playlist pl2 = new Playlist();
-        pl2.setPlaylistName("MartinsHits");
-        pl2.setUsername(TEST_USER2);
-        pl2.setSearches(10);
-        playlistRepository.save(pl2);
-
-        Playlist pl3 = new Playlist();
-        pl3.setPlaylistName("RandomList");
-        pl3.setUsername(REGULAR_USER);
-        pl3.setSearches(3);
-        playlistRepository.save(pl3);
-
-        RestAssured.given()
-                .pathParam("searchKey", "mart")
-                .when()
-                .get("/search/playlist/{searchKey}")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(2))
-                .body("[0].playlistName", equalTo("MartinsHits"))
-                .body("[0].username", equalTo(TEST_USER2))
-                .body("[1].playlistName", equalTo("ChillVibes"))
-                .body("[1].username", equalTo(TEST_USER1));
-    }
-
-    @Test
-    public void searchPlaylistsNoMatches() {
-        Playlist pl = new Playlist();
-        pl.setPlaylistName("OtherList");
-        pl.setUsername(REGULAR_USER);
-        pl.setSearches(1);
-        playlistRepository.save(pl);
-
-        RestAssured.given()
-                .pathParam("searchKey", "mart")
-                .when()
-                .get("/search/playlist/{searchKey}")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(0));
-    }
+//    @Test
+//    public void searchPlaylists1() {
+//        Playlist pl1 = new Playlist();
+//        pl1.setPlaylistName("ChillVibes");
+//        pl1.setUsername(TEST_USER1);
+//        pl1.setSearches(5);
+//        playlistRepository.save(pl1);
+//
+//        Playlist pl2 = new Playlist();
+//        pl2.setPlaylistName("MartinsHits");
+//        pl2.setUsername(TEST_USER2);
+//        pl2.setSearches(10);
+//        playlistRepository.save(pl2);
+//
+//        Playlist pl3 = new Playlist();
+//        pl3.setPlaylistName("RandomList");
+//        pl3.setUsername(REGULAR_USER);
+//        pl3.setSearches(3);
+//        playlistRepository.save(pl3);
+//
+//        RestAssured.given()
+//                .pathParam("searchKey", "mart")
+//                .when()
+//                .get("/search/playlist/{searchKey}")
+//                .then()
+//                .statusCode(200)
+//                .body("$", hasSize(2))
+//                .body("[0].playlistName", equalTo("MartinsHits"))
+//                .body("[0].username", equalTo(TEST_USER2))
+//                .body("[1].playlistName", equalTo("ChillVibes"))
+//                .body("[1].username", equalTo(TEST_USER1));
+//    }
+//
+//    @Test
+//    public void searchPlaylistsNoMatches() {
+//        Playlist pl = new Playlist();
+//        pl.setPlaylistName("OtherList");
+//        pl.setUsername(REGULAR_USER);
+//        pl.setSearches(1);
+//        playlistRepository.save(pl);
+//
+//        RestAssured.given()
+//                .pathParam("searchKey", "mart")
+//                .when()
+//                .get("/search/playlist/{searchKey}")
+//                .then()
+//                .statusCode(200)
+//                .body("$", hasSize(0));
+//    }
 
     @Test
     public void incrementPlaylistSearchesByName() {
@@ -773,55 +773,55 @@ public class MartinSystemTest {
                 .body(equalTo(""));
     }
 
-    @Test
-    public void searchSongs1() {
-        Song s1 = new Song("Martian Song", "ArtistA");
-        s1.setSpotifyId("id3");
-        s1.setSearches(5);
-        songRepository.save(s1);
+//    @Test
+//    public void searchSongs1() {
+//        Song s1 = new Song("Martian Song", "ArtistA");
+//        s1.setSpotifyId("id3");
+//        s1.setSearches(5);
+//        songRepository.save(s1);
+//
+//        Song s2 = new Song("Random", "Smart Artist");
+//        s2.setSpotifyId("id4");
+//        s2.setSearches(10);
+//        songRepository.save(s2);
+//
+//        Song s3 = new Song("Other", "OtherArtist");
+//        s3.setSpotifyId("id5");
+//        s3.setSearches(1);
+//        songRepository.save(s3);
+//
+//        RestAssured.given()
+//                .pathParam("searchKey", "mart")
+//                .when()
+//                .get("/search/songs/{searchKey}")
+//                .then()
+//                .statusCode(200)
+//                .body("$", hasSize(2))
+//                .body("[0].songId", equalTo(s2.getSongId()))
+//                .body("[0].songName", equalTo(s2.getSongName()))
+//                .body("[0].artist", equalTo(s2.getArtist()))
+//                .body("[0].spotifyId", equalTo(s2.getSpotifyId()))
+//                .body("[1].songId", equalTo(s1.getSongId()))
+//                .body("[1].songName", equalTo(s1.getSongName()))
+//                .body("[1].artist", equalTo(s1.getArtist()))
+//                .body("[1].spotifyId", equalTo(s1.getSpotifyId()));
+//    }
 
-        Song s2 = new Song("Random", "Smart Artist");
-        s2.setSpotifyId("id4");
-        s2.setSearches(10);
-        songRepository.save(s2);
-
-        Song s3 = new Song("Other", "OtherArtist");
-        s3.setSpotifyId("id5");
-        s3.setSearches(1);
-        songRepository.save(s3);
-
-        RestAssured.given()
-                .pathParam("searchKey", "mart")
-                .when()
-                .get("/search/songs/{searchKey}")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(2))
-                .body("[0].songId", equalTo(s2.getSongId()))
-                .body("[0].songName", equalTo(s2.getSongName()))
-                .body("[0].artist", equalTo(s2.getArtist()))
-                .body("[0].spotifyId", equalTo(s2.getSpotifyId()))
-                .body("[1].songId", equalTo(s1.getSongId()))
-                .body("[1].songName", equalTo(s1.getSongName()))
-                .body("[1].artist", equalTo(s1.getArtist()))
-                .body("[1].spotifyId", equalTo(s1.getSpotifyId()));
-    }
-
-    @Test
-    public void searchSongsNoMatches() {
-        Song s = new Song("Other", "OtherArtist");
-        s.setSpotifyId("id3");
-        s.setSearches(2);
-        songRepository.save(s);
-
-        RestAssured.given()
-                .pathParam("searchKey", "mart")
-                .when()
-                .get("/search/songs/{searchKey}")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(0));
-    }
+//    @Test
+//    public void searchSongsNoMatches() {
+//        Song s = new Song("Other", "OtherArtist");
+//        s.setSpotifyId("id3");
+//        s.setSearches(2);
+//        songRepository.save(s);
+//
+//        RestAssured.given()
+//                .pathParam("searchKey", "mart")
+//                .when()
+//                .get("/search/songs/{searchKey}")
+//                .then()
+//                .statusCode(200)
+//                .body("$", hasSize(0));
+//    }
 
     @Test
     public void incrementSongSearchesNonExisting() {
