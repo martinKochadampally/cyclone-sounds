@@ -1,0 +1,208 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FriendsController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cycloneSounds.Friends</a>
+</div>
+
+<h1>Coverage Summary for Class: FriendsController (cycloneSounds.Friends)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FriendsController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (14/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cycloneSounds.Friends;
+&nbsp;
+&nbsp;import cycloneSounds.profilePage.Profile;
+&nbsp;import io.swagger.v3.oas.annotations.Operation;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponse;
+&nbsp;import io.swagger.v3.oas.annotations.responses.ApiResponses;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api/friends&quot;)
+&nbsp;public class FriendsController {
+&nbsp;
+&nbsp;    private final FriendsService friendsService;
+&nbsp;
+&nbsp;    @Autowired
+<b class="fc">&nbsp;    public FriendsController(FriendsService friendsService) {</b>
+<b class="fc">&nbsp;        this.friendsService = friendsService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Sends a friend request from one user to another.
+&nbsp;     *
+&nbsp;     * @param payload JSON map containing &quot;requester&quot; and &quot;receiver&quot; usernames
+&nbsp;     * @return ResponseEntity containing the created Friends object or bad request status
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Send a friend request&quot;,
+&nbsp;            description = &quot;Creates a friend request from requester to receiver.&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Friend request created&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;400&quot;, description = &quot;Invalid request payload or error creating request&quot;)
+&nbsp;    })
+&nbsp;    @PostMapping(&quot;/request&quot;)
+&nbsp;    public ResponseEntity&lt;Friends&gt; sendFriendRequest(@RequestBody Map&lt;String, String&gt; payload) {
+<b class="fc">&nbsp;        String requesterUsername = payload.get(&quot;requester&quot;);</b>
+<b class="fc">&nbsp;        String receiverUsername = payload.get(&quot;receiver&quot;);</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            Friends newRequest = friendsService.sendFriendRequest(requesterUsername, receiverUsername);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(newRequest);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.badRequest().body(null);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Responds to a friend request by setting its status (e.g., accepted, rejected).
+&nbsp;     *
+&nbsp;     * @param requestId ID of the friend request
+&nbsp;     * @param payload JSON map containing the new status under key &quot;status&quot;
+&nbsp;     * @return ResponseEntity containing updated Friends object or not found status
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Respond to a friend request&quot;,
+&nbsp;            description = &quot;Updates the status of a friend request identified by requestId.&quot;)
+&nbsp;    @ApiResponses({
+&nbsp;            @ApiResponse(responseCode = &quot;200&quot;, description = &quot;Friend request status updated&quot;),
+&nbsp;            @ApiResponse(responseCode = &quot;404&quot;, description = &quot;Friend request not found&quot;)
+&nbsp;    })
+&nbsp;    @PostMapping(&quot;/respond/{requestId}&quot;)
+&nbsp;    public ResponseEntity&lt;Friends&gt; respondToRequest(@PathVariable String     requestId, @RequestBody Map&lt;String, String&gt; payload) {
+<b class="fc">&nbsp;        String statusString = payload.get(&quot;status&quot;);</b>
+<b class="fc">&nbsp;        Friends.Status status = Friends.Status.valueOf(statusString.toUpperCase());</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            Friends updatedRequest = friendsService.respondToRequest(requestId, status);</b>
+<b class="fc">&nbsp;            return ResponseEntity.ok(updatedRequest);</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            return ResponseEntity.notFound().build();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves a list of accepted friends for the specified username.
+&nbsp;     *
+&nbsp;     * @param username Username whose accepted friends to retrieve
+&nbsp;     * @return ResponseEntity containing list of Profile objects of accepted friends
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get accepted friends&quot;,
+&nbsp;            description = &quot;Retrieves all friends who have accepted friendship with the specified user.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;List of accepted friends retrieved&quot;)
+&nbsp;    @GetMapping(&quot;/accepted/{username}&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Profile&gt;&gt; getAcceptedFriends(@PathVariable String username) {
+<b class="fc">&nbsp;        List&lt;Profile&gt; friends = friendsService.getAcceptedFriends(username);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(friends);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Retrieves a list of pending friend requests received by the specified username.
+&nbsp;     *
+&nbsp;     * @param username Username whose pending friend requests to retrieve
+&nbsp;     * @return ResponseEntity containing list of Friends objects representing pending requests
+&nbsp;     */
+&nbsp;    @Operation(summary = &quot;Get pending friend requests&quot;,
+&nbsp;            description = &quot;Retrieves all pending friend requests received by the specified user.&quot;)
+&nbsp;    @ApiResponse(responseCode = &quot;200&quot;, description = &quot;List of pending friend requests retrieved&quot;)
+&nbsp;    @GetMapping(&quot;/pending/{username}&quot;)
+&nbsp;    public ResponseEntity&lt;List&lt;Friends&gt;&gt; getPendingRequests(@PathVariable String username) {
+<b class="fc">&nbsp;        List&lt;Friends&gt; requests = friendsService.getPendingRequests(username);</b>
+<b class="fc">&nbsp;        return ResponseEntity.ok(requests);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-12-12 13:46</div>
+</div>
+</body>
+</html>
