@@ -1,93 +1,116 @@
-# 1_srijita_7
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.las.iastate.edu/cs309/2025fall/1_srijita_7.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.las.iastate.edu/cs309/2025fall/1_srijita_7/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
+# Cyclone Sounds
+> Note: Active development on this project has **stopped**.  
+> The repository is kept for reference and as a record of our COM S 3090 work.
 
 ## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Cyclone Sounds is a music listening and review application built for **COM S 3090 – Software Development Practices** at **Iowa State University**.  
+The project lets users browse songs and albums, write reviews, see friends’ activity, and listen to music through an integrated Android client and Spring Boot backend.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Project Structure
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Backend/  
+- src/main/java/cycloneSounds/...  
+- src/test/...  
+- pom.xml  
+
+Frontend/  
+- AndroidExample/  
+  - app/src/main/java/com/example/androidexample/...  
+  - app/src/main/res/...  
+  - app/build.gradle  
+
+Documents/  
+- Design documents, reports, and other course materials  
+
+- Backend: REST API, security configuration, and domain logic (albums, reviews, friends, Spotify, websockets, etc.).  
+- Frontend: Native Android Activities for login, home, music player, playlists, reviews, chat, and Spotify playback.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+
+### Requirements
+- Java 17 or later  
+- Maven  
+- Android Studio (latest stable)  
+- Android SDK and an emulator or physical Android device  
+- (Optional) Spotify developer credentials if you want Spotify features enabled
+
+### Backend Setup (Spring Boot)
+
+1. Open the `Backend/` directory in your IDE or terminal.  
+2. Configure the database and other settings in `Backend/src/main/resources/application.properties` (or `application.yml`).  
+3. From `Backend/`, run:
+
+   mvn spring-boot:run
+
+4. The backend will run on `http://localhost:8080` unless configured otherwise.
+
+### Android App Setup
+
+1. Open Android Studio and choose “Open an Existing Project”, selecting `Frontend/AndroidExample`.  
+2. Let Gradle sync and download dependencies.  
+3. Set the backend base URL in your networking code (for example, in `VolleySingleton` or a constants file) to point to the backend:  
+   - For Android emulator: `http://10.0.2.2:8080`  
+   - For physical device: `http://<your-machine-ip>:8080`  
+4. Choose an emulator or device and click Run.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+
+A typical user flow:
+
+1. Launch Cyclone Sounds and create an account or log in.  
+2. Browse jams, songs, or albums from the home screen.  
+3. Tap an item to see details and existing reviews.  
+4. Add your own review and rating.  
+5. View friends, social history, and playlists to explore what others are listening to.  
+6. Use the built-in player or Spotify integration to listen.
+
+Example backend API endpoints (adjust names to match your controllers):
+
+- GET `/api/songs`  
+- GET `/api/songs/{id}`  
+- POST `/api/reviews`  
+- GET `/api/users/{id}/friends`
 
 ## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+If you run into problems:
+
+- Open an issue in the project’s issue tracker.  
+- Contact the team using your Iowa State email addresses (martink5@iastate.edu)
+
+You can also document any known issues or troubleshooting tips here (for example, common Gradle errors or emulator networking issues).
 
 ## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Potential future improvements:
+
+- Push notifications for new reviews and friend activity.  
+- Recommendation engine based on listening and review history.  
+- Enhanced Spotify/streaming integration and better queue management.  
+- Additional themes (for example, dark mode) and accessibility improvements.  
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+This repository was created for a course project, but contributions and refinements are welcome.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+1. Fork the repository.  
+2. Create a feature branch from `main`.  
+3. Make changes in `Backend/` and/or `Frontend/AndroidExample/`.  
+4. Ensure the app builds and passes tests.  
+5. Open a merge request with a clear description of your changes.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+### Running Tests
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Backend (JUnit):
 
-## License
-For open source projects, say how it is licensed.
+- cd Backend  
+- mvn test  
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Android (unit/instrumentation tests):
+
+- cd Frontend/AndroidExample  
+- ./gradlew test  
+- ./gradlew connectedAndroidTest  
+
+## Authors and Acknowledgment
+- Martin Kochadampally & Mark Seward – Backend services, database and CI/CD
+- Alexander Dwitty & Jackson Danby – Android UI and features   
+
+Special thanks to the COM S 3090 instructors and TAs for guidance and feedback.
