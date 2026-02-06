@@ -64,12 +64,12 @@ A typical user flow:
 5. View friends, social history, and playlists to explore what others are listening to.  
 6. Use the built-in player or Spotify integration to listen.
 
-Example backend API endpoints (adjust names to match your controllers):
+Example backend API endpoints:
 
-- GET `/api/songs`  
-- GET `/api/songs/{id}`  
-- POST `/api/reviews`  
-- GET `/api/users/{id}/friends`
+- GET `/search/profiles/{username}`  
+- GET `/blind-review/next`  
+- POST `/blind-review/review` 
+- GET `/api/login`
 
 ## Support
 If you run into problems:
