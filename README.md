@@ -32,7 +32,7 @@ Documents/
 - Maven  
 - Android Studio (latest stable)  
 - Android SDK and an emulator or physical Android device  
-- (Optional) Spotify developer credentials if you want Spotify features enabled
+- Spotify developer credentials if you want Spotify features enabled
 
 ### Backend Setup (Spring Boot)
 
@@ -77,14 +77,11 @@ If you run into problems:
 - Open an issue in the project’s issue tracker.  
 - Contact the team using your Iowa State email addresses (martink5@iastate.edu)
 
-You can also document any known issues or troubleshooting tips here (for example, common Gradle errors or emulator networking issues).
-
 ## Roadmap
 Potential future improvements:
 
 - Push notifications for new reviews and friend activity.  
-- Recommendation engine based on listening and review history.  
-- Enhanced Spotify/streaming integration and better queue management.  
+- Some way to recommend music based on listening and review history.   
 - Additional themes (for example, dark mode) and accessibility improvements.  
 
 ## Contributing
@@ -111,6 +108,6 @@ Android (unit/instrumentation tests):
 
 ## Authors and Acknowledgment
 - Martin Kochadampally & Mark Seward – Backend services, database and CI/CD
-- Alexander Dwitty & Jackson Danby – Android UI and features   
+- Alexander Dwitty & Jackson Danby – Frontend Development    
 
 Special thanks to the COM S 3090 instructors and TAs for guidance and feedback.
